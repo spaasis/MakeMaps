@@ -98,7 +98,7 @@ export class FileDetailsView extends React.Component<
                     : null}
             </div>
             <button className='secondaryButton' style={{ position: 'absolute', left: 15, bottom: 15 }} onClick={this.goBack}>Go back</button>
-            <button className='primaryButton' disabled={!this.props.state.coordinateSystem || (this.props.state.isHeatMap && !this.activeLayer.heatMapVariable) || (!this.props.state.isGeoJSON && (!this.props.state.latitudeField || !this.props.state.longitudeField))} style={{ position: 'absolute', right: 15, bottom: 15 }} onClick={this.proceed}>Mapify!</button>
+            <button className='primaryButton' disabled={!this.props.state.coordinateSystem || (this.props.state.isHeatMap && !this.activeLayer.heatMapVariable) || (!this.props.state.isGeoJSON && (!this.props.state.latitudeField || !this.props.state.longitudeField))} style={{ position: 'absolute', right: 15, bottom: 15 }} onClick={this.proceed}>Make a map!</button>
         </div>
     }
 

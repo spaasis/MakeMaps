@@ -1,12 +1,12 @@
 {
-  "name": "mapify",
+  "name": "MakeMaps",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "prepublish": "typings install && tsc && webpack"
   },
   "author": "Simo Paasisalo",
-  "license": "MIT",
+  "license": "GPL V3",
   "dependencies": {
     "Leaflet.extra-markers": "git+http://github.com/coryasilva/Leaflet.ExtraMarkers",
     "chroma-js": "^1.1.1",

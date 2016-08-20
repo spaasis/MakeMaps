@@ -6,7 +6,7 @@ import { AppState, ImportWizardState, SaveState } from './Stores/States';
 import { Layer, ColorOptions, SymbolOptions } from './Stores/Layer';
 import { Legend } from './Stores/Legend';
 import { LayerImportWizard } from './import_wizard/LayerImportWizard';
-import { MapifyMenu } from './menu/Menu';
+import { MakeMapsMenu } from './menu/Menu';
 import { MapInitModel } from '../models/MapInitModel';
 import { LayerTypes, SymbolTypes, GetSymbolSize, LoadLocalMap, LoadExternalMap } from './common_items/common';
 import { OnScreenFilter } from './misc/OnScreenFilter';
@@ -64,7 +64,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             this.layerImportSubmit(new Layer(this.props.state).geoJSON = mapGeoJSON)
             return;
         }
-        //URL to get a .mapify-file
+        //URL to get a .makeMaps-file
         let mapURL = this.getUrlParameter("mapURL");
         if (mapURL) {
 
@@ -246,7 +246,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         }
         domToImage.toBlob(document.getElementById('content'), { filter: filter })
             .then(function(blob) {
-                (window as any).saveAs(blob, 'Mapify_map.png');
+                (window as any).saveAs(blob, 'MakeMaps_map.png');
             });
     }
 
@@ -262,7 +262,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         saveData.layers.forEach(function(e) { delete e.appState; delete e.layer; delete e.values; });
         saveData.filters.forEach(function(e) { delete e.appState });
         let blob = new Blob([JSON.stringify(saveData)], { type: "text/plain;charset=utf-8" });
-        (window as any).saveAs(blob, 'map.mapify');
+        (window as any).saveAs(blob, 'map.mmap');
     }
 
 
@@ -298,7 +298,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                                 cancel={this.cancelLayerImport.bind(this)}
                                 />
                         </Modal>
-                        <MapifyMenu
+                        <MakeMapsMenu
                             state = {this.props.state}
                             addLayer = {this.startLayerImport.bind(this)}
                             changeLayerOrder ={this.changeLayerOrder.bind(this)}

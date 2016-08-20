@@ -76,20 +76,20 @@ function GetItemBetweenLimits(limits: any[], items: any[], value: number) {
 
 
 /**
- * LoadLocalMap - Load a .mapify file from server
+ * LoadLocalMap - Load a .makeMaps file from server
  *
  * @param  filename   name of the file, without extension
  * @param  onLoad     function to run on load complete
  * @param  path       custom path. If null, defaults to demos/
  */
 function LoadLocalMap(filename: string, onLoad: (string) => void, path?: string) {
-    LoadSavedMap(path ? path : 'demos/' + filename + '.mapify', onLoad)
+    LoadSavedMap(path ? path : 'demos/' + filename + '.mmap', onLoad)
 
 }
 
 
 /**
- * LoadExternalMap - Load a .mapify file from external URL
+ * LoadExternalMap - Load a .makeMaps file from external URL
  *
  * @param  URL      File URL
  * @param  onLoad     function to run on load complete
@@ -100,7 +100,7 @@ function LoadExternalMap(URL: string, onLoad: (string) => void) {
 }
 
 /**
- * LoadSavedMap - Loads a specified .mapify-file
+ * LoadSavedMap - Loads a specified .makeMaps-file
  * @param  path      File path
  * @param  onLoad     function to run on load complete
  */
@@ -112,7 +112,6 @@ function LoadSavedMap(path: string, onLoad: (string) => void) {
     function uploadComplete() {
         if (rawFile.readyState === 4) {
             if (rawFile.status === 200 || rawFile.status == 0) {
-
                 onLoad(JSON.parse(rawFile.responseText));
             }
         }

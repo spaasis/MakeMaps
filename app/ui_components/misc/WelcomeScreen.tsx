@@ -33,7 +33,7 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
         function contentUploaded(e) {
             let contents: any = e.target;
             let ext: string = fileName.split('.').pop().toLowerCase();
-            if (ext === 'mapify') {
+            if (ext === 'mmap') {
                 this.setState({
                     savedJSON: JSON.parse(contents.result),
                     fileName: fileName,
@@ -41,7 +41,7 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
                 });
             }
             else {
-                alert('Select a .mapify file!');
+                alert('Select a .mmap file!');
             }
 
         }
@@ -62,11 +62,11 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
             fontWeight: 'bold'
         }
         return (<div style={{ textAlign: 'center' }}>
-            <a href="https://github.com/simopaasisalo/mapify"><img style={{ position: 'absolute', top: 0, right: 0, border: 0 }} src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"/></a>
+            <a href="https://github.com/simopaasisalo/MakeMaps"><img style={{ position: 'absolute', top: 0, right: 0, border: 0 }} src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"/></a>
             <img src='app/images/logo_pre.png' style={{ display: 'block', margin: '0 auto', padding:5 }}/>
-            Mapify is an open source mapmaking tool that lets you create powerful visualizations from your spatial data
+            MakeMaps is an open source mapmaking tool that lets you create powerful visualizations from your spatial data
             <br/>
-            Guides and feedback channels can be found in the <a href="https://github.com/simopaasisalo/mapify">GitHub page</a>. Contributions and feature requests welcome!
+            Guides and feedback channels can be found in the <a href="https://github.com/simopaasisalo/MakeMaps">GitHub page</a>. Contributions and feature requests welcome!
             <hr/>
             <h3>Here's a few demos: </h3>
             <div style={{ overflowX: 'visible', overflowY: 'hidden', height: 440, whiteSpace: 'nowrap' }}>
@@ -78,7 +78,7 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
                     />
                 <DemoPreview
                     imageURL='demos/symboldemo.png'
-                    description='This demo demonstrates the different symbol options of Mapify. Data random generated for demo purposes.'
+                    description='This demo demonstrates the different symbol options of MakeMaps. Data random generated for demo purposes.'
                     loadDemo={this.loadDemo.bind(this, 'symboldemo')}
                     />
                 <DemoPreview
@@ -100,7 +100,7 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
                         <Dropzone
                             style={dropStyle}
                             onDrop={this.onDrop.bind(this)}
-                            accept={'.mapify'}
+                            accept={'.mmap'}
                             >
                             {this.state.fileName ?
                                 <span>

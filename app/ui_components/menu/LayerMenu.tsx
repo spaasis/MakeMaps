@@ -89,7 +89,7 @@ export class LayerMenu extends React.Component<{
             lineHeight: '20px',
         }
         return (
-            <div className="mapify-options">
+            <div className="makeMaps-options">
                 <label>Select the base map</label>
                 <Select
                     options={this.props.state.obsBaseLayers}

@@ -110,7 +110,7 @@ export class FilterMenu extends React.Component<{
             filters.push({ value: this.props.state.filters.slice()[i].id, label: this.props.state.filters.slice()[i].title });
         }
         return (!layer ? null :
-            <div className="mapify-options">
+            <div className="makeMaps-options">
                 {filter ?
                     <div>
                         <label>Select the filter to update</label>

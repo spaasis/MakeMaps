@@ -16,7 +16,7 @@ let Select = require('react-select');
 let Menu = require('impromptu-react-sidemenu');
 
 @observer
-export class MapifyMenu extends React.Component<{
+export class MakeMapsMenu extends React.Component<{
     /** Application state*/
     state: AppState,
     /** Reorder the layers on the map*/
@@ -25,7 +25,7 @@ export class MapifyMenu extends React.Component<{
     addLayer: () => void,
     /** Export map as .png */
     saveImage: () => void,
-    /** Export map as .mapify*/
+    /** Export map as .makeMaps*/
     saveFile: () => void,
 }, {}>{
     componentWillMount() {

@@ -26,7 +26,7 @@ export class PopUpMenu extends React.Component<{
     }
     render() {
         return (this.props.state.visibleMenu !== 6 ? null :
-            <div className="mapify-options">
+            <div className="makeMaps-options">
                 <label>Select the variables to show</label>
                 <Select
                     options={this.props.state.editingLayer.headers.slice()}

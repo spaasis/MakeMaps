@@ -7,7 +7,7 @@ export class ExportMenu extends React.Component<{
     state: AppState,
     /** Save map as a .png image*/
     saveImage: () => void,
-    /** Save map as a .mapify file*/
+    /** Save map as a .makeMaps file*/
     saveFile: () => void,
 }, {}>{
 

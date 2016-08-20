@@ -39,7 +39,7 @@ export class LegendMenu extends React.Component<{
         }
 
         return (
-            <div className="mapify-options">
+            <div className="makeMaps-options">
                 <label htmlFor='showLegend'>Show legend
                     <input id='showLegend' type='checkbox' checked={legend.visible} onChange={(e) => {
                         this.props.state.legend.visible = (e.currentTarget as any).checked;

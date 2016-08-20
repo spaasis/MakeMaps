@@ -330,7 +330,7 @@ export class ColorMenu extends React.Component<{
         }
         let isChart = layer.layerType === LayerTypes.SymbolMap && layer.symbolOptions.symbolType === SymbolTypes.Chart;
         return (
-            <div className="mapify-options">
+            <div className="makeMaps-options">
                 {layer.layerType === LayerTypes.ChoroplethMap || layer.layerType === LayerTypes.HeatMap || isChart ? null :
                     <div>
                         <label htmlFor='multipleSelect'>Use multiple fill colors

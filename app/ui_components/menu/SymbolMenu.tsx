@@ -244,7 +244,7 @@ export class SymbolMenu extends React.Component<{
         }
         return (
 
-            <div className="mapify-options">
+            <div className="makeMaps-options">
                 <label forHTML='circle'>
                     <i style={{ margin: 4 }} className='fa fa-circle-o'/>
                     Circle
