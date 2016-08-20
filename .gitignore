@@ -1,0 +1,10 @@
+
+node_modules/
+demos/
+typings/
+release/
+*.js
+*.js.map
+*.log.*
+*.log
+*.tgz
