@@ -1,0 +1,55 @@
+      .slider{
+        width: 400px;
+      }
+     .horizontal-slider {
+         width: 290;
+         height: 20px;
+         margin: 4px;
+     }
+     .vertical-slider {
+         height: 380px;
+         width: 20px;
+         border: 1px solid grey;
+     }
+     .handle {
+         font-size: 0.9em;
+         text-align: center;
+         background-color: #0066CC;
+         color: white;
+         cursor: pointer;
+        border-radius: 30px;
+     }
+     .handle.active {
+         background-color: grey;
+     }
+     .bar {
+         position: relative;
+         background: #ddd;
+     }
+     .horizontal-slider .bar {
+         top: 8px;
+         height: 5px;
+     }
+     .horizontal-slider .handle {
+         top: 1px;
+         width: 20px;
+         height: 20px;
+         line-height: 20px;
+     }
+     .vertical-slider .handle {
+         left: 1px;
+         width: 20px;
+         line-height: 20px;
+     }
+     .vertical-slider .bar {
+         left: 20px;
+         width: 10px;
+     }
+     #horizontal-0,
+     #horizontal-1, #horizontal-2, #horizontal-3,
+     #vertical {
+         margin: 20px 10px;
+     }
+     #horizontal-2 .bar.bar-2 {
+         background: #ddd;
+     }
