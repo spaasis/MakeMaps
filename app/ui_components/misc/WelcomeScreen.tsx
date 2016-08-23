@@ -62,9 +62,9 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
             fontWeight: 'bold'
         }
         return (<div style={{ textAlign: 'center' }}>
-            <a href="https://github.com/simopaasisalo/MakeMaps"><img style={{ position: 'absolute', top: 0, right: 0, border: 0 }} src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"/></a>
+            <a href="https://github.com/simopaasisalo/MakeMaps"><i className='fa fa-github' style={{position:'absolute', right:5, fontSize:'40px'}}/></a>
             <img src='app/images/logo_pre.png' style={{ display: 'block', margin: '0 auto', padding:5 }}/>
-            MakeMaps is an open source mapmaking tool that lets you create powerful visualizations from your spatial data
+            MakeMaps is an open source map creation tool that lets you make powerful visualizations from your spatial data
             <br/>
             Guides and feedback channels can be found in the <a href="https://github.com/simopaasisalo/MakeMaps">GitHub page</a>. Contributions and feature requests welcome!
             <hr/>
