@@ -8,7 +8,7 @@ import { Legend } from './Stores/Legend';
 import { LayerImportWizard } from './import_wizard/LayerImportWizard';
 import { MakeMapsMenu } from './menu/Menu';
 import { MapInitModel } from '../models/MapInitModel';
-import { LayerTypes, SymbolTypes, GetSymbolSize, LoadLocalMap, LoadExternalMap } from './common_items/common';
+import { LayerTypes, SymbolTypes, GetSymbolSize, LoadExternalMap } from './common_items/common';
 import { OnScreenFilter } from './misc/OnScreenFilter';
 import { OnScreenLegend } from './misc/OnScreenLegend';
 import { WelcomeScreen } from './misc/WelcomeScreen';
@@ -49,14 +49,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
     /** Parse URL parameters and act accordingly */
     embed() {
-        //Local file name on server
-        let mapFile = this.getUrlParameter("mapFile");
-        if (mapFile) {
-            //Custom path on server
-            let path = this.getUrlParameter("path");
-            LoadLocalMap(mapFile, this.loadSavedMap.bind(this), path);
-            return;
-        }
         //Pure GeoJSON without styling as string
         let mapGeoJSON = this.getUrlParameter("mapGeoJSON");
         if (mapGeoJSON) {

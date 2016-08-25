@@ -51,15 +51,12 @@ function CalculateLimits(min: number, max: number, count: number) {
 }
 
 function GetItemBetweenLimits(limits: any[], items: any[], value: number) {
-
     if (!isNaN(value)) {
         if (limits.length > 0)
             for (let i = 0; i < limits.length; i++) {
-
                 if (i < limits.length - 1) {
                     let lowerLimit = limits[i];
                     let upperLimit = limits[i + 1];
-
                     if (lowerLimit <= value && value < upperLimit) {
                         return items[i];
                     }
@@ -74,22 +71,8 @@ function GetItemBetweenLimits(limits: any[], items: any[], value: number) {
     }
 }
 
-
 /**
- * LoadLocalMap - Load a .makeMaps file from server
- *
- * @param  filename   name of the file, without extension
- * @param  onLoad     function to run on load complete
- * @param  path       custom path. If null, defaults to demos/
- */
-function LoadLocalMap(filename: string, onLoad: (string) => void, path?: string) {
-    LoadSavedMap(path ? path : 'demos/' + filename + '.mmap', onLoad)
-
-}
-
-
-/**
- * LoadExternalMap - Load a .makeMaps file from external URL
+ * LoadExternalMap - Load a .mmap file from external URL
  *
  * @param  URL      File URL
  * @param  onLoad     function to run on load complete
@@ -100,12 +83,11 @@ function LoadExternalMap(URL: string, onLoad: (string) => void) {
 }
 
 /**
- * LoadSavedMap - Loads a specified .makeMaps-file
+ * LoadSavedMap - Loads a specified .mmap-file
  * @param  path      File path
  * @param  onLoad     function to run on load complete
  */
 function LoadSavedMap(path: string, onLoad: (string) => void) {
-
     let rawFile = new XMLHttpRequest();
     rawFile.open("GET", path, false);
     rawFile.onreadystatechange = uploadComplete.bind(this)
@@ -121,4 +103,4 @@ function LoadSavedMap(path: string, onLoad: (string) => void) {
 
 
 
-export { LayerTypes, SymbolTypes, DefaultProjections, GetSymbolSize, CalculateLimits, GetItemBetweenLimits, LoadLocalMap, LoadExternalMap }
+export { LayerTypes, SymbolTypes, DefaultProjections, GetSymbolSize, CalculateLimits, GetItemBetweenLimits, LoadExternalMap }

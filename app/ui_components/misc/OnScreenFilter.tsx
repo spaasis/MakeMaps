@@ -28,7 +28,6 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
         }
     }
     onFilterScaleChange = (values) => {
-
         if (this.props.state.lockDistance) {
             this.advanceSliderWhenLocked(values[0], values[1]);
         }
@@ -56,14 +55,9 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
             this.props.state.currentMax = val;
         }
     }
-    onLockDistanceChange = (e) => {
-
-        this.props.state.lockDistance = e.currentTarget.checked;
-    }
     onCustomStepClick = (i: number) => {
         let minVal = this.props.state.steps[i][0];
         let maxVal = this.props.state.steps[i][1];
-
         this.props.state.currentMin = minVal;
         this.props.state.currentMax = maxVal;
         this.props.state.step = i;
@@ -100,25 +94,32 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
             handle={'.filterhead'}
             >
             <div className='filter'>
-                <h2 className='filterhead'>{this.props.state.title}</h2>
+                <h3 className='filterhead'>{this.props.state.title}</h3>
                 {this.renderSteps.call(this)}
-                <span>
+                <div style={{ display: 'inline-flex' }}>
                     <input type='number' style={{ width: '70px' }} value={this.props.state.currentMin.toFixed(0)} onChange={this.onCurrentMinChange}/>
-                    <label>Lock distance</label>
-                    <input type='checkbox' checked={this.props.state.lockDistance} onChange={this.onLockDistanceChange}/>
-                    <input type='number' style={{ float: 'right', width: '70px' }} value={this.props.state.currentMax.toFixed(0)} onChange={this.onCurrentMaxChange}/>
-                </span>
-                <Slider className='horizontal-slider'
-                    onChange={this.onFilterScaleChange}
-                    value={[this.props.state.currentMin, this.props.state.currentMax]}
-                    min={this.props.state.totalMin - 1}
-                    max={this.props.state.totalMax + 1}
-                    withBars>
-                    <div className='minHandle'></div>
-                    <div className='maxHandle'></div>
+                    <Slider className='horizontal-slider'
+                        onChange={this.onFilterScaleChange}
+                        value={[this.props.state.currentMin, this.props.state.currentMax]}
+                        min={this.props.state.totalMin - 1}
+                        max={this.props.state.totalMax + 1}
+                        withBars>
+                        <div className='minHandle'></div>
+                        <div className='maxHandle'></div>
+                    </Slider>
+                    <input type='number' style={{ width: '70px' }} value={this.props.state.currentMax.toFixed(0)} onChange={this.onCurrentMaxChange}/>
+                    <div style={{ display: 'inline-block', cursor: 'pointer' }} onClick={() => {
+                        this.props.state.lockDistance = !this.props.state.lockDistance;
+                    } }>
+                        <i style={{ color: 'cecece', fontSize: 20, padding: 4 }} className={!this.props.state.lockDistance ? 'fa fa-unlock-alt' : 'fa fa-lock'}/>
+                    </div>
+                </div>
+                {
 
-                </Slider>
-
+                    // <label>Lock distance
+                    //     <input type='checkbox' checked={this.props.state.lockDistance} onChange={this.onLockDistanceChange}/>
+                    // </label>
+                }
             </div>
         </Draggable>
     }

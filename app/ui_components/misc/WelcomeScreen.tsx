@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { DemoPreview } from './DemoPreview';
 let Dropzone = require('react-dropzone');
-import { LoadLocalMap } from '../common_items/common';
+import { LoadExternalMap } from '../common_items/common';
 
 
 export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcomeScreenStates>{
@@ -16,7 +16,7 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
      * @param  filename  Name of the file (without extension) to load
      */
     loadDemo(filename: string) {
-        LoadLocalMap(filename, this.props.loadMap);
+        LoadExternalMap('demos/'+filename+'.mmap', this.props.loadMap);
     }
     createNewMap() {
         this.props.openLayerImport();

@@ -2,7 +2,7 @@
         width: 400px;
       }
      .horizontal-slider {
-         width: 290;
+         width: 120;
          height: 20px;
          margin: 4px;
      }
@@ -12,12 +12,12 @@
          border: 1px solid grey;
      }
      .handle {
-         font-size: 0.9em;
-         text-align: center;
-         background-color: #0066CC;
-         color: white;
-         cursor: pointer;
-        border-radius: 30px;
+        font-size: 0.9em;
+        text-align: center;
+        background-color: white;
+        border: 1px solid gray;
+        color: white;
+        cursor: pointer;
      }
      .handle.active {
          background-color: grey;
@@ -32,13 +32,14 @@
      }
      .horizontal-slider .handle {
          top: 1px;
-         width: 20px;
-         height: 20px;
+         width: 8;
+         height: 20;
          line-height: 20px;
      }
      .vertical-slider .handle {
          left: 1px;
-         width: 20px;
+         width: 20;
+         height: 8;
          line-height: 20px;
      }
      .vertical-slider .bar {

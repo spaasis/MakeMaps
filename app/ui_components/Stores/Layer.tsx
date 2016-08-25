@@ -165,37 +165,18 @@ function pointToLayerFunc(col: ColorOptions, sym: SymbolOptions, feature, latlng
 
     switch (sym.symbolType) {
         case SymbolTypes.Icon:
-            let icon, shape, val;
-            for (let i = 0; i < sym.iconLimits.slice().length; i++) {
-                if (i !== sym.iconLimits.slice().length - 1) {
-                    val = feature.properties[sym.iconField];
-                    if (sym.iconLimits[i] <= val && val <= sym.iconLimits[i + 1]) {
-                        icon = sym.icons[i].fa;
-                        shape = sym.icons[i].shape;
-                        break;
-                    }
-                }
-                else { //get the last correct symbol
-                    icon = sym.icons[i].fa;
-                    shape = sym.icons[i].shape;
-                }
-            }
-
+            let icon = GetItemBetweenLimits(sym.iconLimits.slice(),sym.icons.slice(),feature.properties[sym.iconField] );
             let customIcon = L.ExtraMarkers.icon({
-                icon: icon ? icon : sym.icons[0].fa,
+                icon: icon.fa || sym.icons[0].fa,
                 prefix: 'fa',
                 markerColor: col.fillColor,
                 svg: true,
                 svgBorderColor: borderColor,
                 svgOpacity: col.fillOpacity,
-                shape: shape ? shape : sym.icons[0].shape,
+                shape:  icon.shape || sym.icons[0].shape,
                 iconColor: col.iconTextColor,
             });
             let mark = L.marker(latlng, { icon: customIcon });
-
-            mark.on('contextmenu', function(e) {
-                //mark.bindTooltip('Whynowork').openTooltip();
-            });
             return mark;
         case SymbolTypes.Rectangle:
             let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: 1px solid ' + borderColor + '"/>';

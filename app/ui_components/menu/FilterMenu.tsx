@@ -11,10 +11,11 @@ export class FilterMenu extends React.Component<{
 }, {}>{
 
     onFilterVariableChange = (val) => {
-        this.props.state.editingFilter.fieldToFilter = val.value;
-        this.props.state.editingFilter.title = this.props.state.editingFilter.title ? this.props.state.editingFilter.title : val.value + '-filter';
-        this.getMinMax()
-
+        if (val) {
+            this.props.state.editingFilter.fieldToFilter = val.value;
+            this.props.state.editingFilter.title = this.props.state.editingFilter.title ? this.props.state.editingFilter.title : val.value + '-filter';
+            this.getMinMax()
+        }
     }
 
     onUseDistinctValuesChange = (e) => {
@@ -64,8 +65,9 @@ export class FilterMenu extends React.Component<{
         let filter = new Filter();
         filter.id = this.props.state.nextFilterId;
         filter.layer = this.props.state.editingLayer;
-        filter.title = this.props.state.editingLayer.name + '-filter';
         filter.fieldToFilter = this.props.state.editingLayer.numberHeaders[0].label;
+        filter.title = filter.fieldToFilter;
+
         filter.appState = this.props.state;
         this.props.state.filters.push(filter);
         this.props.state.filterMenuState.selectedFilterId = filter.id;
@@ -73,14 +75,17 @@ export class FilterMenu extends React.Component<{
 
     }
     saveFilter = () => {
-        let steps;
+        //let steps;
         // if (this.props.state.filterMenuState.useCustomSteps) {
         //     steps = this.getStepValues();
         // }
-        this.props.state.editingFilter.init();
-        if (this.props.state.filterMenuState.useCustomSteps) {
-            this.props.state.editingFilter.steps = this.getStepValues();
-        }
+        let filter = this.props.state.editingFilter;
+        if (!filter.show)
+            filter.init();
+        if (this.props.state.filterMenuState.useCustomSteps)
+            filter.steps = this.getStepValues();
+        else
+            filter.steps = null;
     }
     deleteFilter = () => {
         let filter = this.props.state.editingFilter;
