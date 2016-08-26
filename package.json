@@ -19,6 +19,7 @@
     "leaflet.heat": "git+https://github.com/DuGuille/Leaflet.heat.git#relative-heatmap",
     "mobx": "^2.3.4",
     "mobx-react": "^3.4.0",
+    "osmtogeojson": "^2.2.11",
     "papaparse": "^4.1.2",
     "proj4": "^2.3.14",
     "react": "^0.14.8",
