@@ -245,6 +245,8 @@ export class SymbolMenu extends React.Component<{
         return (
 
             <div className="makeMaps-options">
+                <label>Select symbol type </label>
+                <br/>
                 <label forHTML='circle'>
                     <i style={{ margin: 4 }} className='fa fa-circle-o'/>
                     Circle
@@ -354,6 +356,7 @@ export class SymbolMenu extends React.Component<{
                                         options={this.props.state.editingLayer.numberHeaders}
                                         onChange={this.onIconFieldChange}
                                         value={sym.iconField}
+                                        clearable={false}
                                         />
                                     {sym.iconField ?
                                         <div>Set the <i>lower limit</i> and icon

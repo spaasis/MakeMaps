@@ -25,16 +25,48 @@ hr{
   color: #cecece;
   width: 75%;
 }
-.menuHeader{
-  line-height: 48px !important;
-  width: 100%;
-  margin: 0;
+
+.menu{
+  color:#9e9e9e;
+  text-align: center;
 }
-.menuHeader:hover{
-  background-color: #415c93 !important;
+.menuHeader{
+  text-align: center;
+  margin: 0 auto;
+}
+
+.menuHover{
+  transform: rotate(270deg);
+  transform-origin: 10% 10% 0;
+  position: absolute;
+  bottom: 0;
+  display: none;
+}
+
+.menuHeaderDiv{
+  margin: 0;
+  float: 'left';
+  width: 30;
+  height: 100%;
+  position: relative;
+  display:flex;
+  align-items:center;
+  cursor: pointer;
+}
+.menuHeaderDiv:hover{
+  background-color: #dddddd !important;
+}
+.menuHeaderDiv:hover span{
+  display: inline-block;
+}
+.menuHeaderDiv:hover i{
+  position: absolute;
+  top: 6;
+  left: 0;
+  right: 0;
 }
 .makeMaps-options{
-  background-color: #1a263f;
+  background-color: #ededed;
   cursor: default;
 }
 .symbolIcon:hover{
@@ -122,9 +154,6 @@ hr{
 
 .colorBlock{
   cursor: pointer;
-  width: 100px;
-  height: 70px;
   border-radius: 15px;
   text-align: center;
-  line-height: 70px;
 }

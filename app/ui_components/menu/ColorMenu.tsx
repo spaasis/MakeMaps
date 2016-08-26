@@ -344,20 +344,18 @@ export class ColorMenu extends React.Component<{
                         </label>
                     </div>
                 }
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    {col.useMultipleFillColors || layer.layerType === LayerTypes.HeatMap || isChart ?
-                        null :
-                        <div className='colorBlock' style={fillColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'fillColor')}>Fill</div>
-                    }
-                    {layer.layerType === LayerTypes.HeatMap ? null :
-                        <div className='colorBlock' style={borderColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'borderColor')}>Border</div>
-                    }
-                    {layer.layerType === LayerTypes.SymbolMap && layer.symbolOptions.symbolType === SymbolTypes.Icon ?
-                        <div className='colorBlock' style={iconTextColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'iconTextColor')}>Icon</div>
-                        : null
-                    }
+                {col.useMultipleFillColors || layer.layerType === LayerTypes.HeatMap || isChart ?
+                    null :
+                    <div className='colorBlock' style={fillColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'fillColor')}>Fill</div>
+                }
+                {layer.layerType === LayerTypes.HeatMap ? null :
+                    <div className='colorBlock' style={borderColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'borderColor')}>Border</div>
+                }
+                {layer.layerType === LayerTypes.SymbolMap && layer.symbolOptions.symbolType === SymbolTypes.Icon ?
+                    <div className='colorBlock' style={iconTextColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'iconTextColor')}>Icon</div>
+                    : null
+                }
 
-                </div>
                 {layer.layerType === LayerTypes.HeatMap ? null :
                     <div>
                         <label>Opacity</label>

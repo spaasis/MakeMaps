@@ -127,7 +127,7 @@ export class FilterMenu extends React.Component<{
                             value={state.selectedFilterId}
                             />
                         Or
-                        <button onClick={this.createNewFilter}>Create new filter</button>
+                        <button className='menuButton' onClick={this.createNewFilter}>Create new filter</button>
                         <br/>
                         <label>Give a name to the filter
                             <input type="text" onChange={(e) => {
@@ -217,7 +217,7 @@ export class FilterMenu extends React.Component<{
                     </div>
 
                     :
-                    <button onClick={this.createNewFilter}>Create new filter</button>
+                    <button className='menuButton' onClick={this.createNewFilter}>Create new filter</button>
                 }
             </div >
         );
