@@ -238,9 +238,9 @@ export class ColorMenu extends React.Component<{
             for (let i of layer.symbolOptions.chartFields) {
                 rows.push(
                     <li key={i.label}
-                        style={{ background: layer.colorOptions.chartColors[i.value] || '#FFF' }}
+                        style={{ background: layer.colorOptions.chartColors[i.value] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer' }}
                         onClick={this.toggleColorPick.bind(this, 'chartfield' + i.value)}>
-                        <i style={{ margin: 4, padding: 10, background: 'white', borderRadius: 5 }}>
+                        <i style={{ background: 'white', borderRadius: 5 }}>
                             {i.label}
                         </i>
                     </li>);
@@ -258,7 +258,7 @@ export class ColorMenu extends React.Component<{
             for (let i of steps) {
                 rows.push(
                     <li key={i}
-                        style={{ background: layer.colorOptions.colors[row] || '#FFF' }}
+                        style={{ background: layer.colorOptions.colors[row] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer' }}
                         onClick={this.toggleColorPick.bind(this, 'step' + row)}>
 
                         <input
@@ -332,17 +332,15 @@ export class ColorMenu extends React.Component<{
         return (
             <div className="makeMaps-options">
                 {layer.layerType === LayerTypes.ChoroplethMap || layer.layerType === LayerTypes.HeatMap || isChart ? null :
-                    <div>
-                        <label htmlFor='multipleSelect'>Use multiple fill colors
-                            <input
-                                id='multipleSelect'
-                                type='checkbox'
-                                onChange={(e) => {
-                                    this.props.state.editingLayer.colorOptions.useMultipleFillColors = (e.target as any).checked;
-                                } }
-                                checked={col.useMultipleFillColors}/>
-                        </label>
-                    </div>
+                    <label htmlFor='multipleSelect'>Use multiple fill colors
+                        <input
+                            id='multipleSelect'
+                            type='checkbox'
+                            onChange={(e) => {
+                                this.props.state.editingLayer.colorOptions.useMultipleFillColors = (e.target as any).checked;
+                            } }
+                            checked={col.useMultipleFillColors}/>
+                    </label>
                 }
                 {col.useMultipleFillColors || layer.layerType === LayerTypes.HeatMap || isChart ?
                     null :
@@ -357,10 +355,9 @@ export class ColorMenu extends React.Component<{
                 }
 
                 {layer.layerType === LayerTypes.HeatMap ? null :
-                    <div>
-                        <label>Opacity</label>
+                    <label>Opacity
                         <input type='number' max={1} min={0} step={0.1} onChange={this.onOpacityChange} value={col.opacity}/>
-                    </div>
+                    </label>
                 }
                 <Modal
                     isOpen={state.colorSelectOpen}
@@ -387,7 +384,7 @@ export class ColorMenu extends React.Component<{
                         <div>
                             {layer.layerType === LayerTypes.HeatMap ? null :
                                 <div>
-                                    <label>Select the variable to color by</label>
+                                    <label>Select the color variable</label>
                                     <Select
                                         options={layer.numberHeaders}
                                         onChange={this.onChoroVariableChange}
@@ -434,7 +431,7 @@ export class ColorMenu extends React.Component<{
                                     <label>Steps</label>
                                     <input
                                         type='number'
-                                        max={col.useCustomScheme ? 100 : 10}
+                                        max={100}
                                         min={2}
                                         step={1}
                                         onChange={this.onStepsChange}

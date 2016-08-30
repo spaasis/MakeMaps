@@ -17,8 +17,13 @@ export class SymbolMenu extends React.Component<{
 
         let sym: SymbolOptions = this.props.state.editingLayer.symbolOptions;
         sym.symbolType = type;
+
+        console.log(sym.sizeXVar)
         sym.sizeXVar = sym.sizeXVar ? sym.sizeXVar : layer.numberHeaders[0] ? layer.numberHeaders[0].label : undefined;
+        if (type === SymbolTypes.Blocks && !sym.sizeXVar)
+            sym.sizeXVar = layer.numberHeaders[0].label;
         sym.iconField = sym.iconField ? sym.iconField : layer.numberHeaders[0] ? layer.numberHeaders[0].label : undefined;
+        sym.blockValue = sym.blockValue == 0 ? Math.ceil(layer.values[sym.sizeXVar][layer.values[sym.sizeXVar].length - 1] / 5) : sym.blockValue;
         if (type === SymbolTypes.Chart) {
             if (sym.chartFields.length == 0)
                 this.onChartFieldsChange(layer.numberHeaders);

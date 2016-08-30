@@ -165,7 +165,7 @@ function pointToLayerFunc(col: ColorOptions, sym: SymbolOptions, feature, latlng
 
     switch (sym.symbolType) {
         case SymbolTypes.Icon:
-            let icon = GetItemBetweenLimits(sym.iconLimits.slice(),sym.icons.slice(),feature.properties[sym.iconField] );
+            let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), feature.properties[sym.iconField]);
             let customIcon = L.ExtraMarkers.icon({
                 icon: icon.fa || sym.icons[0].fa,
                 prefix: 'fa',
@@ -173,7 +173,7 @@ function pointToLayerFunc(col: ColorOptions, sym: SymbolOptions, feature, latlng
                 svg: true,
                 svgBorderColor: borderColor,
                 svgOpacity: col.fillOpacity,
-                shape:  icon.shape || sym.icons[0].shape,
+                shape: icon.shape || sym.icons[0].shape,
                 iconColor: col.iconTextColor,
             });
             let mark = L.marker(latlng, { icon: customIcon });
@@ -581,7 +581,7 @@ export class SymbolOptions {
         this.sizeMultiplier = prev && prev.sizeMultiplier || 1;
         this.chartFields = prev && prev.chartFields || [];
         this.chartType = prev && prev.chartType || 'pie';
-        this.blockValue = prev && prev.blockValue || 1;
+        this.blockValue = prev && prev.blockValue || 0;
         this.actualMinYValue = prev && prev.actualMinYValue || undefined;
         this.actualMaxYValue = prev && prev.actualMaxYValue || undefined;
         this.actualMinXValue = prev && prev.actualMinXValue || undefined;

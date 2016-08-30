@@ -11,6 +11,7 @@ import { AppState } from '../Stores/States';
 import { Layer, ColorOptions, SymbolOptions } from '../Stores/Layer';
 import { Legend } from '../Stores/Legend';
 import { observer } from 'mobx-react';
+import { MenuEntry } from './MenuEntry';
 
 let Select = require('react-select');
 
@@ -70,6 +71,8 @@ export class MakeMapsMenu extends React.Component<{
 
     getActiveMenu() {
         switch (this.props.state.visibleMenu) {
+            case 0:
+                return;
             case 1:
                 return <LayerMenu
                     state={this.props.state}
@@ -124,60 +127,16 @@ export class MakeMapsMenu extends React.Component<{
             !this.props.state.menuShown ? null :
                 <div style = {menuStyle} className='menu'>
                     <div style={{ float: 'left', display: 'flex', flexFlow: 'column', height: '100%' }}>
-                        <div className='menuHeaderDiv' style={{ backgroundColor: this.props.state.visibleMenu === 1 ? '#ededed' : '#fefefe' }} onClick = {this.onActiveMenuChange.bind(this, 1)}>
-                            <i className="menuHeader fa fa-bars"/>
-                            <span className='menuHover'>Layers</span>
-                        </div>
-                        {this.props.state.editingLayer ?
-                            <div className='menuHeaderDiv' onClick = {this.onActiveMenuChange.bind(this, 2)}
-                                style={{ backgroundColor: this.props.state.visibleMenu === 2 ? '#ededed' : '#fefefe' }}>
-                                <i className="menuHeader fa fa-paint-brush"/>
-                                <span className='menuHover'>Colors</span>
-                            </div>
-                            : <div/>
-                        }
-                        {this.props.state.editingLayer && this.props.state.editingLayer.layerType !== LayerTypes.ChoroplethMap && this.props.state.editingLayer.layerType !== LayerTypes.HeatMap ?
-                            <div className='menuHeaderDiv' onClick = {this.onActiveMenuChange.bind(this, 3)}
-                                style={{ backgroundColor: this.props.state.visibleMenu === 3 ? '#ededed' : '#fefefe' }}>
-                                <i className="menuHeader fa fa-map-marker"/>
-                                <span className='menuHover'>Symbols</span>
-                            </div>
-                            : <div/>
-                        }
-                        <div className='menuHeaderDiv'
-                            onClick = {this.onActiveMenuChange.bind(this, 4)}
-                            style={{ backgroundColor: this.props.state.visibleMenu === 4 ? '#ededed' : '#fefefe' }}>
-                            <i className="menuHeader fa fa-sliders"/>
-                            <span className='menuHover'>Filters</span>
-                        </div>
-
-                        <div className='menuHeaderDiv'
-                            onClick = {this.onActiveMenuChange.bind(this, 5)}
-                            style={{ backgroundColor: this.props.state.visibleMenu === 5 ? '#ededed' : '#fefefe' }}>
-                            <i className="menuHeader fa fa-map-o"/>
-                            <span className='menuHover'>Legend</span>
-                        </div >
-                        {this.props.state.editingLayer && this.props.state.editingLayer.layerType !== LayerTypes.HeatMap ?
-
-                            <div
-                                className='menuHeaderDiv'
-                                onClick = {this.onActiveMenuChange.bind(this, 6)}
-                                style={{ backgroundColor: this.props.state.visibleMenu === 6 ? '#ededed' : '#fefefe' }}
-                                >
-                                <i className="menuHeader fa fa-newspaper-o"/>
-                                <span className='menuHover'>Pop-ups</span>
-                            </div>
-                            : <div/>
-                        }
-                        <div
-                            className='menuHeaderDiv'
-                            onClick = {this.onActiveMenuChange.bind(this, 7)}
-                            style={{ backgroundColor: this.props.state.visibleMenu === 7 ? '#ededed' : '#fefefe' }}>
-                            <i className="menuHeader fa fa-download"/>
-                            <span className='menuHover'>Download</span>
-                        </div>
+                        <MenuEntry text="Layers" id={1} active={this.props.state.visibleMenu === 1} fa='bars' onClick = {this.onActiveMenuChange}/>
+                        <MenuEntry text="Colors" id={2} active={this.props.state.visibleMenu == 2} fa='paint-brush' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer}/>
+                        <MenuEntry text="Symbols" id={3} active={this.props.state.visibleMenu == 3} fa='map-marker' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.layerType === LayerTypes.ChoroplethMap || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
+                        <MenuEntry text="Filters" id={4} active={this.props.state.visibleMenu == 4} fa='sliders' onClick = {this.onActiveMenuChange} />
+                        <MenuEntry text="Legend" id={5} active={this.props.state.visibleMenu == 5} fa='map-o' onClick = {this.onActiveMenuChange}/>
+                        <MenuEntry text="Pop-ups" id={6} active={this.props.state.visibleMenu == 6} fa='newspaper-o' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
+                        <MenuEntry text="Download" id={7} active={this.props.state.visibleMenu == 7} fa='download' onClick = {this.onActiveMenuChange}/>
                     </div >
-                    <div className='menuOptions' style ={{ float: 'right', width: this.props.state.visibleMenu > 0 ? 250 : 0, height: '100%', background: '#ededed' }}>
+                    <div className={this.props.state.visibleMenu > 0 ? 'menuOpen' : document.getElementsByClassName('menuOpen').length > 0 ? 'menuClose' : ''}
+                        style ={{ float: 'right', width: this.props.state.visibleMenu > 0 ? 250 : 0, height: '100%', background: '#ededed' }}>
 
                         {
                             this.props.state.visibleMenu !== 0 && this.props.state.visibleMenu !== 1 && this.props.state.visibleMenu !== 4 && this.props.state.visibleMenu !== 5 && this.props.state.visibleMenu !== 7 ?

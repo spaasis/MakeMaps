@@ -9,6 +9,7 @@ export class ExportMenu extends React.Component<{
     saveImage: () => void,
     /** Save map as a .makeMaps file*/
     saveFile: () => void,
+
 }, {}>{
 
     render() {
@@ -35,6 +36,9 @@ export class ExportMenu extends React.Component<{
                     <button className='menuButton' onClick={() => {
                         this.props.saveFile();
                     } }>Download map as a file</button>
+
+                    <br/>
+
 
                 </div>
                 : null

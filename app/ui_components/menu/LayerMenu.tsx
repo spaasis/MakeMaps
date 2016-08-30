@@ -71,6 +71,7 @@ export class LayerMenu extends React.Component<{
         if (layerInfo) {
             this.props.state.layers = this.props.state.layers.filter((lyr) => { return lyr.id != id });
             this.props.state.map.removeLayer(layerInfo.layer);
+            this.props.state.layerMenuState.order = this.props.state.layerMenuState.order.filter((l) => { return l.id != id });
         }
     }
     render() {
@@ -78,7 +79,6 @@ export class LayerMenu extends React.Component<{
             return <div/>
         let layerStyle = {
             cursor: 'pointer',
-            width: '90%',
             background: 'white',
             color: 'black',
             borderColor: 'white',
@@ -87,6 +87,7 @@ export class LayerMenu extends React.Component<{
             borderRadius: '15px',
             textAlign: 'center',
             lineHeight: '20px',
+            border: '1px solid gray'
         }
         return (
             <div className="makeMaps-options">
