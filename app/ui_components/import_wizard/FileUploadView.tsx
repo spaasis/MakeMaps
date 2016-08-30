@@ -3,7 +3,7 @@ let Dropzone = require('react-dropzone');
 import { FilePreProcessModel } from '../../models/FilePreProcessModel';
 
 let _fileModel = new FilePreProcessModel();
-let _allowedFileTypes = ['geojson', 'csv', 'gpx', 'kml', 'wkt'];
+let _allowedFileTypes = ['geojson', 'csv', 'gpx', 'kml', 'wkt', 'osm'];
 import { ImportWizardState } from '../Stores/States';
 import { observer } from 'mobx-react';
 

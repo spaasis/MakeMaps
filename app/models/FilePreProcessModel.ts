@@ -3,7 +3,7 @@ let csv2geojson = require('csv2geojson');
 let proj4 = require('proj4');
 let togeojson = require('togeojson');
 let wkt = require('wellknown');
-
+let osmtogeojson = require('osmtogeojson');
 
 export class FilePreProcessModel {
 
@@ -92,6 +92,10 @@ export class FilePreProcessModel {
         }
         else if (fileFormat === 'wkt') {
             geoJSON = wkt(input);
+        }
+        else if (fileFormat === 'osm') {
+            let xml = (new DOMParser()).parseFromString(input, 'text/xml');
+            geoJSON = osmtogeojson(xml);
         }
         return geoJSON;
     }
