@@ -4,7 +4,7 @@ var path = require('path');
 var BUILD_DIR = path.resolve(__dirname, 'release');
 var APP_DIR = path.resolve(__dirname, 'app');
 
-var config = {
+module.exports = {
   entry: APP_DIR + '/ui_components/Map.js',
   output: {
     path: BUILD_DIR,
@@ -12,7 +12,14 @@ var config = {
   },
   alias: {
     react: path.resolve('./node_modules/react'),
+  },
+  module:{
+    loaders : [
+      {
+          test: /\.json$/,
+          loader: "json-loader"
+        }
+    ]
   }
-};
 
-module.exports = config;
+};
