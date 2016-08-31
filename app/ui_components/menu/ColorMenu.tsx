@@ -257,7 +257,7 @@ export class ColorMenu extends React.Component<{
             }
             for (let i of steps) {
                 rows.push(
-                    <li key={i}
+                    <li key={row}
                         style={{ background: layer.colorOptions.colors[row] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer' }}
                         onClick={this.toggleColorPick.bind(this, 'step' + row)}>
 
@@ -354,11 +354,9 @@ export class ColorMenu extends React.Component<{
                     : null
                 }
 
-                {layer.layerType === LayerTypes.HeatMap ? null :
-                    <label>Opacity
-                        <input type='number' max={1} min={0} step={0.1} onChange={this.onOpacityChange} value={col.opacity}/>
-                    </label>
-                }
+                <label>Opacity
+                    <input type='number' max={1} min={0} step={0.1} onChange={this.onOpacityChange} value={col.opacity}/>
+                </label>
                 <Modal
                     isOpen={state.colorSelectOpen}
                     style={colorSelectStyle}

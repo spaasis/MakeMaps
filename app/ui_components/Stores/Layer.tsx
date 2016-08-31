@@ -414,28 +414,26 @@ function makeBlockSymbol(sideLength: number, blockAmount: number, fillColor: str
 
 function createHeatLayer(l: Layer) {
     let arr: number[][] = [];
-    let max = 0;
+    let customScheme = l.colorOptions.useCustomScheme;
+    let max = customScheme ? l.colorOptions.limits[l.colorOptions.limits.length - 2] : 0;
     l.geoJSON.features.map(function(feat) {
         let pos = [];
         let heatVal = feat.properties[l.heatMapVariable];
-        if (heatVal > max)
+        if (!customScheme && heatVal > max)
             max = heatVal;
         pos.push(feat.geometry.coordinates[1]);
         pos.push(feat.geometry.coordinates[0]);
         pos.push(heatVal);
         arr.push(pos);
     });
-    for (let i in arr) {
-        arr[i][2] = arr[i][2] / max;
-    }
     let gradient = l.colorOptions.colors && l.colorOptions.colors.length > 0 ? {} : undefined;
     if (gradient) {
         let limits = l.colorOptions.limits;
-        for (let i = 1; i < limits.length; i++) {
-            gradient[limits[i] / (limits[limits.length - 1])] = l.colorOptions.colors[i - 1];
+        for (let i = 0; i < limits.length - 1; i++) {
+            gradient[limits[i] / max] = l.colorOptions.colors[i];
         }
     }
-    return L.heatLayer(arr, { relative: false, gradient: gradient, radius: l.colorOptions.heatMapRadius })
+    return L.heatLayer(arr, { relative: false, gradient: gradient, radius: l.colorOptions.heatMapRadius, max: 1, minOpacity: l.colorOptions.fillOpacity })
 }
 
 /**

@@ -1,6 +1,6 @@
 import * as React from 'react';
 let Draggable = require('react-draggable');
-import { SymbolTypes, GetItemBetweenLimits } from '../common_items/common';
+import { LayerTypes, SymbolTypes, GetItemBetweenLimits } from '../common_items/common';
 import { AppState } from '../Stores/States';
 import { Layer, SymbolOptions, ColorOptions } from '../Stores/Layer';
 import { TextEditor } from './TextEditor';
@@ -16,7 +16,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         let sym = options.symbolOptions;
         if (col.colors && col.colors.length !== 0 && col.useMultipleFillColors && sym.symbolType !== SymbolTypes.Chart && (sym.symbolType !== SymbolTypes.Icon || sym.iconField !== col.colorField)) {
             let percentages = this.props.state.legend.showPercentages ? this.getStepPercentages(layer.geoJSON, col.colorField, col.limits) : {};
-            choroLegend = this.createChoroplethLegend(options, percentages);
+            choroLegend = this.createMultiColorLegend(options, percentages);
         }
         if (sym.symbolType === SymbolTypes.Chart && col.chartColors) {
             chartLegend = this.createChartSymbolLegend(col, sym);
@@ -84,9 +84,9 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                         }, this)
                     }
                 </div>
-                <div style={{ clear: 'both' }}>
+                <div style={{ clear: 'both', }}>
                     <TextEditor
-                        style={{ width: '100%' }}
+                        style={{ width: '100%', minHeight: legend.edit ? '40px' : '' }}
                         content={legend.meta}
                         onChange={this.onMetaChange}
                         edit={legend.edit}/>
@@ -97,14 +97,14 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         );
     }
 
-    createChoroplethLegend(layer: Layer, percentages) {
+    createMultiColorLegend(layer: Layer, percentages) {
         let divs = [];
         let limits = layer.colorOptions.limits;
         let colors = layer.colorOptions.colors;
         for (let i = 0; i < limits.length - 1; i++) {
             let colorStyle = {
                 background: colors[i],
-                opacity: layer.colorOptions.fillOpacity,
+                opacity: layer.layerType === LayerTypes.HeatMap ? 1 : layer.colorOptions.fillOpacity,
                 minWidth: '20px',
                 minHeight: '20px',
             }
