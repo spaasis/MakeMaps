@@ -16,13 +16,11 @@ import 'leaflet';
 import 'Leaflet.extra-markers';
 import 'leaflet-fullscreen';
 let Modal = require('react-modal');
+let d3 = require('d3');
+let chroma = require('chroma-js');
+let heat = require('leaflet.heat');
 let domToImage = require('dom-to-image');
-let heat = require('leaflet.heat')
 let reactDOMServer = require('react-dom/server');
-let rest = require('rest');
-let mime = require('rest/interceptor/mime');
-let errorCode = require('rest/interceptor/errorCode');
-let pathPrefix = require('rest/interceptor/pathPrefix');
 let _mapInitModel = new MapInitModel();
 let _currentLayerId: number = 0;
 
@@ -36,7 +34,8 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     componentWillMount() {
         let sPageURL = decodeURIComponent(window.location.search.substring(1));
         _parameters = sPageURL.split('&');
-        if (this.getUrlParameter("mapId") || this.getUrlParameter("mapFile") || this.getUrlParameter("mapURL") || this.getUrlParameter("mapGeoJSON"))
+
+        if (this.getUrlParameter("mapFile") || this.getUrlParameter("mapURL") || this.getUrlParameter("mapGeoJSON"))
             this.props.state.embed = true;
     }
 
@@ -50,7 +49,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
     /** Parse URL parameters and act accordingly */
     embed() {
-
         //Pure GeoJSON without styling as string
         let mapGeoJSON = this.getUrlParameter("mapGeoJSON");
         if (mapGeoJSON) {
@@ -259,6 +257,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         (window as any).saveAs(blob, 'map.mmap');
     }
 
+
     render() {
         let modalStyle = {
             content: {
@@ -295,7 +294,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                             state = {this.props.state}
                             addLayer = {this.startLayerImport.bind(this)}
                             changeLayerOrder ={this.changeLayerOrder.bind(this)}
-                            saveImage ={this.saveImage.bind(this)}
+                            saveImage ={this.saveImage}
                             saveFile = {this.saveFile.bind(this)}
                             />
                     </div>

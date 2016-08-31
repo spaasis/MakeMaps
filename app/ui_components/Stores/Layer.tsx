@@ -435,7 +435,7 @@ function createHeatLayer(l: Layer) {
             gradient[limits[i] / (limits[limits.length - 1])] = l.colorOptions.colors[i - 1];
         }
     }
-    return L.heatLayer(arr, { relative: true, gradient: gradient, radius: l.colorOptions.heatMapRadius })
+    return L.heatLayer(arr, { relative: false, gradient: gradient, radius: l.colorOptions.heatMapRadius })
 }
 
 /**
