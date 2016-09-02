@@ -72,6 +72,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 top: legend.top ? 0 : '',
                 background: "#FFF",
                 borderRadius: 15,
+                zIndex: 600
             }}>
                 <h2 className='legendHeader'>{legend.title}</h2>
                 <div>

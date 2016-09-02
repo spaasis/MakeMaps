@@ -177,6 +177,10 @@ hr{
   text-align: center;
 }
 
+.ReactModal__Overlay--after-open{
+  z-index: 600;
+}
+
 
 /* The animation code */
 @keyframes menuOpen {

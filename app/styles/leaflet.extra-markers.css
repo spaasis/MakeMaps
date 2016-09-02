@@ -16,6 +16,8 @@
   top: 0;
   display: block;
   text-align: center;
+  outline: medium none;
+  
 }
 
 .extra-marker-svg {
@@ -53,6 +55,7 @@
   display: inline-block;
   font-size: 14px;
   position: relative;
+  z-index: 600;
 }
 /* Semantic UI Fix */
 .extra-marker i.icon {
