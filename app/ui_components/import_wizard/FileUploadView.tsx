@@ -3,7 +3,7 @@ let Dropzone = require('react-dropzone');
 import { FilePreProcessModel } from '../../models/FilePreProcessModel';
 
 let _fileModel = new FilePreProcessModel();
-let _allowedFileTypes = ['geojson', 'csv', 'gpx', 'kml', 'wkt', 'osm'];
+let _allowedFileTypes = ['geojson', 'csv', 'gpx', 'kml', 'wkt', 'osm'];//, 'shp', 'rar', 'zip'];
 import { ImportWizardState } from '../Stores/States';
 import { observer } from 'mobx-react';
 
@@ -22,16 +22,21 @@ export class FileUploadView extends React.Component<{
     onDrop = (files) => {
         let reader = new FileReader();
         let fileName, content;
+        let ext: string;
         reader.onload = contentUploaded.bind(this);
         files.forEach((file) => {
             fileName = file.name;
-            reader.readAsText(file);
+            ext = fileName.split('.').pop().toLowerCase();
+            if (ext != 'zip' && ext != 'rar')
+                reader.readAsText(file);
+            else
+                reader.readAsArrayBuffer(file);
         });
         function contentUploaded(e) {
             let contents: any = e.target;
-            let ext: string = fileName.split('.').pop().toLowerCase();
             if (_allowedFileTypes.indexOf(ext) !== -1) {
                 this.props.state.content = contents.result;
+
                 this.props.state.fileName = fileName;
                 this.props.state.layer.name = fileName;
                 this.props.state.fileExtension = ext;
@@ -78,7 +83,7 @@ export class FileUploadView extends React.Component<{
                     <h2> Upload the file containing the data </h2>
                     <hr/>
                     <p>Currently supported file types: </p>
-                    <p> GeoJSON, CSV(point data with coordinates in two columns), KML, GPX, WKT</p>
+                    <p> GeoJSON, CSV(point data with coordinates in two columns), KML, GPX, WKT, OSM</p>
                     <Dropzone
                         style={dropStyle}
                         onDrop={this.onDrop.bind(this)}

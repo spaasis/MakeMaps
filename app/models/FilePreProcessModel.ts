@@ -4,7 +4,7 @@ let proj4 = require('proj4');
 let togeojson = require('togeojson');
 let wkt = require('wellknown');
 let osmtogeojson = require('osmtogeojson');
-
+// declare function shp(any): { any }
 export class FilePreProcessModel {
 
 
@@ -97,7 +97,19 @@ export class FilePreProcessModel {
             let xml = (new DOMParser()).parseFromString(input, 'text/xml');
             geoJSON = osmtogeojson(xml);
         }
-        return geoJSON;
+        if (geoJSON) {
+            console.log(geoJSON)
+            return geoJSON;
+        }
+        // else if (fileFormat === 'rar' || fileFormat === 'zip' || fileFormat === 'shp') {
+        //     let promise = (shp(input) as any).then(function(geojson) {
+        //         console.log(geojson)
+        //         return geojson;
+        //     });
+        //     return promise;
+        // }
+
+
     }
 
     private stringToXML(oString) {

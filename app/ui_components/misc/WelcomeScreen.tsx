@@ -88,7 +88,7 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
                     />
                 <DemoPreview
                     imageURL='demos/hki_heatdemo.png'
-                    description='This demo showcases the heat map by visualizing the total traffic in Helsinki. Data acquired from hri.fi'
+                    description='This demo showcases the heat map by visualizing the daily public transportation boardings by HSL'
                     loadDemo={this.loadDemo.bind(this, 'hki_heatdemo')}
                     />
             </div>

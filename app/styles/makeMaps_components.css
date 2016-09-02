@@ -64,9 +64,11 @@ hr{
   display:flex;
   align-items:center;
   cursor: pointer;
+  border-left: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
 }
 .menuHeaderDiv:hover{
-  background-color: #dddddd !important;
+  background-color: #ddd !important;
 }
 .menuHeaderDiv:hover span{
   display: inline-block;

@@ -433,7 +433,7 @@ function createHeatLayer(l: Layer) {
             gradient[limits[i] / max] = l.colorOptions.colors[i];
         }
     }
-    return L.heatLayer(arr, { relative: false, gradient: gradient, radius: l.colorOptions.heatMapRadius, max: 1, minOpacity: l.colorOptions.fillOpacity })
+    return L.heatLayer(arr, { relative: false, gradient: gradient, radius: l.colorOptions.heatMapRadius, max: max, minOpacity: l.colorOptions.fillOpacity })
 }
 
 /**

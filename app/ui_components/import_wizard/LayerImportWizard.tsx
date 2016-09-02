@@ -38,7 +38,7 @@ export class LayerImportWizard extends React.Component<{
         else {
             if (ext === 'geojson')
                 state.layer.geoJSON = JSON.parse(state.content);
-            else if (ext === 'kml' || ext === 'gpx' || ext === 'wkt' || ext === 'osm')
+            else
                 state.layer.geoJSON = _fileModel.ParseToGeoJSON(state.content, ext)
             for (let i of state.layer.geoJSON.features) { //have to loop every feature here, because each can have different properties
                 let props = state.layer.geoJSON.features ? i.properties : {};
