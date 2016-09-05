@@ -40,6 +40,8 @@ export class Layer {
 
     @observable filterUpdatesPending: boolean = false;
 
+    @observable useMarkerClustering: boolean = true;
+
     appState: AppState;
 
     /** Keep the layer from redrawing unnecessarily. For example when a function updates multiple observable fields at once, release the block only after the last one*/
@@ -96,7 +98,17 @@ export class Layer {
 
         }
         if (layer) {
-            layer.addTo(this.appState.map);
+            if (this.useMarkerClustering) {
+                let markers = L.markerClusterGroup();
+
+                markers.addLayer(layer);
+                layer = markers;
+                this.appState.map.addLayer(layer);
+
+            }
+            else {
+                layer.addTo(this.appState.map);
+            }
             if (this.layer)
                 this.appState.map.removeLayer(this.layer)
             this.layer = layer;

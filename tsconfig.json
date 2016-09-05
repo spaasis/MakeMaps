@@ -23,6 +23,7 @@
 "typings-custom/leaflet.heat.d.ts",
 "typings-custom/leaflet.ExtraMarkers.d.ts",
 "typings-custom/leaflet.shapefile.d.ts",
+"typings-custom/leaflet-markercluster.d.ts",
 "app/ui_components/common_items/commonInterfaces.ts",
 "app/ui_components/Map.tsx",
 "app/ui_components/Stores/States.ts"
