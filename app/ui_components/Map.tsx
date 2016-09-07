@@ -132,6 +132,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
 
     loadSavedMap(saved: SaveState) {
+        console.time("LoadSavedMap")
         if (saved.baseLayerId) {
             let oldBase = this.props.state.activeBaseLayer;
             let newBase: L.TileLayer;
@@ -173,6 +174,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         this.props.state.welcomeShown = false;
         this.props.state.editingLayer = this.props.state.layers[0];
         this.props.state.menuShown = !this.props.state.embed;
+        console.timeEnd("LoadSavedMap")
     }
 
     /**

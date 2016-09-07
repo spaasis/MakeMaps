@@ -25,6 +25,7 @@ hr{
   color: #cecece;
   width: 75%;
 }
+
 .menuOpen{
   animation-name: menuOpen;
   animation-duration: 0.2s;

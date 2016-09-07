@@ -58,6 +58,7 @@ export class Layer {
     refresh() {
         let layer;
         if (this.blockUpdate) return;
+        console.time("LayerCreate")
         if (this.geoJSON) {
             // if (this.colorOptions.useMultipleFillColors && !this.colorOptions.useCustomScheme && (this.layerType === LayerTypes.ChoroplethMap || this.layerType === LayerTypes.HeatMap || this.colorOptions.colorField)) {
             //     if (!this.colorOptions.colorField) {
@@ -95,8 +96,12 @@ export class Layer {
             }
 
         }
+        console.timeEnd("LayerCreate")
+
         if (layer) {
+            console.time("LayerRender")
             layer.addTo(this.appState.map);
+            console.timeEnd("LayerRender")
             if (this.layer)
                 this.appState.map.removeLayer(this.layer)
             this.layer = layer;
@@ -217,6 +222,7 @@ function pointToLayerFunc(col: ColorOptions, sym: SymbolOptions, feature, latlng
 
 /** Get feature values in their own dictionary to reduce the amount of common calculations*/
 function getValues(layer: Layer) {
+    console.time("Layer.GetValues");
     layer.geoJSON.features.map(function(feat) {
         for (let i in feat.properties) {
             if (!layer.values[i])
@@ -234,6 +240,8 @@ function getValues(layer: Layer) {
             layer.values[header].sort(function(a, b) { return a - b })
         }
     }
+    console.timeEnd("Layer.GetValues");
+
 }
 
 function getScaleSymbolMaxValues() {

@@ -29,6 +29,8 @@ export class Filter {
     @observable totalMin: number;
     /** User defined steps*/
     @observable steps: [number, number][] = [];
+    /** Filter categories for string values*/
+    @observable categories: string[] = [];
     /** Whether to remove the filtered layer completely or change opacity*/
     @observable remove: boolean;
     /** The storage of already filtered indices */
@@ -79,8 +81,9 @@ export class Filter {
                     let filteredIndex = this.filteredIndices.indexOf(+val); //is filtered?
                     if (filteredIndex === -1 && (+val < this.currentMin || +val > this.currentMax)) { //If not yet filtered and values over thresholds
                         this.filterValues[val].map(function(lyr) {
-                            if (this.remove)
+                            if (this.remove) {
                                 this.layer.layer.removeLayer(lyr);
+                            }
                             else {
                                 if (this.layer.symbolOptions.symbolType === SymbolTypes.Rectangle) { //for divIcons - replace existing with a copy with new opacity
                                     let icon = (lyr as any).options.icon;
@@ -98,8 +101,9 @@ export class Filter {
                     else if (filteredIndex > -1 && (+val >= this.currentMin && +val <= this.currentMax)) { //If filtered and within thresholds
                         this.filterValues[val].map(function(lyr) {
                             if (shouldLayerBeAdded.call(this, lyr)) {
-                                if (this.remove)
+                                if (this.remove) {
                                     this.layer.layer.addLayer(lyr);
+                                }
                                 else
                                     if (this.layer.symbolOptions.symbolType === SymbolTypes.Rectangle) {
                                         let icon = (lyr as any).options.icon;
@@ -142,15 +146,15 @@ export class Filter {
         /**
          * shouldLayerBeAdded - Checks every active filter to see if a layer can be un-filtered
          *
-         * @return {type}  description
+         * TODO: optimize performance (by storing the every filter current value in state?)
          */
         function shouldLayerBeAdded(layer) {
             let filters: Filter[] = this.appState.filters.filter((f) => { return f.id !== this.id });
             let canUnFilter = true;
             for (let i in filters) {
                 let filter = filters[i];
-                let val = layer.feature.properties[this.fieldToFilter];
-                canUnFilter = val <= this.currentMax && val >= this.currentMin;
+                let val = layer.feature.properties[filter.fieldToFilter];
+                canUnFilter = val <= filter.currentMax && val >= filter.currentMin;
             }
             return canUnFilter;
         }
