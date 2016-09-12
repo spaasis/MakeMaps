@@ -26,6 +26,7 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
                 this.props.state.currentMax -= maxValDiff;
             }
         }
+        this.props.state.filterLayer();
     }
     onFilterScaleChange = (values) => {
         if (this.props.state.lockDistance) {
@@ -35,6 +36,8 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
             this.props.state.currentMin = values[0];
             this.props.state.currentMax = values[1];
         }
+        this.props.state.filterLayer();
+
     }
     onCurrentMinChange = (e) => {
         let val = e.currentTarget.valueAsNumber
@@ -44,6 +47,7 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
         else {
             this.props.state.currentMin = val;
         }
+        this.props.state.filterLayer();
 
     }
     onCurrentMaxChange = (e) => {
@@ -54,6 +58,8 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
         else {
             this.props.state.currentMax = val;
         }
+        this.props.state.filterLayer();
+
     }
     onCustomStepClick = (i: number) => {
         let minVal = this.props.state.steps[i][0];
@@ -61,6 +67,8 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
         this.props.state.currentMin = minVal;
         this.props.state.currentMax = maxVal;
         this.props.state.step = i;
+        this.props.state.filterLayer();
+
     }
     renderSteps() {
         let rows = [];

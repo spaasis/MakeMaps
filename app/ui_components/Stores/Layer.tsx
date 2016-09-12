@@ -105,6 +105,7 @@ export class Layer {
                     getScaleSymbolMaxValues.call(this);
                 }
             }
+            this.refreshFilter();
         }
 
     }
