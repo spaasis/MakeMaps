@@ -38,36 +38,21 @@ export class Layer {
     /**  The symbol options for symbol layers. Contains ie. symbol type  */
     @observable symbolOptions: SymbolOptions = new SymbolOptions();
 
-    @observable filterUpdatesPending: boolean = false;
-
     appState: AppState;
 
-    /** Keep the layer from redrawing unnecessarily. For example when a function updates multiple observable fields at once, release the block only after the last one*/
-    @observable blockUpdate: boolean = true;
 
     values: { [field: string]: any[]; } = undefined;
 
 
     constructor(state: AppState) {
         this.appState = state;
-        mobx.autorun(() => this.refresh());
-        mobx.autorun(() => this.refreshFilter());
     }
 
     /** Update layer based on changed options and properties. */
     refresh() {
         let layer;
-        if (this.blockUpdate) return;
         console.time("LayerCreate")
         if (this.geoJSON) {
-            // if (this.colorOptions.useMultipleFillColors && !this.colorOptions.useCustomScheme && (this.layerType === LayerTypes.ChoroplethMap || this.layerType === LayerTypes.HeatMap || this.colorOptions.colorField)) {
-            //     if (!this.colorOptions.colorField) {
-            //         this.colorOptions.colorField = this.layerType === LayerTypes.HeatMap ? this.heatMapVariable : this.numberHeaders[0] ? this.numberHeaders[0].label : undefined;
-            //     }
-            //
-            //     if (this.colorOptions.colorField)
-            //         getColors(this);
-            // }
             if (this.layerType === LayerTypes.HeatMap) {
                 if (this.heatMapVariable)
                     layer = createHeatLayer(this);
@@ -120,28 +105,23 @@ export class Layer {
                     getScaleSymbolMaxValues.call(this);
                 }
             }
-            this.filterUpdatesPending = true;
         }
 
     }
     refreshFilter() {
-        if (this.filterUpdatesPending) {
-            let filters = this.appState.filters.filter((f) => { return f.layer.id === this.id });
-            for (let i in filters) {
-                let filter = filters[i];
-                // if (filter.currentMin != filter.totalMin || filter.currentMax != filter.totalMax) {
-                //     filter.currentMax = filter.totalMax;
-                //     filter.currentMin = filter.totalMin;
-                // }
-                filter.init(true);
-            }
+        let filters = this.appState.filters.filter((f) => { return f.layer.id === this.id });
+        for (let i in filters) {
+            let filter = filters[i];
+            // if (filter.currentMin != filter.totalMin || filter.currentMax != filter.totalMax) {
+            //     filter.currentMax = filter.totalMax;
+            //     filter.currentMin = filter.totalMin;
+            // }
+            filter.init(true);
         }
-        this.filterUpdatesPending = false;
     }
 
     /**
-     * getColors - calculates the color values based on a field name
-     * @param  layerData    the data containing the GeoJSON string and the color variable
+     * getColors - calculates the color values based on a field name (colorOptions.colorField)
      */
     getColors() {
         let opts = this.colorOptions;

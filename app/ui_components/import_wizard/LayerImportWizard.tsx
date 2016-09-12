@@ -96,8 +96,6 @@ export class LayerImportWizard extends React.Component<{
         }
 
         layer.getColors();
-
-        layer.blockUpdate = false;
         this.props.submit(layer);
     }
 

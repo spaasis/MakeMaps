@@ -47,27 +47,6 @@ export class MakeMapsMenu extends React.Component<{
         this.props.addLayer();
     }
 
-    changePopUpHeaders = () => {
-        let lyr: Layer = this.props.state.editingLayer;
-        let headers = this.props.state.editingLayer.popupHeaders;
-        lyr.onEachFeature = addPopupsToLayer;
-
-        function addPopupsToLayer(feature, layer: L.GeoJSON) {
-            var popupContent = '';
-            for (var prop in feature.properties) {
-                let index = headers.map(function(h) { return h.label; }).indexOf(prop);
-                if (index != -1) {
-                    popupContent += prop + ": " + feature.properties[prop];
-                    popupContent += "<br />";
-                }
-            }
-            if (popupContent != '')
-                layer.bindPopup(popupContent);
-        }
-        this.setState({
-            selectedLayer: lyr
-        })
-    }
 
     getActiveMenu() {
         switch (this.props.state.visibleMenu) {
@@ -92,7 +71,6 @@ export class MakeMapsMenu extends React.Component<{
             case 6:
                 return <PopUpMenu
                     state = {this.props.state}
-                    saveValues = {this.changePopUpHeaders}
                     />;
             case 7:
                 return <ExportMenu

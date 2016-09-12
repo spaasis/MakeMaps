@@ -64,10 +64,11 @@ export class Filter {
             }, this);
         }
 
+
+        this.show = true;
         if (layerUpdate) {
             this.filterLayer(); //hack-ish way to make sure that all of the layers are displayed after update
         }
-        this.show = true;
     }
 
     /**

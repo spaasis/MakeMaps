@@ -6,13 +6,10 @@ import { observer } from 'mobx-react';
 @observer
 export class PopUpMenu extends React.Component<{
     state: AppState,
-    /** Save the currently selected headers to the map*/
-    saveValues: () => void,
 }, {}>{
 
-    componentWillUpdate() {
-        if (this.props.state.autoRefresh)
-            this.props.saveValues();
+    saveValues() {
+        this.props.state.editingLayer.refresh();
     }
 
     onSelectionChange = (e: IHeader[]) => {
@@ -23,6 +20,8 @@ export class PopUpMenu extends React.Component<{
         for (let i in e) { //add new headers
             headers.push(e[i]);
         }
+        if (this.props.state.autoRefresh)
+            this.props.state.editingLayer.refresh();
     }
     render() {
         return (this.props.state.visibleMenu !== 6 ? null :
@@ -38,7 +37,7 @@ export class PopUpMenu extends React.Component<{
 
                 {this.props.state.autoRefresh ? null :
                     <button className='menuButton' onClick={() => {
-                        this.props.saveValues();
+                        this.saveValues();
                     } }>Refresh map</button>
                 }
             </div >

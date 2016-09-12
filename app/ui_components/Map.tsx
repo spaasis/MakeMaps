@@ -111,17 +111,22 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
     cancelLayerImport() {
         this.props.state.importWizardShown = false;
-        this.props.state.menuShown = true;
         if (this.props.state.layers.length == 0)
             this.props.state.welcomeShown = true;
+        else {
+            this.props.state.menuShown = true;
+            this.props.state.editingLayer = this.props.state.layers[0];
+        }
     }
 
     /**
      * layerImportSubmit - Layer importing was completed -> draw to map
      */
     layerImportSubmit(l: Layer) {
+
         l.appState = this.props.state;
         l.id = _currentLayerId++;
+        l.refresh();
         this.props.state.layers.push(l);
         this.props.state.layerMenuState.order.push({ name: l.name, id: l.id });
         this.props.state.importWizardShown = false;
@@ -164,7 +169,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             newLayer.geoJSON = lyr.geoJSON;
             newLayer.colorOptions = new ColorOptions(lyr.colorOptions);
             newLayer.symbolOptions = new SymbolOptions(lyr.symbolOptions);
-            newLayer.blockUpdate = false;
+            newLayer.refresh();
             this.props.state.layers.push(newLayer);
 
             this.props.state.layerMenuState.order.push({ name: newLayer.name, id: newLayer.id });
