@@ -25,6 +25,7 @@ hr{
   color: #cecece;
   width: 75%;
 }
+
 .menuOpen{
   animation-name: menuOpen;
   animation-duration: 0.2s;
@@ -64,9 +65,11 @@ hr{
   display:flex;
   align-items:center;
   cursor: pointer;
+  border-left: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
 }
 .menuHeaderDiv:hover{
-  background-color: #dddddd !important;
+  background-color: #ddd !important;
 }
 .menuHeaderDiv:hover span{
   display: inline-block;
@@ -175,6 +178,17 @@ hr{
   text-align: center;
 }
 
+.ReactModal__Overlay--after-open{
+  z-index: 600;
+}
+
+.legend{
+  z-index: 600;
+}
+
+.filter{
+  z-index: 600;
+}
 
 /* The animation code */
 @keyframes menuOpen {
