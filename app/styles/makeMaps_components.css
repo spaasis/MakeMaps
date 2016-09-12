@@ -182,6 +182,13 @@ hr{
   z-index: 600;
 }
 
+.legend{
+  z-index: 600;
+}
+
+.filter{
+  z-index: 600;
+}
 
 /* The animation code */
 @keyframes menuOpen {

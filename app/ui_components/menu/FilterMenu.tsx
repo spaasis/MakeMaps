@@ -162,9 +162,7 @@ export class FilterMenu extends React.Component<{
                                 {renderSteps.call(this)}
                             </div>
                             : null}
-                        {layer.layerType === LayerTypes.HeatMap ||
-                            (layer.symbolOptions.symbolType === SymbolTypes.Icon ||
-                                layer.symbolOptions.symbolType === SymbolTypes.Chart) ? null :
+                        {layer.layerType === LayerTypes.HeatMap ? null :
                             < div >
                                 <label forHTML='remove'>
                                     Remove filtered items
