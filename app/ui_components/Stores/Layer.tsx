@@ -50,32 +50,48 @@ export class Layer {
 
     /** Update layer based on changed options and properties. */
     refresh() {
-        let layer;
+        let layer = this.layer;
         console.time("LayerCreate")
+        let col: ColorOptions = JSON.parse(JSON.stringify(this.colorOptions));
+        let sym: SymbolOptions = JSON.parse(JSON.stringify(this.symbolOptions));
+        let style = function(opts: ColorOptions, feature) {
+            return {
+                fillOpacity: opts.fillOpacity,
+                opacity: opts.opacity,
+                fillColor: opts.colors.slice().length == 0 || !opts.useMultipleFillColors ? opts.fillColor : GetItemBetweenLimits(opts.limits.slice(), opts.colors.slice(), feature.properties[opts.colorField]),
+                color: opts.color,
+                weight: 1,
+            }
+        }
+        if (layer && this.layerType !== LayerTypes.HeatMap) {
+            if (this.layerType === LayerTypes.SymbolMap) {
+                layer.eachLayer(function(l) {
+                    let marker = getMarker(col, sym, l.feature, l.latlng);
+                    let icon = (marker as any).options.icon;
+                    l.setIcon(icon);
+                });
+            }
+            else {
+                layer.eachLayer(function(l) {
+                    l.setStyle(style(col, l.feature));
+                });
+            }
+            console.timeEnd("LayerCreate")
+            return;
+        }
         if (this.geoJSON) {
             if (this.layerType === LayerTypes.HeatMap) {
                 if (this.heatMapVariable)
                     layer = createHeatLayer(this);
             }
             else {
-                let style = function(opts: ColorOptions, feature) {
 
-                    return {
-                        fillOpacity: opts.fillOpacity,
-                        opacity: opts.opacity,
-                        fillColor: col.colors.slice().length == 0 || !col.useMultipleFillColors ? col.fillColor : GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField]),
-                        color: opts.color,
-                        weight: 1,
-                    }
-                }
 
                 let geoJSON = JSON.parse(JSON.stringify(this.geoJSON));
-                let col: ColorOptions = JSON.parse(JSON.stringify(this.colorOptions));
-                let sym: SymbolOptions = JSON.parse(JSON.stringify(this.symbolOptions));
                 let options: L.GeoJSONOptions = {}
                 layer = L.geoJson(geoJSON, ({
                     onEachFeature: this.onEachFeature,
-                    pointToLayer: pointToLayerFunc.bind(this, col, sym),
+                    pointToLayer: getMarker.bind(this, col, sym),
                     style: style.bind(this, col),
                 }));
             }
@@ -142,13 +158,13 @@ export class Layer {
 }
 
 /** Function to run on every point-type data to visualize it according to the settings*/
-function pointToLayerFunc(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.LatLng): L.Marker | L.CircleMarker {
+function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.LatLng): L.Marker {
+
     if (col.colors && col.limits)
         col.fillColor = col.colors.slice().length == 0 || !col.useMultipleFillColors ? col.fillColor : GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField]);
     let borderColor = col.color;
     let x: number = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 10;
     let y: number = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 10;
-
     switch (sym.symbolType) {
         case SymbolTypes.Icon:
             let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), feature.properties[sym.iconField]);
@@ -166,8 +182,8 @@ function pointToLayerFunc(col: ColorOptions, sym: SymbolOptions, feature, latlng
             return mark;
         case SymbolTypes.Rectangle:
             let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: 1px solid ' + borderColor + '"/>';
-            let rectMarker = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
-            return L.marker(latlng, { icon: rectMarker });
+            let rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
+            return L.marker(latlng, { icon: rectIcon });
         case SymbolTypes.Chart:
             let vals = [];
             let i = 0;
@@ -197,8 +213,12 @@ function pointToLayerFunc(col: ColorOptions, sym: SymbolOptions, feature, latlng
             let blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, borderColor);
             let blockMarker = L.divIcon({ iconAnchor: L.point(5 * side, 5 * side), html: blockHtml, className: '' });
             return L.marker(latlng, { icon: blockMarker });
+        default:
+            let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: 1px solid ' + borderColor + ';border-radius: 30px;"/>';
+            let circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
+            return L.marker(latlng, { icon: circleIcon });
+
     }
-    return L.circleMarker(latlng, col).setRadius(x);
 }
 
 /** Get feature values in their own dictionary to reduce the amount of common calculations*/
