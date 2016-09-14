@@ -13,41 +13,36 @@ export class SymbolMenu extends React.Component<{
 
     onTypeChange = (type: SymbolTypes) => {
         let layer: Layer = this.props.state.editingLayer;
-        layer.blockUpdate = true;
-
         let sym: SymbolOptions = this.props.state.editingLayer.symbolOptions;
         sym.symbolType = type;
-
-        console.log(sym.sizeXVar)
-        sym.sizeXVar = sym.sizeXVar ? sym.sizeXVar : layer.numberHeaders[0] ? layer.numberHeaders[0].label : undefined;
-        if (type === SymbolTypes.Blocks && !sym.sizeXVar)
-            sym.sizeXVar = layer.numberHeaders[0].label;
-        sym.iconField = sym.iconField ? sym.iconField : layer.numberHeaders[0] ? layer.numberHeaders[0].label : undefined;
-        sym.blockValue = sym.blockValue == 0 ? Math.ceil(layer.values[sym.sizeXVar][layer.values[sym.sizeXVar].length - 1] / 5) : sym.blockValue;
+        if (type === SymbolTypes.Blocks && !sym.blockSizeVar) {
+            sym.blockSizeVar = layer.numberHeaders[0].label;
+            sym.blockValue = sym.blockValue == 0 ? Math.ceil(layer.values[sym.blockSizeVar][layer.values[sym.blockSizeVar].length - 1] / 5) : sym.blockValue;
+        }
         if (type === SymbolTypes.Chart) {
             if (sym.chartFields.length == 0)
                 this.onChartFieldsChange(layer.numberHeaders);
         }
-        layer.blockUpdate = false;
-
-
+        if (this.props.state.autoRefresh)
+            layer.refresh();
     }
 
     onXVariableChange = (val) => {
         let sym = this.props.state.editingLayer.symbolOptions;
-        this.props.state.editingLayer.blockUpdate = true;
+
         sym.sizeXVar = val ? val.value : '';
         sym.sizeMultiplier = sym.sizeMultiplier ? sym.sizeMultiplier : 1;
-        this.props.state.editingLayer.blockUpdate = false;
+        if (this.props.state.autoRefresh)
+            this.props.state.editingLayer.refresh();
 
     }
 
     onYVariableChange = (val) => {
         let sym = this.props.state.editingLayer.symbolOptions;
-        this.props.state.editingLayer.blockUpdate = true;
         sym.sizeYVar = val ? val.value : '';
         sym.sizeMultiplier = sym.sizeMultiplier ? sym.sizeMultiplier : 1;
-        this.props.state.editingLayer.blockUpdate = false;
+        if (this.props.state.autoRefresh)
+            this.props.state.editingLayer.refresh();
     }
 
     onFAIconChange = (e) => {
@@ -55,10 +50,16 @@ export class SymbolMenu extends React.Component<{
             e = e.currentTarget.value
         }
         this.props.state.editingLayer.symbolOptions.icons[this.props.state.symbolMenuState.currentIconIndex].fa = e;
+        if (this.props.state.autoRefresh)
+            this.props.state.editingLayer.refresh();
+
     }
 
     onIconShapeChange = (shape: 'circle' | 'square' | 'star' | 'penta') => {
         this.props.state.editingLayer.symbolOptions.icons[this.props.state.symbolMenuState.currentIconIndex].shape = shape;
+        if (this.props.state.autoRefresh)
+            this.props.state.editingLayer.refresh();
+
     }
 
     onChartFieldsChange = (e: IHeader[]) => {
@@ -73,6 +74,9 @@ export class SymbolMenu extends React.Component<{
             }
             headers.push(e[i]);
         }
+        if (this.props.state.autoRefresh)
+            this.props.state.editingLayer.refresh();
+
     }
 
     toggleIconSelect = (index: number) => {
@@ -82,7 +86,6 @@ export class SymbolMenu extends React.Component<{
 
     onUseIconStepsChange = (e) => {
         let use: boolean = e.target.checked;
-        this.props.state.editingLayer.blockUpdate = true;
         let sym: SymbolOptions = this.props.state.editingLayer.symbolOptions;
         this.props.state.editingLayer.symbolOptions.useMultipleIcons = use;
         sym.icons = use ? sym.icons : [sym.icons.slice()[0]];
@@ -90,21 +93,21 @@ export class SymbolMenu extends React.Component<{
         if (use) {
             this.calculateIconValues(sym.iconField, sym.iconCount)
         }
-        this.props.state.editingLayer.blockUpdate = false;
+        if (this.props.state.autoRefresh)
+            this.props.state.editingLayer.refresh();
 
     }
 
     onIconFieldChange = (val: IHeader) => {
-        this.props.state.editingLayer.blockUpdate = true;
-
-        this.props.state.editingLayer.symbolOptions.iconField = val.value;
-        this.calculateIconValues(val.value, this.props.state.editingLayer.symbolOptions.iconCount);
-        this.props.state.editingLayer.blockUpdate = false;
+        let layer = this.props.state.editingLayer;
+        layer.symbolOptions.iconField = val.value;
+        this.calculateIconValues(val.value, layer.symbolOptions.iconCount);
+        if (this.props.state.autoRefresh)
+            layer.refresh();
 
     }
     onIconStepCountChange = (amount: number) => {
         let layer = this.props.state.editingLayer;
-        layer.blockUpdate = true;
 
         if (amount == 1) {
             layer.symbolOptions.icons.push({ shape: 'circle', fa: faIcons[Math.floor(Math.random() * faIcons.length)] }); //add random icon
@@ -115,7 +118,8 @@ export class SymbolMenu extends React.Component<{
         if (layer.symbolOptions.iconCount > 0) {
             this.calculateIconValues(layer.symbolOptions.iconField, layer.symbolOptions.iconCount)
         }
-        layer.blockUpdate = false;
+        if (this.props.state.autoRefresh)
+            layer.refresh();
 
     }
 
@@ -123,7 +127,6 @@ export class SymbolMenu extends React.Component<{
         let layer = this.props.state.editingLayer;
         let limits = layer.symbolOptions.iconLimits;
         let val = e.currentTarget.valueAsNumber;
-        layer.blockUpdate = true;
         if (limits[step + 1] && limits[step + 1] <= val) { //if collides with the next limit
             let index = step + 1;
             while (index < limits.length) { //keep increasing limits by one until a free amount is found. NOTE: This will cause some funky effects if the actual limits are something like 0.5, 0.6, 0.7...
@@ -146,11 +149,14 @@ export class SymbolMenu extends React.Component<{
         }
         layer.symbolOptions.iconLimits[step] = val;
 
-        layer.blockUpdate = false;
+        if (this.props.state.autoRefresh)
+            layer.refresh();
 
     }
 
     saveOptions = () => {
+        if (this.props.state.autoRefresh)
+            this.props.state.editingLayer.refresh();
     }
 
     getIcon(shape: string, fa: string, stroke: string, fill: string, onClick) {
@@ -219,9 +225,9 @@ export class SymbolMenu extends React.Component<{
         if (this.props.state.visibleMenu !== 3)
             return <div/>;
 
-        let sym: SymbolOptions = this.props.state.editingLayer.symbolOptions;
+        let layer = this.props.state.editingLayer;
+        let sym: SymbolOptions = layer.symbolOptions;
         let state: SymbolMenuState = this.props.state.symbolMenuState;
-
         let iconSelectStyle = {
             overlay: {
                 position: 'fixed',
@@ -312,36 +318,43 @@ export class SymbolMenu extends React.Component<{
                         />
                     <br/>
                 </label>
-                {sym.symbolType === SymbolTypes.Circle || sym.symbolType === SymbolTypes.Rectangle || sym.symbolType === SymbolTypes.Chart || sym.symbolType === SymbolTypes.Blocks ?
+                {sym.symbolType !== SymbolTypes.Icon ?
                     <div>
                         <label>Scale {sym.symbolType === SymbolTypes.Rectangle ? 'width' : 'size'} by</label>
                         <Select
-                            options={this.props.state.editingLayer.numberHeaders}
+                            options={layer.numberHeaders}
                             onChange={this.onXVariableChange}
-                            value={sym.sizeXVar}
+                            value={sym.symbolType === SymbolTypes.Blocks ? sym.blockSizeVar : sym.sizeXVar}
+                            clearable={sym.symbolType !== SymbolTypes.Blocks}
                             />
                         {sym.symbolType === SymbolTypes.Rectangle ? <div>
                             <label>Scale height by</label>
                             <Select
-                                options={this.props.state.editingLayer.numberHeaders}
+                                options={layer.numberHeaders}
                                 onChange={this.onYVariableChange}
                                 value={sym.sizeYVar}
                                 />
                         </div> : null}
-                        {sym.symbolType !== SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar) ?
+                        {sym.sizeXVar || sym.sizeYVar ?
                             <div><label>Size multiplier</label>
                                 <input type="number" value={sym.sizeMultiplier} onChange={(e) => {
-                                    this.props.state.editingLayer.symbolOptions.sizeMultiplier = (e.currentTarget as any).valueAsNumber;
+                                    layer.symbolOptions.sizeMultiplier = (e.currentTarget as any).valueAsNumber;
+                                    if (this.props.state.autoRefresh)
+                                        layer.refresh();
                                 } } min={0.1} max={10} step={0.1}/>
                                 <br/>
                                 <label>Size lower limit</label>
                                 <input type="number" value={sym.sizeLowLimit} onChange={(e) => {
-                                    this.props.state.editingLayer.symbolOptions.sizeLowLimit = (e.currentTarget as any).valueAsNumber;
+                                    layer.symbolOptions.sizeLowLimit = (e.currentTarget as any).valueAsNumber;
+                                    if (this.props.state.autoRefresh)
+                                        layer.refresh();
                                 } } min={0}/>
                                 <br/>
                                 <label>Size upper limit</label>
                                 <input type="number" value={sym.sizeUpLimit} onChange={(e) => {
-                                    this.props.state.editingLayer.symbolOptions.sizeUpLimit = (e.currentTarget as any).valueAsNumber;
+                                    layer.symbolOptions.sizeUpLimit = (e.currentTarget as any).valueAsNumber;
+                                    if (this.props.state.autoRefresh)
+                                        layer.refresh();
                                 } } min={1}/>
                             </div>
                             : null}
@@ -358,7 +371,7 @@ export class SymbolMenu extends React.Component<{
                                 <div>
                                     <label>Field to change icon by</label>
                                     <Select
-                                        options={this.props.state.editingLayer.numberHeaders}
+                                        options={layer.numberHeaders}
                                         onChange={this.onIconFieldChange}
                                         value={sym.iconField}
                                         clearable={false}
@@ -387,7 +400,7 @@ export class SymbolMenu extends React.Component<{
                     <div>
                         <label>Select the variables to show</label>
                         <Select
-                            options={this.props.state.editingLayer.numberHeaders}
+                            options={layer.numberHeaders}
                             multi
                             onChange={this.onChartFieldsChange}
                             value={sym.chartFields.slice()}
@@ -401,7 +414,7 @@ export class SymbolMenu extends React.Component<{
                             <input
                                 type='radio'
                                 onChange={() => {
-                                    this.props.state.editingLayer.symbolOptions.chartType = 'pie';
+                                    layer.symbolOptions.chartType = 'pie';
                                 } }
                                 checked={sym.chartType === 'pie'}
                                 name='charttype'
@@ -415,7 +428,7 @@ export class SymbolMenu extends React.Component<{
                             <input
                                 type='radio'
                                 onChange={() => {
-                                    this.props.state.editingLayer.symbolOptions.chartType = 'donut';
+                                    layer.symbolOptions.chartType = 'donut';
                                 } }
                                 checked={sym.chartType === 'donut'}
                                 name='charttype'
@@ -433,7 +446,9 @@ export class SymbolMenu extends React.Component<{
                     <div>
                         <label>Single block value</label>
                         <input type="number" value={sym.blockValue} onChange={(e) => {
-                            this.props.state.editingLayer.symbolOptions.blockValue = (e.currentTarget as any).valueAsNumber;
+                            layer.symbolOptions.blockValue = (e.currentTarget as any).valueAsNumber;
+                            if (this.props.state.autoRefresh)
+                                layer.refresh();
                         } } min={1}/>
                     </div>
                     : null

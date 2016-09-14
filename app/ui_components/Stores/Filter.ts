@@ -6,9 +6,6 @@ let mobx = require('mobx');
 
 export class Filter {
 
-    constructor() {
-        mobx.autorun(() => this.filterLayer());
-    }
     /** The unique id of the filter */
     @observable id: number;
     /** The name of the this. Will be shown on the map*/
@@ -17,8 +14,8 @@ export class Filter {
     @observable layer: Layer;
     /** The name of the field to filter*/
     @observable fieldToFilter: string;
-    /** Dictionary containing lists of layers by the value being filtered*/
-    @observable filterValues: { [value: number]: L.ILayer[] } = {};
+    /** Dictionary containing lists of layer ids by the value being filtered*/
+    @observable filterValues: { [value: number]: number[] } = {};
     /** Current maximum value */
     @observable currentMax: number;
     /** Current min value */
@@ -29,6 +26,8 @@ export class Filter {
     @observable totalMin: number;
     /** User defined steps*/
     @observable steps: [number, number][] = [];
+    /** Filter categories for string values*/
+    @observable categories: string[] = [];
     /** Whether to remove the filtered layer completely or change opacity*/
     @observable remove: boolean;
     /** The storage of already filtered indices */
@@ -47,18 +46,16 @@ export class Filter {
      * Initializes a filter to be shown in the UI by calculating the layers
      */
     init(layerUpdate: boolean = false) {
-        if (this.layer.symbolOptions.symbolType === SymbolTypes.Chart || this.layer.symbolOptions.symbolType === SymbolTypes.Icon)
-            this.remove = true; //force removal if type requires it
-
         this.filterValues = {};
         this.filteredIndices = [];
         if (this.layer.layerType !== LayerTypes.HeatMap) {
-            this.layer.layer.eachLayer(function(layer) {
-                let val = (layer as any).feature.properties[this.fieldToFilter];
-                if (this.filterValues[val])
-                    this.filterValues[val].push(layer);
+            this.layer.layer.eachLayer(function(layer: any) {
+                let val = layer.feature.properties[this.fieldToFilter];
+                if (this.filterValues[val]) {
+                    this.filterValues[val].push(layer._leaflet_id);
+                }
                 else
-                    this.filterValues[val] = [layer];
+                    this.filterValues[val] = [layer._leaflet_id];
             }, this);
         }
 
@@ -66,6 +63,7 @@ export class Filter {
             this.filterLayer(); //hack-ish way to make sure that all of the layers are displayed after update
         }
         this.show = true;
+
     }
 
     /**
@@ -74,43 +72,54 @@ export class Filter {
     filterLayer() {
         if (this.show) {
             if (this.layer.layerType !== LayerTypes.HeatMap) {
-
                 for (let val in this.filterValues) {
                     let filteredIndex = this.filteredIndices.indexOf(+val); //is filtered?
+
                     if (filteredIndex === -1 && (+val < this.currentMin || +val > this.currentMax)) { //If not yet filtered and values over thresholds
-                        this.filterValues[val].map(function(lyr) {
-                            if (this.remove)
-                                this.layer.layer.removeLayer(lyr);
+                        this.filterValues[val].map(function(id) {
+                            let layer = this.layer.layer._layers[id];
+                            if (this.remove) {
+                                if (layer._icon) {
+                                    layer._icon.style.display = 'none';
+                                }
+                                else if (layer._path) {
+                                    layer._path.style.display = 'none';
+                                }
+                                if (layer._shadow) {
+                                    layer._shadow.style.display = 'none';
+                                }
+                            }
                             else {
-                                if (this.layer.symbolOptions.symbolType === SymbolTypes.Rectangle) { //for divIcons - replace existing with a copy with new opacity
-                                    let icon = (lyr as any).options.icon;
-                                    let html = icon.options.html.replace('opacity:' + this.layer.colorOptions.fillOpacity + ';', 'opacity:0.2;');
-                                    icon.options.html = html;
-                                    (lyr as any).setIcon(icon);
-                                }
-                                else {
-                                    (lyr as any).setStyle({ fillOpacity: 0.2, opacity: 0.2 })
-                                }
+                                if (layer.setOpacity)
+                                    layer.setOpacity(0.2);
+                                else
+                                    layer.setStyle({ fillOpacity: 0.2, opacity: 0.2 })
+
                             }
                         }, this);
                         this.filteredIndices.push(+val); //mark as filtered
                     }
                     else if (filteredIndex > -1 && (+val >= this.currentMin && +val <= this.currentMax)) { //If filtered and within thresholds
-                        this.filterValues[val].map(function(lyr) {
-                            if (shouldLayerBeAdded.call(this, lyr)) {
-                                if (this.remove)
-                                    this.layer.layer.addLayer(lyr);
-                                else
-                                    if (this.layer.symbolOptions.symbolType === SymbolTypes.Rectangle) {
-                                        let icon = (lyr as any).options.icon;
-                                        let html = icon.options.html.replace('opacity:0.2;', 'opacity:' + this.layer.colorOptions.fillOpacity + ';');
-
-                                        icon.options.html = html;
-                                        (lyr as any).setIcon(icon);
+                        this.filterValues[val].map(function(id) {
+                            let layer = this.layer.layer._layers[id];
+                            if (shouldLayerBeAdded.call(this, layer)) {
+                                if (this.remove) {
+                                    if (layer._icon) {
+                                        layer._icon.style.display = 'block';
                                     }
-                                    else {
-                                        (lyr as any).setStyle({ fillOpacity: this.layer.colorOptions.fillOpacity, opacity: this.layer.colorOptions.opacity });
+                                    else if (layer._path) {
+                                        layer._path.style.display = 'block';
                                     }
+                                    if (layer._shadow) {
+                                        layer._shadow.style.display = 'block';
+                                    }
+                                }
+                                else {
+                                    if (layer.setOpacity)
+                                        layer.setOpacity(this.layer.colorOptions.fillOpacity);
+                                    else
+                                        layer.setStyle({ fillOpacity: this.layer.colorOptions.fillOpacity, opacity: this.layer.colorOptions.opacity })
+                                }
                             }
                         }, this);
                         this.filteredIndices.splice(filteredIndex, 1);
@@ -135,22 +144,22 @@ export class Filter {
                 for (let i in arr) {
                     arr[i][2] = arr[i][2] / max;
                 }
-                this.layer.layer.setLatLngs(arr);
+                (this.layer.layer as any).setLatLngs(arr);
             }
         }
 
         /**
          * shouldLayerBeAdded - Checks every active filter to see if a layer can be un-filtered
          *
-         * @return {type}  description
+         * TODO: optimize performance (by storing every filter current value in state?)
          */
         function shouldLayerBeAdded(layer) {
             let filters: Filter[] = this.appState.filters.filter((f) => { return f.id !== this.id });
             let canUnFilter = true;
             for (let i in filters) {
                 let filter = filters[i];
-                let val = layer.feature.properties[this.fieldToFilter];
-                canUnFilter = val <= this.currentMax && val >= this.currentMin;
+                let val = layer.feature.properties[filter.fieldToFilter];
+                canUnFilter = val <= filter.currentMax && val >= filter.currentMin;
             }
             return canUnFilter;
         }

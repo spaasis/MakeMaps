@@ -13,7 +13,7 @@ export class FilterMenu extends React.Component<{
     onFilterVariableChange = (val) => {
         if (val) {
             this.props.state.editingFilter.fieldToFilter = val.value;
-            this.props.state.editingFilter.title = this.props.state.editingFilter.title ? this.props.state.editingFilter.title : val.value + '-filter';
+            this.props.state.editingFilter.title = val.value;
             this.getMinMax()
         }
     }
@@ -23,21 +23,10 @@ export class FilterMenu extends React.Component<{
         this.props.state.filterMenuState.customStepCount = e.target.checked ? this.getDistinctValues(this.props.state.editingFilter.fieldToFilter).length - 1 : 5;
     }
     getMinMax() {
-        let minVal: number; let maxVal: number;
+        let vals = this.props.state.editingLayer.values;
         let field = this.props.state.editingFilter.fieldToFilter;
-        this.props.state.editingLayer.geoJSON.features.map(function(feat) {
-            let val = feat.properties[field];
-            if (minVal === undefined && maxVal === undefined) {
-                minVal = val;
-                maxVal = val;
-            }
-            else {
-                if (val < minVal)
-                    minVal = val;
-                if (val > maxVal)
-                    maxVal = val;
-            }
-        });
+        let minVal = vals[field][0];
+        let maxVal = vals[field][vals[field].length - 1];
         this.props.state.editingFilter.totalMin = minVal;
         this.props.state.editingFilter.currentMin = minVal;
         this.props.state.editingFilter.totalMax = maxVal;
@@ -173,9 +162,7 @@ export class FilterMenu extends React.Component<{
                                 {renderSteps.call(this)}
                             </div>
                             : null}
-                        {layer.layerType === LayerTypes.HeatMap ||
-                            (layer.symbolOptions.symbolType === SymbolTypes.Icon ||
-                                layer.symbolOptions.symbolType === SymbolTypes.Chart) ? null :
+                        {layer.layerType === LayerTypes.HeatMap ? null :
                             < div >
                                 <label forHTML='remove'>
                                     Remove filtered items
@@ -192,8 +179,7 @@ export class FilterMenu extends React.Component<{
                                 <br/>
                                 Or
                                 <br/>
-
-                                <label forHTML='opacity'>
+                                <label forHTML='opacity' style={{ marginTop: 0 }}>
                                     Change opacity
                                     <input
                                         type='radio'

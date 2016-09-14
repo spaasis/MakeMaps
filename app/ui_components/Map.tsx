@@ -96,8 +96,9 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             layers: this.props.state.activeBaseLayer,
             fullscreenControl: true,
             worldCopyJump: true,
+            preferCanvas: true,
         };
-        this.props.state.map = L.map('map', (props as any)).setView([0, 0], 2);
+        this.props.state.map = L.map('map', props).setView([0, 0], 2);
 
         this.props.state.map.doubleClickZoom.disable();
         this.props.state.map.on('contextmenu', function(e) { //disable context menu opening on right-click
@@ -113,17 +114,22 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
     cancelLayerImport() {
         this.props.state.importWizardShown = false;
-        this.props.state.menuShown = true;
         if (this.props.state.layers.length == 0)
             this.props.state.welcomeShown = true;
+        else {
+            this.props.state.menuShown = true;
+            this.props.state.editingLayer = this.props.state.layers[0];
+        }
     }
 
     /**
      * layerImportSubmit - Layer importing was completed -> draw to map
      */
     layerImportSubmit(l: Layer) {
+
         l.appState = this.props.state;
         l.id = _currentLayerId++;
+        l.refresh();
         this.props.state.layers.push(l);
         this.props.state.layerMenuState.order.push({ name: l.name, id: l.id });
         this.props.state.importWizardShown = false;
@@ -134,6 +140,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
 
     loadSavedMap(saved: SaveState) {
+        console.time("LoadSavedMap")
         if (saved.baseLayerId) {
             let oldBase = this.props.state.activeBaseLayer;
             let newBase: L.TileLayer;
@@ -165,7 +172,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             newLayer.geoJSON = lyr.geoJSON;
             newLayer.colorOptions = new ColorOptions(lyr.colorOptions);
             newLayer.symbolOptions = new SymbolOptions(lyr.symbolOptions);
-            newLayer.blockUpdate = false;
+            newLayer.refresh();
             this.props.state.layers.push(newLayer);
 
             this.props.state.layerMenuState.order.push({ name: newLayer.name, id: newLayer.id });
@@ -175,6 +182,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         this.props.state.welcomeShown = false;
         this.props.state.editingLayer = this.props.state.layers[0];
         this.props.state.menuShown = !this.props.state.embed;
+        console.timeEnd("LoadSavedMap")
     }
 
     /**

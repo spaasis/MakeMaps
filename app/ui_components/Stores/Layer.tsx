@@ -8,7 +8,6 @@ let mobx = require('mobx');
 let reactDOMServer = require('react-dom/server');
 let chroma = require('chroma-js');
 
-
 export class Layer {
 
     /** The unique identification. Is used for example to delete items*/
@@ -27,128 +26,137 @@ export class Layer {
     }
 
     @observable popupHeaders: IHeader[] = [];
+    @observable showPopUpOnHover: boolean;
     /** The variable by which to create the heat map*/
     @observable heatMapVariable: string;
     /** The Leaflet layer. Will be modified by changing options*/
-    layer: any;
+    layer: L.GeoJSON;
     /** The function to run on every feature of the layer. Is used to place pop-ups to map features */
-    onEachFeature: (feature: any, layer: L.GeoJSON) => void = addPopupsToLayer.bind(this);
+    onEachFeature: (feature: any, layer: L.GeoJSON) => void = eachFeature.bind(this);
     /** The coloring options of the layer. Contains ie. border color and opacity */
     @observable colorOptions: ColorOptions = new ColorOptions();
     /**  The symbol options for symbol layers. Contains ie. symbol type  */
     @observable symbolOptions: SymbolOptions = new SymbolOptions();
-
-    @observable filterUpdatesPending: boolean = false;
-
     @observable useMarkerClustering: boolean = true;
-
     appState: AppState;
 
-    /** Keep the layer from redrawing unnecessarily. For example when a function updates multiple observable fields at once, release the block only after the last one*/
-    @observable blockUpdate: boolean = true;
 
     values: { [field: string]: any[]; } = undefined;
 
 
     constructor(state: AppState) {
         this.appState = state;
-        mobx.autorun(() => this.refresh());
-        mobx.autorun(() => this.refreshFilter());
     }
 
     /** Update layer based on changed options and properties. */
     refresh() {
-        let layer;
-        if (this.blockUpdate) return;
-        if (this.geoJSON) {
-            // if (this.colorOptions.useMultipleFillColors && !this.colorOptions.useCustomScheme && (this.layerType === LayerTypes.ChoroplethMap || this.layerType === LayerTypes.HeatMap || this.colorOptions.colorField)) {
-            //     if (!this.colorOptions.colorField) {
-            //         this.colorOptions.colorField = this.layerType === LayerTypes.HeatMap ? this.heatMapVariable : this.numberHeaders[0] ? this.numberHeaders[0].label : undefined;
-            //     }
-            //
-            //     if (this.colorOptions.colorField)
-            //         getColors(this);
-            // }
+        let layer = this.layer;
+        console.time("LayerCreate")
+        let col: ColorOptions = JSON.parse(JSON.stringify(this.colorOptions));
+        let sym: SymbolOptions = JSON.parse(JSON.stringify(this.symbolOptions));
+        let style = function(opts: ColorOptions, feature) {
+            return {
+                fillOpacity: opts.fillOpacity,
+                opacity: opts.opacity,
+                fillColor: opts.colors.slice().length == 0 || !opts.useMultipleFillColors ? opts.fillColor : GetItemBetweenLimits(opts.limits.slice(), opts.colors.slice(), feature.properties[opts.colorField]),
+                color: opts.color,
+                weight: 1,
+            }
+        }
+        if (layer && this.layerType !== LayerTypes.HeatMap) {
+            let that = this;
+            let path = false;
+            layer.eachLayer(function(l: any) {
+
+                if (l.setStyle) {
+                    l.setStyle(style(col, l.feature));
+                    path = true;
+                }
+                else {
+                    let marker = getMarker(col, sym, l.feature, l.latlng);
+                    let icon = (marker as any).options.icon;
+                    l.setIcon(icon);
+                }
+            });
+            if (path) {
+                this.refreshFilter();
+            }
+            console.timeEnd("LayerCreate")
+        }
+        else if (this.geoJSON) {
             if (this.layerType === LayerTypes.HeatMap) {
                 if (this.heatMapVariable)
-                    layer = createHeatLayer(this);
+                    layer = (createHeatLayer(this) as any);
             }
             else {
-                let style = function(opts: ColorOptions, feature) {
-
-                    return {
-                        fillOpacity: opts.fillOpacity,
-                        opacity: opts.opacity,
-                        fillColor: col.colors.slice().length == 0 || !col.useMultipleFillColors ? col.fillColor : GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField]),
-                        color: opts.color,
-                        weight: 1,
-                    }
-                }
-
                 let geoJSON = JSON.parse(JSON.stringify(this.geoJSON));
-                let col: ColorOptions = JSON.parse(JSON.stringify(this.colorOptions));
-                let sym: SymbolOptions = JSON.parse(JSON.stringify(this.symbolOptions));
                 let options: L.GeoJSONOptions = {}
                 layer = L.geoJson(geoJSON, ({
                     onEachFeature: this.onEachFeature,
-                    pointToLayer: pointToLayerFunc.bind(this, col, sym),
+                    pointToLayer: getMarker.bind(this, col, sym),
                     style: style.bind(this, col),
                 }));
             }
+            if (layer) {
+                if (this.useMarkerClustering) {
+                    let markers = L.markerClusterGroup();
 
-        }
-        if (layer) {
-            if (this.useMarkerClustering) {
-                let markers = L.markerClusterGroup();
+                    markers.addLayer(layer);
+                    layer = markers as any;
+                    this.appState.map.addLayer(layer);
 
-                markers.addLayer(layer);
-                layer = markers;
-                this.appState.map.addLayer(layer);
-
-            }
-            else {
-                layer.addTo(this.appState.map);
-            }
-            if (this.layer)
-                this.appState.map.removeLayer(this.layer)
-            this.layer = layer;
-            if (!this.values) {
-                this.values = {};
-                getValues(this)
-            }
-
-            if (this.layerType === LayerTypes.SymbolMap) {
-                if (this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar &&
-                    (this.symbolOptions.symbolType === SymbolTypes.Circle ||
-                        this.symbolOptions.symbolType === SymbolTypes.Rectangle ||
-                        this.symbolOptions.symbolType === SymbolTypes.Blocks
-                    )
-                ) {
-                    getScaleSymbolMaxValues.call(this);
                 }
+                else {
+                    console.time("LayerRender")
+                    layer.addTo(this.appState.map);
+                    console.timeEnd("LayerRender")
+                    if (this.layer)
+                        this.appState.map.removeLayer(this.layer)
+                    this.layer = layer;
+                    if (!this.values) {
+                        this.values = {};
+                        getValues(this)
+                    }
+                    this.refreshFilter();
+                }
+
             }
-            this.filterUpdatesPending = true;
+            console.timeEnd("LayerCreate");
+        }
+
+
+
+        if (this.layerType === LayerTypes.SymbolMap) {
+            if (this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar &&
+                (this.symbolOptions.symbolType === SymbolTypes.Circle ||
+                    this.symbolOptions.symbolType === SymbolTypes.Rectangle ||
+                    this.symbolOptions.symbolType === SymbolTypes.Blocks
+                )
+            ) {
+                getScaleSymbolMaxValues.call(this);
+            }
         }
 
     }
     refreshFilter() {
-        if (this.filterUpdatesPending) {
-            let filters = this.appState.filters.filter((f) => { return f.layer.id === this.id });
-            for (let i in filters) {
-                let filter = filters[i];
-                // if (filter.currentMin != filter.totalMin || filter.currentMax != filter.totalMax) {
-                //     filter.currentMax = filter.totalMax;
-                //     filter.currentMin = filter.totalMin;
-                // }
-                filter.init(true);
-            }
+        let filters = this.appState.filters.filter((f) => { return f.layer.id === this.id });
+        for (let i in filters) {
+            filters[i].init(true);
         }
-        this.filterUpdatesPending = false;
+    }
+
+    refreshPopUps() {
+        console.time('refreshPopUps')
+        if (this.layer && this.popupHeaders.length > 0) {
+            this.layer.eachLayer(function(l: any) {
+                eachFeature.call(this, l.feature, l);
+            }, this)
+        }
+        console.timeEnd('refreshPopUps')
     }
 
     /**
-     * getColors - calculates the color values based on a field name
-     * @param  layerData    the data containing the GeoJSON string and the color variable
+     * getColors - calculates the color values based on a field name (colorOptions.colorField)
      */
     getColors() {
         let opts = this.colorOptions;
@@ -168,13 +176,13 @@ export class Layer {
 }
 
 /** Function to run on every point-type data to visualize it according to the settings*/
-function pointToLayerFunc(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.LatLng): L.Marker | L.CircleMarker {
+function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.LatLng): L.Marker {
+
     if (col.colors && col.limits)
         col.fillColor = col.colors.slice().length == 0 || !col.useMultipleFillColors ? col.fillColor : GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField]);
     let borderColor = col.color;
-    let x: number = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 10;
-    let y: number = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 10;
-
+    let x: number = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+    let y: number = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
     switch (sym.symbolType) {
         case SymbolTypes.Icon:
             let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), feature.properties[sym.iconField]);
@@ -190,10 +198,6 @@ function pointToLayerFunc(col: ColorOptions, sym: SymbolOptions, feature, latlng
             });
             let mark = L.marker(latlng, { icon: customIcon });
             return mark;
-        case SymbolTypes.Rectangle:
-            let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: 1px solid ' + borderColor + '"/>';
-            let rectMarker = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
-            return L.marker(latlng, { icon: rectMarker });
         case SymbolTypes.Chart:
             let vals = [];
             let i = 0;
@@ -202,33 +206,41 @@ function pointToLayerFunc(col: ColorOptions, sym: SymbolOptions, feature, latlng
                     vals.push({ feat: e, val: feature.properties[e.value], color: col.chartColors[e.value] });
                 i++;
             });
-            let radius = sym.sizeXVar ? x : 30;
+
             let chartHtml = makePieChart({
                 fullCircle: sym.chartType === 'pie',
                 data: vals,
                 valueFunc: function(d) { return d.val; },
                 strokeWidth: 1,
-                outerRadius: radius,
-                innerRadius: radius / 3,
+                outerRadius: x,
+                innerRadius: x / 3,
                 pieClass: function(d) { return d.data.feat },
                 pathFillFunc: function(d) { return d.data.color },
                 borderColor: col.color,
                 opacity: col.fillOpacity
             });
-            let marker = L.divIcon({ iconAnchor: L.point(radius, radius), html: chartHtml, className: '' });
+            let marker = L.divIcon({ iconAnchor: L.point(x, x), html: chartHtml, className: '' });
             return L.marker(latlng, { icon: marker });
         case SymbolTypes.Blocks:
-            let side = Math.ceil(Math.sqrt(feature.properties[sym.sizeXVar] / sym.blockValue));
-            let blockCount = Math.ceil(feature.properties[sym.sizeXVar] / sym.blockValue);
+            let side = Math.ceil(Math.sqrt(feature.properties[sym.blockSizeVar] / sym.blockValue));
+            let blockCount = Math.ceil(feature.properties[sym.blockSizeVar] / sym.blockValue);
             let blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, borderColor);
             let blockMarker = L.divIcon({ iconAnchor: L.point(5 * side, 5 * side), html: blockHtml, className: '' });
             return L.marker(latlng, { icon: blockMarker });
+        case SymbolTypes.Rectangle:
+            let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: 1px solid ' + borderColor + '"/>';
+            let rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
+            return L.marker(latlng, { icon: rectIcon });
+        default:
+            let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: 1px solid ' + borderColor + ';border-radius: 30px;"/>';
+            let circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
+            return L.marker(latlng, { icon: circleIcon });
     }
-    return L.circleMarker(latlng, col).setRadius(x);
 }
 
 /** Get feature values in their own dictionary to reduce the amount of common calculations*/
 function getValues(layer: Layer) {
+    console.time("Layer.GetValues");
     layer.geoJSON.features.map(function(feat) {
         for (let i in feat.properties) {
             if (!layer.values[i])
@@ -246,6 +258,8 @@ function getValues(layer: Layer) {
             layer.values[header].sort(function(a, b) { return a - b })
         }
     }
+    console.timeEnd("Layer.GetValues");
+
 }
 
 function getScaleSymbolMaxValues() {
@@ -448,11 +462,25 @@ function createHeatLayer(l: Layer) {
     return L.heatLayer(arr, { relative: false, gradient: gradient, radius: l.colorOptions.heatMapRadius, max: max, minOpacity: l.colorOptions.fillOpacity })
 }
 
+function eachFeature(feature, layer: L.GeoJSON) {
+    addPopupsToLayer.call(this, feature, layer);
+    if (this.showPopUpOnHover) {
+        layer.off('click')
+        layer.on('mouseover', function(e) { this.openPopup(); });
+        layer.on('mouseout', function(e) { this.closePopup(); });
+    }
+    else {
+        layer.on('click', function(e) { this.openPopup(); })
+        layer.off('mouseover');
+        layer.off('mouseout');
+    }
+}
+
 /**
  * addPopupsToLayer - adds the feature details popup to layer
  *
- * @param   feature GeoJSON feature
- * @param   layer   layer to add popup to
+ * @param   feature   GeoJSON feature
+ * @param   layer     layer to add popup to
  */
 function addPopupsToLayer(feature, layer: L.GeoJSON) {
     let headers: string[] = [];
@@ -548,6 +576,8 @@ export class SymbolOptions {
     @observable sizeXVar: string;
     /** The name of the field to scale size y-axis by*/
     @observable sizeYVar: string;
+    /** The name of the field to scale block size by*/
+    @observable blockSizeVar: string;
     /** The minimum allowed size when scaling*/
     @observable sizeLowLimit: number;
     /** The maximum allowed size when scaling*/

@@ -19,7 +19,6 @@ export class ColorMenu extends React.Component<{
         let isChart: boolean = layer.layerType === LayerTypes.SymbolMap && layer.symbolOptions.symbolType === SymbolTypes.Chart;
         let hex: string = color.hex;
         let editing: string = this.props.state.colorMenuState.editing;
-        layer.blockUpdate = true;
 
         if (editing.indexOf('step') !== -1) {
             layer.colorOptions.colors[editing.substring(4)] = hex;
@@ -41,58 +40,50 @@ export class ColorMenu extends React.Component<{
                     break;
             }
         }
-        layer.blockUpdate = false;
+        if (this.props.state.autoRefresh)
+            layer.refresh();
         this.props.state.colorMenuState.startColor = hex;
     }
 
     onChoroVariableChange = (e) => {
-        this.props.state.editingLayer.blockUpdate = true;
         this.props.state.editingLayer.colorOptions.colorField = e.label;
         this.calculateValues();
-        this.props.state.editingLayer.blockUpdate = false;
-
     }
     onSchemeChange = (e) => {
-        this.props.state.editingLayer.blockUpdate = true;
         this.props.state.editingLayer.colorOptions.colorScheme = e.value;
         this.calculateValues();
-        this.props.state.editingLayer.blockUpdate = false;
     }
     onOpacityChange = (e) => {
-        this.props.state.editingLayer.blockUpdate = true;
-        this.props.state.editingLayer.colorOptions.opacity = e.target.valueAsNumber;
-        this.props.state.editingLayer.colorOptions.fillOpacity = e.target.valueAsNumber;
-        this.props.state.editingLayer.blockUpdate = false;
+        let val: number = e.target.valueAsNumber;
+        let layer = this.props.state.editingLayer;
+        if (layer.colorOptions.opacity !== val || layer.colorOptions.fillOpacity !== val) {
+            layer.colorOptions.opacity = e.target.valueAsNumber;
+            layer.colorOptions.fillOpacity = e.target.valueAsNumber;
+            layer.refresh();
+        }
     }
     onStepsChange = (e) => {
-        this.props.state.editingLayer.blockUpdate = true;
         this.props.state.editingLayer.colorOptions.steps = e.target.valueAsNumber;
         this.calculateValues();
-        this.props.state.editingLayer.blockUpdate = false;
     }
     onModeChange = (mode) => {
-        this.props.state.editingLayer.blockUpdate = true;
         this.props.state.editingLayer.colorOptions.mode = mode;
         this.calculateValues();
-        this.props.state.editingLayer.blockUpdate = false;
     }
     onRevertChange = (e) => {
-        this.props.state.editingLayer.blockUpdate = true;
         this.props.state.editingLayer.colorOptions.revert = e.target.checked;
         this.calculateValues();
-        this.props.state.editingLayer.blockUpdate = false;
     }
     onCustomSchemeChange = (e) => {
         let use: boolean = e.target.checked;
-        let steps: number = use ? this.props.state.editingLayer.colorOptions.steps : this.props.state.editingLayer.colorOptions.steps > 10 ? 10 : this.props.state.editingLayer.colorOptions.steps; //If switching back from custom steps, force the steps to be under the limit
-        this.props.state.editingLayer.blockUpdate = true;
-        this.props.state.editingLayer.colorOptions.useCustomScheme = use;
-        this.props.state.editingLayer.colorOptions.steps = steps;
+        let layer = this.props.state.editingLayer;
+        let steps: number = use ? layer.colorOptions.steps : layer.colorOptions.steps > 10 ? 10 : layer.colorOptions.steps; //If switching back from custom steps, force the steps to be under the limit
+        layer.colorOptions.useCustomScheme = use;
+        layer.colorOptions.steps = steps;
         if (use) {
-            this.props.state.editingLayer.colorOptions.colorScheme = undefined;
+            layer.colorOptions.colorScheme = undefined;
         }
         this.calculateValues();
-        this.props.state.editingLayer.blockUpdate = false;
     }
 
     onCustomLimitChange = (step: number, e) => {
@@ -101,7 +92,6 @@ export class ColorMenu extends React.Component<{
         let val = e.currentTarget.valueAsNumber;
         if (step === 0 && val > layer.values[layer.colorOptions.colorField][0])//the lowest limit cannot be increased, since this would lead to some items not having a color
             return
-        layer.blockUpdate = true;
         if (limits[step + 1] !== undefined && limits[step + 1] <= val) { //if collides with the next limit
             limits = this.increaseLimitStep(limits, val, step);
         }
@@ -111,8 +101,8 @@ export class ColorMenu extends React.Component<{
         else {
             limits[step] = val;
         }
-
-        layer.blockUpdate = false;
+        if (this.props.state.autoRefresh)
+            layer.refresh();
 
     }
 
@@ -191,6 +181,8 @@ export class ColorMenu extends React.Component<{
         }
         lyr.colorOptions.limits = limits;
         lyr.colorOptions.colors = lyr.colorOptions.revert ? colors.reverse() : colors;
+        if (this.props.state.autoRefresh)
+            lyr.refresh();
 
     }
 
@@ -227,7 +219,7 @@ export class ColorMenu extends React.Component<{
 
     /**  Manually save values when autoRefresh is disabled */
     saveOptions = () => {
-
+        this.props.state.editingLayer.refresh();
     }
     renderSteps() {
         let layer = this.props.state.editingLayer;

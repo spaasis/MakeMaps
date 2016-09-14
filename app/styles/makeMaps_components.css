@@ -25,6 +25,7 @@ hr{
   color: #cecece;
   width: 75%;
 }
+
 .menuOpen{
   animation-name: menuOpen;
   animation-duration: 0.2s;
@@ -181,6 +182,13 @@ hr{
   z-index: 600;
 }
 
+.legend{
+  z-index: 600;
+}
+
+.filter{
+  z-index: 600;
+}
 
 /* The animation code */
 @keyframes menuOpen {
