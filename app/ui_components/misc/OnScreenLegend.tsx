@@ -45,21 +45,10 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         this.props.state.legend.meta = e.target.value;
     }
 
-    // onDragStop = (e, ui) => {
-    //     this.props.state.legend.x = e.clientX;
-    //     this.props.state.legend.y = e.clientY;
-    // }
 
     render() {
         let layers = this.props.state.layers;
         let legend = this.props.state.legend;
-        // <Draggable
-        //     handle={'.dragDiv'}
-        //     bounds={'parent'}
-        //     onDragStop={this.onDragStop}
-        //     disabled={legend.edit}
-        //defaultPosition={{ x: legend.x, y: legend.y - 400 }}//hack until I find out why the Y axis starts in the middle of the map instead of the top of the window
-        //     >
 
         return (
             <div className='legend' style={{
@@ -76,9 +65,6 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             }}>
                 <h2 className='legendHeader'>{legend.title}</h2>
                 <div>
-                    {
-                        //<div style={{ position: 'absolute', left: 0, cursor: 'pointer' }} className='dragDiv'><i className='fa fa-arrows'/></div>
-                    }
                     {
                         layers.map(function(m) {
                             return this.createLegend(m);
@@ -115,7 +101,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
 
                 <span style={{ marginLeft: '3px', marginRight: '3px' }}>
 
-                    {limits[i].toFixed(0) + '-'} {this.props.state.legend.horizontal ? <br/> : ''} {limits[i + 1].toFixed(0)}
+                    {limits[i].toFixed(0) + (i < (limits.length - 2) ? '-' : '+')} {this.props.state.legend.horizontal ? <br/> : ''} {i < (limits.length - 2) ? limits[i + 1].toFixed(0) : ''}
                     {this.props.state.legend.showPercentages ? <br/> : null}
                     {this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null}
                 </span>
@@ -293,7 +279,8 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 divs.push(<div key={i} style={{ display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}>
                     {getIcon(icon.shape, icon.fa, col.color, fillColor, fillColor != '000' ? layer.colorOptions.iconTextColor : 'FFF')}
                     <span style={{ marginLeft: '3px', marginRight: '3px' }}>
-                        {limits[i].toFixed(0) + '-'} {this.props.state.legend.horizontal ? <br/> : ''} {limits[i + 1].toFixed(0)}
+                        {limits[i].toFixed(0) + (i < (limits.length - 2) ? '-' : '+')} {this.props.state.legend.horizontal ? <br/> : ''} {i < (limits.length - 2) ? limits[i + 1].toFixed(0) : ''}
+
                         {this.props.state.legend.showPercentages ? <br/> : null}
                         {this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null}
                     </span>

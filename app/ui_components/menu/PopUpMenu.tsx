@@ -13,13 +13,17 @@ export class PopUpMenu extends React.Component<{
     }
 
     onSelectionChange = (e: IHeader[]) => {
-        let headers = this.props.state.editingLayer.popupHeaders;
+        let layer = this.props.state.editingLayer;
+        let headers = layer.popupHeaders;
         if (e === null)
             e = [];
         headers.splice(0, headers.length) //empty headers
         for (let i in e) { //add new headers
             headers.push(e[i]);
         }
+        if (this.props.state.autoRefresh)
+            layer.refreshPopUps();
+
     }
     render() {
         let layer = this.props.state.editingLayer;
