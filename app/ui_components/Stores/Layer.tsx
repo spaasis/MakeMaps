@@ -32,12 +32,12 @@ export class Layer {
     /** The Leaflet layer. Will be modified by changing options*/
     layer: L.GeoJSON;
     /** The function to run on every feature of the layer. Is used to place pop-ups to map features */
-    onEachFeature: (feature: any, layer: L.GeoJSON) => void = eachFeature.bind(this);
+    onEachFeature: (feature: any, layer: L.GeoJSON) => void = addPopups.bind(this);
     /** The coloring options of the layer. Contains ie. border color and opacity */
     @observable colorOptions: ColorOptions = new ColorOptions();
     /**  The symbol options for symbol layers. Contains ie. symbol type  */
     @observable symbolOptions: SymbolOptions = new SymbolOptions();
-    @observable useMarkerClustering: boolean = true;
+    @observable clusterOptions: ClusterOptions = new ClusterOptions();
     appState: AppState;
 
 
@@ -81,6 +81,9 @@ export class Layer {
             if (path) {
                 this.refreshFilter();
             }
+            if ((layer as any).refreshClusters) {
+                (layer as any).refreshClusters();
+            }
             console.timeEnd("LayerCreate")
         }
         else if (this.geoJSON) {
@@ -98,39 +101,40 @@ export class Layer {
                 }));
             }
             if (layer) {
-                if (this.useMarkerClustering) {
-                    let markers = L.markerClusterGroup();
-
+                console.time("LayerRender")
+                if (this.clusterOptions.useClustering) {
+                    let markers = L.markerClusterGroup({
+                        iconCreateFunction: this.createClusteredIcon.bind(this),
+                    });
                     markers.addLayer(layer);
                     layer = markers as any;
                     this.appState.map.addLayer(layer);
 
                 }
                 else {
-                    console.time("LayerRender")
                     layer.addTo(this.appState.map);
-                    console.timeEnd("LayerRender")
-                    if (this.layer)
-                        this.appState.map.removeLayer(this.layer)
-                    this.layer = layer;
-                    if (!this.values) {
-                        this.values = {};
-                        getValues(this)
-                    }
-                    this.refreshFilter();
                 }
-
+                console.timeEnd("LayerRender")
+                if (this.layer)
+                    this.appState.map.removeLayer(this.layer)
+                this.layer = layer;
+                if (!this.values) {
+                    this.values = {};
+                    getValues(this)
+                }
+                this.refreshFilter();
             }
-            console.timeEnd("LayerCreate");
+
         }
+        console.timeEnd("LayerCreate");
+
 
 
 
         if (this.layerType === LayerTypes.SymbolMap) {
             if (this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar &&
                 (this.symbolOptions.symbolType === SymbolTypes.Circle ||
-                    this.symbolOptions.symbolType === SymbolTypes.Rectangle ||
-                    this.symbolOptions.symbolType === SymbolTypes.Blocks
+                    this.symbolOptions.symbolType === SymbolTypes.Rectangle
                 )
             ) {
                 getScaleSymbolMaxValues.call(this);
@@ -149,7 +153,7 @@ export class Layer {
         console.time('refreshPopUps')
         if (this.layer && this.popupHeaders.length > 0) {
             this.layer.eachLayer(function(l: any) {
-                eachFeature.call(this, l.feature, l);
+                addPopups.call(this, l.feature, l);
             }, this)
         }
         console.timeEnd('refreshPopUps')
@@ -173,6 +177,44 @@ export class Layer {
         colors = chroma.scale(opts.colorScheme).colors(opts.limits.length - 1);
         opts.colors = opts.revert ? colors.reverse() : colors;
     }
+
+    createClusteredIcon(cluster) {
+        let arithmetic: number;
+        if (this.clusterOptions.arithmetic) {
+            arithmetic = cluster.arithmetic(this.clusterOptions.arithmetic, this.clusterOptions.arithmeticVariable);
+        }
+        let count = cluster.getChildCount();
+
+        let fillColor;
+        if (!arithmetic) {
+            fillColor = count >= 100 ? '#fc4925' : count >= 50 ? '#ea9d38' : count >= 20 ? '#deea38' : '#85ea38';
+        }
+        else {
+            let col = this.colorOptions;
+            fillColor = GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), arithmetic); //TODO: check if variable is the same, own variable and limits to clusters?
+        }
+        let style = {
+            background: fillColor,
+            minWidth: 40,
+            minHeight: 40,
+            borderRadius: '30px',
+            display: 'flex',
+            flexDirection: 'column',
+            textAlign: 'center'
+        }
+        let icon =
+            <div style={style}>
+                {arithmetic ? <b style={{ display: 'block' }}>{arithmetic}</b> : null}
+                <b style={{ display: 'block' }} > {count}</b>
+            </div>
+
+        let html: string = reactDOMServer.renderToString(icon);
+
+
+        return L.divIcon({
+            html: html, className: ''
+        });
+    }
 }
 
 /** Function to run on every point-type data to visualize it according to the settings*/
@@ -187,13 +229,13 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
         case SymbolTypes.Icon:
             let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), feature.properties[sym.iconField]);
             let customIcon = L.ExtraMarkers.icon({
-                icon: icon.fa || sym.icons[0].fa,
+                icon: icon ? icon.fa : sym.icons[0].fa,
                 prefix: 'fa',
                 markerColor: col.fillColor,
                 svg: true,
                 svgBorderColor: borderColor,
                 svgOpacity: col.fillOpacity,
-                shape: icon.shape || sym.icons[0].shape,
+                shape: icon ? icon.shape : sym.icons[0].shape,
                 iconColor: col.iconTextColor,
             });
             let mark = L.marker(latlng, { icon: customIcon });
@@ -265,7 +307,7 @@ function getValues(layer: Layer) {
 function getScaleSymbolMaxValues() {
     let maxXradius, minXradius, maxYradius, minYradius;
     let sym: SymbolOptions = this.symbolOptions;
-    (this.layer as any).eachLayer(function(layer) {
+    this.layer.eachLayer(function(layer) {
         let xVal = layer.feature.properties[sym.sizeXVar];
         let yVal = layer.feature.properties[sym.sizeYVar];
         let r = 10;
@@ -462,8 +504,19 @@ function createHeatLayer(l: Layer) {
     return L.heatLayer(arr, { relative: false, gradient: gradient, radius: l.colorOptions.heatMapRadius, max: max, minOpacity: l.colorOptions.fillOpacity })
 }
 
-function eachFeature(feature, layer: L.GeoJSON) {
-    addPopupsToLayer.call(this, feature, layer);
+function addPopups(feature, layer: L.GeoJSON) {
+    let headers: string[] = [];
+    this.popupHeaders.map(function(h) { headers.push(h.label) })
+    let popupContent = '';
+    for (var prop in feature.properties) {
+        if (headers.indexOf(prop) != -1) {
+            popupContent += prop + ": " + feature.properties[prop];
+            popupContent += "<br />";
+        }
+    }
+    if (popupContent != '')
+        layer.bindPopup(popupContent);
+
     if (this.showPopUpOnHover) {
         layer.off('click')
         layer.on('mouseover', function(e) { this.openPopup(); });
@@ -474,27 +527,9 @@ function eachFeature(feature, layer: L.GeoJSON) {
         layer.off('mouseover');
         layer.off('mouseout');
     }
+
 }
 
-/**
- * addPopupsToLayer - adds the feature details popup to layer
- *
- * @param   feature   GeoJSON feature
- * @param   layer     layer to add popup to
- */
-function addPopupsToLayer(feature, layer: L.GeoJSON) {
-    let headers: string[] = [];
-    this.popupHeaders.map(function(h) { headers.push(h.label) })
-    var popupContent = '';
-    for (var prop in feature.properties) {
-        if (headers.indexOf(prop) != -1) {
-            popupContent += prop + ": " + feature.properties[prop];
-            popupContent += "<br />";
-        }
-    }
-    if (popupContent != '')
-        layer.bindPopup(popupContent);
-}
 
 export class ColorOptions implements L.PathOptions {
     /** If not empty, use choropleth coloring */
@@ -529,7 +564,6 @@ export class ColorOptions implements L.PathOptions {
     @observable heatMapRadius: number = 25;
 
     @observable chartColors: { [field: string]: string; } = undefined;
-
 
     /**
      * @param  prev   previous options to copy
@@ -630,5 +664,18 @@ export class SymbolOptions {
         this.actualMaxYRadius = prev && prev.actualMaxYRadius || undefined;
         this.actualMinXRadius = prev && prev.actualMinXRadius || undefined;
         this.actualMaxXRadius = prev && prev.actualMaxXRadius || undefined;
+    }
+}
+
+export class ClusterOptions {
+    @observable useClustering: boolean;
+    @observable arithmetic: 'avg' | 'sum' | '';
+    @observable arithmeticVariable: string;
+
+
+    constructor(prev?: ClusterOptions) {
+        this.useClustering = prev && prev.useClustering || true;
+        this.arithmetic = prev && prev.arithmetic || 'avg';
+        this.arithmeticVariable = prev && prev.arithmeticVariable || 'boarders';
     }
 }

@@ -158,7 +158,6 @@ export class SymbolMenu extends React.Component<{
         if (this.props.state.autoRefresh)
             this.props.state.editingLayer.refresh();
     }
-
     getIcon(shape: string, fa: string, stroke: string, fill: string, onClick) {
         let circleIcon =
             <svg viewBox="0 0 69.529271 95.44922" height="40" width="40">

@@ -17,7 +17,7 @@
     "leaflet": "^1.0.0-rc.3",
     "leaflet-fullscreen": "^1.0.1",
     "leaflet.heat": "git+https://github.com/DuGuille/Leaflet.heat.git#relative-heatmap",
-    "leaflet.markercluster": "^1.0.0-rc.1.0",
+    "leaflet.markercluster": "git+https://github.com/simopaasisalo/Leaflet.markercluster.git",
     "mobx": "^2.3.4",
     "mobx-react": "^3.4.0",
     "osmtogeojson": "^2.2.12",

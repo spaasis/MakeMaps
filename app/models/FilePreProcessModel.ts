@@ -98,12 +98,10 @@ export class FilePreProcessModel {
             geoJSON = osmtogeojson(xml);
         }
         if (geoJSON) {
-            console.log(geoJSON)
             return geoJSON;
         }
         // else if (fileFormat === 'rar' || fileFormat === 'zip' || fileFormat === 'shp') {
         //     let promise = (shp(input) as any).then(function(geojson) {
-        //         console.log(geojson)
         //         return geojson;
         //     });
         //     return promise;
