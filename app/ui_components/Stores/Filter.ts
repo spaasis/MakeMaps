@@ -49,8 +49,8 @@ export class Filter {
         this.filterValues = {};
         this.filteredIndices = [];
         if (this.layer.layerType !== LayerTypes.HeatMap) {
-            this.layer.layer.eachLayer(function(layer) {
-                let val = (layer as any).feature.properties[this.fieldToFilter];
+            this.layer.layer.eachLayer(function(layer: any) {
+                let val = layer.feature.properties[this.fieldToFilter];
                 if (this.filterValues[val]) {
                     this.filterValues[val].push(layer._leaflet_id);
                 }
@@ -144,7 +144,7 @@ export class Filter {
                 for (let i in arr) {
                     arr[i][2] = arr[i][2] / max;
                 }
-                this.layer.layer.setLatLngs(arr);
+                (this.layer.layer as any).setLatLngs(arr);
             }
         }
 

@@ -15,23 +15,21 @@ export class SymbolMenu extends React.Component<{
         let layer: Layer = this.props.state.editingLayer;
         let sym: SymbolOptions = this.props.state.editingLayer.symbolOptions;
         sym.symbolType = type;
-        sym.sizeXVar = sym.sizeXVar ? sym.sizeXVar : layer.numberHeaders[0] ? layer.numberHeaders[0].label : undefined;
-        if (type === SymbolTypes.Blocks && !sym.sizeXVar)
-            sym.sizeXVar = layer.numberHeaders[0].label;
-        sym.iconField = sym.iconField ? sym.iconField : layer.numberHeaders[0] ? layer.numberHeaders[0].label : undefined;
-        sym.blockValue = sym.blockValue == 0 ? Math.ceil(layer.values[sym.sizeXVar][layer.values[sym.sizeXVar].length - 1] / 5) : sym.blockValue;
+        if (type === SymbolTypes.Blocks && !sym.blockSizeVar) {
+            sym.blockSizeVar = layer.numberHeaders[0].label;
+            sym.blockValue = sym.blockValue == 0 ? Math.ceil(layer.values[sym.blockSizeVar][layer.values[sym.blockSizeVar].length - 1] / 5) : sym.blockValue;
+        }
         if (type === SymbolTypes.Chart) {
             if (sym.chartFields.length == 0)
                 this.onChartFieldsChange(layer.numberHeaders);
         }
         if (this.props.state.autoRefresh)
             layer.refresh();
-
-
     }
 
     onXVariableChange = (val) => {
         let sym = this.props.state.editingLayer.symbolOptions;
+
         sym.sizeXVar = val ? val.value : '';
         sym.sizeMultiplier = sym.sizeMultiplier ? sym.sizeMultiplier : 1;
         if (this.props.state.autoRefresh)
@@ -320,13 +318,14 @@ export class SymbolMenu extends React.Component<{
                         />
                     <br/>
                 </label>
-                {sym.symbolType === SymbolTypes.Circle || sym.symbolType === SymbolTypes.Rectangle || sym.symbolType === SymbolTypes.Chart || sym.symbolType === SymbolTypes.Blocks ?
+                {sym.symbolType !== SymbolTypes.Icon ?
                     <div>
                         <label>Scale {sym.symbolType === SymbolTypes.Rectangle ? 'width' : 'size'} by</label>
                         <Select
                             options={layer.numberHeaders}
                             onChange={this.onXVariableChange}
-                            value={sym.sizeXVar}
+                            value={sym.symbolType === SymbolTypes.Blocks ? sym.blockSizeVar : sym.sizeXVar}
+                            clearable={sym.symbolType !== SymbolTypes.Blocks}
                             />
                         {sym.symbolType === SymbolTypes.Rectangle ? <div>
                             <label>Scale height by</label>
@@ -336,7 +335,7 @@ export class SymbolMenu extends React.Component<{
                                 value={sym.sizeYVar}
                                 />
                         </div> : null}
-                        {sym.symbolType !== SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar) ?
+                        {sym.sizeXVar || sym.sizeYVar ?
                             <div><label>Size multiplier</label>
                                 <input type="number" value={sym.sizeMultiplier} onChange={(e) => {
                                     layer.symbolOptions.sizeMultiplier = (e.currentTarget as any).valueAsNumber;

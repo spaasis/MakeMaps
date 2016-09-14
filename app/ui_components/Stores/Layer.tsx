@@ -27,12 +27,13 @@ export class Layer {
     }
 
     @observable popupHeaders: IHeader[] = [];
+    @observable showPopUpOnHover: boolean;
     /** The variable by which to create the heat map*/
     @observable heatMapVariable: string;
     /** The Leaflet layer. Will be modified by changing options*/
-    layer: any;
+    layer: L.GeoJSON;
     /** The function to run on every feature of the layer. Is used to place pop-ups to map features */
-    onEachFeature: (feature: any, layer: L.GeoJSON) => void = addPopupsToLayer.bind(this);
+    onEachFeature: (feature: any, layer: L.GeoJSON) => void = eachFeature.bind(this);
     /** The coloring options of the layer. Contains ie. border color and opacity */
     @observable colorOptions: ColorOptions = new ColorOptions();
     /**  The symbol options for symbol layers. Contains ie. symbol type  */
@@ -64,29 +65,30 @@ export class Layer {
             }
         }
         if (layer && this.layerType !== LayerTypes.HeatMap) {
-            if (this.layerType === LayerTypes.SymbolMap) {
-                layer.eachLayer(function(l) {
+            let that = this;
+            let path = false;
+            layer.eachLayer(function(l: any) {
+                if (l.setStyle) {
+                    l.setStyle(style(col, l.feature));
+                    path = true;
+                }
+                else {
                     let marker = getMarker(col, sym, l.feature, l.latlng);
                     let icon = (marker as any).options.icon;
                     l.setIcon(icon);
-                });
-            }
-            else {
-                layer.eachLayer(function(l) {
-                    l.setStyle(style(col, l.feature));
-                });
+                }
+            });
+            if (path) {
+                this.refreshFilter();
             }
             console.timeEnd("LayerCreate")
-            return;
         }
-        if (this.geoJSON) {
+        else if (this.geoJSON) {
             if (this.layerType === LayerTypes.HeatMap) {
                 if (this.heatMapVariable)
-                    layer = createHeatLayer(this);
+                    layer = (createHeatLayer(this) as any);
             }
             else {
-
-
                 let geoJSON = JSON.parse(JSON.stringify(this.geoJSON));
                 let options: L.GeoJSONOptions = {}
                 layer = L.geoJson(geoJSON, ({
@@ -95,46 +97,53 @@ export class Layer {
                     style: style.bind(this, col),
                 }));
             }
+            if (layer) {
+                console.time("LayerRender")
+                layer.addTo(this.appState.map);
+                console.timeEnd("LayerRender")
+                if (this.layer)
+                    this.appState.map.removeLayer(this.layer)
+                this.layer = layer;
+                if (!this.values) {
+                    this.values = {};
+                    getValues(this)
+                }
+                this.refreshFilter();
+
+            }
 
         }
         console.timeEnd("LayerCreate")
 
-        if (layer) {
-            console.time("LayerRender")
-            layer.addTo(this.appState.map);
-            console.timeEnd("LayerRender")
-            if (this.layer)
-                this.appState.map.removeLayer(this.layer)
-            this.layer = layer;
-            if (!this.values) {
-                this.values = {};
-                getValues(this)
-            }
 
-            if (this.layerType === LayerTypes.SymbolMap) {
-                if (this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar &&
-                    (this.symbolOptions.symbolType === SymbolTypes.Circle ||
-                        this.symbolOptions.symbolType === SymbolTypes.Rectangle ||
-                        this.symbolOptions.symbolType === SymbolTypes.Blocks
-                    )
-                ) {
-                    getScaleSymbolMaxValues.call(this);
-                }
+
+        if (this.layerType === LayerTypes.SymbolMap) {
+            if (this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar &&
+                (this.symbolOptions.symbolType === SymbolTypes.Circle ||
+                    this.symbolOptions.symbolType === SymbolTypes.Rectangle ||
+                    this.symbolOptions.symbolType === SymbolTypes.Blocks
+                )
+            ) {
+                getScaleSymbolMaxValues.call(this);
             }
-            this.refreshFilter();
         }
 
     }
     refreshFilter() {
         let filters = this.appState.filters.filter((f) => { return f.layer.id === this.id });
         for (let i in filters) {
-            let filter = filters[i];
-            // if (filter.currentMin != filter.totalMin || filter.currentMax != filter.totalMax) {
-            //     filter.currentMax = filter.totalMax;
-            //     filter.currentMin = filter.totalMin;
-            // }
-            filter.init(true);
+            filters[i].init(true);
         }
+    }
+
+    refreshPopUps() {
+        console.time('refreshPopUps')
+        if (this.layer && this.popupHeaders.length > 0) {
+            this.layer.eachLayer(function(l: any) {
+                eachFeature.call(this, l.feature, l);
+            }, this)
+        }
+        console.timeEnd('refreshPopUps')
     }
 
     /**
@@ -163,8 +172,8 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
     if (col.colors && col.limits)
         col.fillColor = col.colors.slice().length == 0 || !col.useMultipleFillColors ? col.fillColor : GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField]);
     let borderColor = col.color;
-    let x: number = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 10;
-    let y: number = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 10;
+    let x: number = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+    let y: number = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
     switch (sym.symbolType) {
         case SymbolTypes.Icon:
             let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), feature.properties[sym.iconField]);
@@ -180,10 +189,6 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
             });
             let mark = L.marker(latlng, { icon: customIcon });
             return mark;
-        case SymbolTypes.Rectangle:
-            let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: 1px solid ' + borderColor + '"/>';
-            let rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
-            return L.marker(latlng, { icon: rectIcon });
         case SymbolTypes.Chart:
             let vals = [];
             let i = 0;
@@ -192,27 +197,31 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
                     vals.push({ feat: e, val: feature.properties[e.value], color: col.chartColors[e.value] });
                 i++;
             });
-            let radius = sym.sizeXVar ? x : 30;
+
             let chartHtml = makePieChart({
                 fullCircle: sym.chartType === 'pie',
                 data: vals,
                 valueFunc: function(d) { return d.val; },
                 strokeWidth: 1,
-                outerRadius: radius,
-                innerRadius: radius / 3,
+                outerRadius: x,
+                innerRadius: x / 3,
                 pieClass: function(d) { return d.data.feat },
                 pathFillFunc: function(d) { return d.data.color },
                 borderColor: col.color,
                 opacity: col.fillOpacity
             });
-            let marker = L.divIcon({ iconAnchor: L.point(radius, radius), html: chartHtml, className: '' });
+            let marker = L.divIcon({ iconAnchor: L.point(x, x), html: chartHtml, className: '' });
             return L.marker(latlng, { icon: marker });
         case SymbolTypes.Blocks:
-            let side = Math.ceil(Math.sqrt(feature.properties[sym.sizeXVar] / sym.blockValue));
-            let blockCount = Math.ceil(feature.properties[sym.sizeXVar] / sym.blockValue);
+            let side = Math.ceil(Math.sqrt(feature.properties[sym.blockSizeVar] / sym.blockValue));
+            let blockCount = Math.ceil(feature.properties[sym.blockSizeVar] / sym.blockValue);
             let blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, borderColor);
             let blockMarker = L.divIcon({ iconAnchor: L.point(5 * side, 5 * side), html: blockHtml, className: '' });
             return L.marker(latlng, { icon: blockMarker });
+        case SymbolTypes.Rectangle:
+            let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: 1px solid ' + borderColor + '"/>';
+            let rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
+            return L.marker(latlng, { icon: rectIcon });
         default:
             let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: 1px solid ' + borderColor + ';border-radius: 30px;"/>';
             let circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
@@ -445,11 +454,25 @@ function createHeatLayer(l: Layer) {
     return L.heatLayer(arr, { relative: false, gradient: gradient, radius: l.colorOptions.heatMapRadius, max: max, minOpacity: l.colorOptions.fillOpacity })
 }
 
+function eachFeature(feature, layer: L.GeoJSON) {
+    addPopupsToLayer.call(this, feature, layer);
+    if (this.showPopUpOnHover) {
+        layer.off('click')
+        layer.on('mouseover', function(e) { this.openPopup(); });
+        layer.on('mouseout', function(e) { this.closePopup(); });
+    }
+    else {
+        layer.on('click', function(e) { this.openPopup(); })
+        layer.off('mouseover');
+        layer.off('mouseout');
+    }
+}
+
 /**
  * addPopupsToLayer - adds the feature details popup to layer
  *
- * @param   feature GeoJSON feature
- * @param   layer   layer to add popup to
+ * @param   feature   GeoJSON feature
+ * @param   layer     layer to add popup to
  */
 function addPopupsToLayer(feature, layer: L.GeoJSON) {
     let headers: string[] = [];
@@ -545,6 +568,8 @@ export class SymbolOptions {
     @observable sizeXVar: string;
     /** The name of the field to scale size y-axis by*/
     @observable sizeYVar: string;
+    /** The name of the field to scale block size by*/
+    @observable blockSizeVar: string;
     /** The minimum allowed size when scaling*/
     @observable sizeLowLimit: number;
     /** The maximum allowed size when scaling*/

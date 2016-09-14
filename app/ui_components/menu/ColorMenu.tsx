@@ -48,38 +48,31 @@ export class ColorMenu extends React.Component<{
     onChoroVariableChange = (e) => {
         this.props.state.editingLayer.colorOptions.colorField = e.label;
         this.calculateValues();
-        if (this.props.state.autoRefresh)
-            this.props.state.editingLayer.refresh();
-
     }
     onSchemeChange = (e) => {
         this.props.state.editingLayer.colorOptions.colorScheme = e.value;
         this.calculateValues();
-        if (this.props.state.autoRefresh)
-            this.props.state.editingLayer.refresh();
     }
     onOpacityChange = (e) => {
-        this.props.state.editingLayer.colorOptions.opacity = e.target.valueAsNumber;
-        this.props.state.editingLayer.colorOptions.fillOpacity = e.target.valueAsNumber;
-        this.props.state.editingLayer.refresh();
+        let val: number = e.target.valueAsNumber;
+        let layer = this.props.state.editingLayer;
+        if (layer.colorOptions.opacity !== val || layer.colorOptions.fillOpacity !== val) {
+            layer.colorOptions.opacity = e.target.valueAsNumber;
+            layer.colorOptions.fillOpacity = e.target.valueAsNumber;
+            layer.refresh();
+        }
     }
     onStepsChange = (e) => {
         this.props.state.editingLayer.colorOptions.steps = e.target.valueAsNumber;
         this.calculateValues();
-        if (this.props.state.autoRefresh)
-            this.props.state.editingLayer.refresh();
     }
     onModeChange = (mode) => {
         this.props.state.editingLayer.colorOptions.mode = mode;
         this.calculateValues();
-        if (this.props.state.autoRefresh)
-            this.props.state.editingLayer.refresh();
     }
     onRevertChange = (e) => {
         this.props.state.editingLayer.colorOptions.revert = e.target.checked;
         this.calculateValues();
-        if (this.props.state.autoRefresh)
-            this.props.state.editingLayer.refresh();
     }
     onCustomSchemeChange = (e) => {
         let use: boolean = e.target.checked;
@@ -91,8 +84,6 @@ export class ColorMenu extends React.Component<{
             layer.colorOptions.colorScheme = undefined;
         }
         this.calculateValues();
-        if (this.props.state.autoRefresh)
-            layer.refresh();
     }
 
     onCustomLimitChange = (step: number, e) => {

@@ -179,8 +179,7 @@ export class FilterMenu extends React.Component<{
                                 <br/>
                                 Or
                                 <br/>
-
-                                <label forHTML='opacity'>
+                                <label forHTML='opacity' style={{ marginTop: 0 }}>
                                     Change opacity
                                     <input
                                         type='radio'
