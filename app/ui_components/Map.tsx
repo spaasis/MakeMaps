@@ -94,8 +94,9 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             layers: this.props.state.activeBaseLayer,
             fullscreenControl: true,
             worldCopyJump: true,
+            preferCanvas: true,
         };
-        this.props.state.map = L.map('map', (props as any)).setView([0, 0], 2);
+        this.props.state.map = L.map('map', props).setView([0, 0], 2);
 
         this.props.state.map.doubleClickZoom.disable();
         this.props.state.map.on('contextmenu', function(e) { //disable context menu opening on right-click

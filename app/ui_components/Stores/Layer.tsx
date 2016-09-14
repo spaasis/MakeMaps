@@ -8,7 +8,6 @@ let mobx = require('mobx');
 let reactDOMServer = require('react-dom/server');
 let chroma = require('chroma-js');
 
-
 export class Layer {
 
     /** The unique identification. Is used for example to delete items*/
@@ -68,6 +67,7 @@ export class Layer {
             let that = this;
             let path = false;
             layer.eachLayer(function(l: any) {
+
                 if (l.setStyle) {
                     l.setStyle(style(col, l.feature));
                     path = true;
@@ -226,7 +226,6 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
             let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: 1px solid ' + borderColor + ';border-radius: 30px;"/>';
             let circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
             return L.marker(latlng, { icon: circleIcon });
-
     }
 }
 
