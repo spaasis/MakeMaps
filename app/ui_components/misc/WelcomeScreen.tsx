@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { DemoPreview } from './DemoPreview';
 let Dropzone = require('react-dropzone');
-import { LoadExternalMap } from '../common_items/common';
+import { LoadExternalMap } from '../../common_items/common';
 
 
 export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcomeScreenStates>{
@@ -91,6 +91,11 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
                     description='This demo showcases the heat map by visualizing the daily public transportation boardings by HSL'
                     loadDemo={this.loadDemo.bind(this, 'hki_heatdemo')}
                     />
+                    <DemoPreview
+                        imageURL='demos/clusterdemo.png'
+                        description='This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently'
+                        loadDemo={this.loadDemo.bind(this, 'clusterdemo')}
+                        />
             </div>
             <hr style={{ color: '#cecece', width: '75%' }}/>
 

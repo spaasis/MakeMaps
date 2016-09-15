@@ -4,7 +4,7 @@ import { FilePreProcessModel } from '../../models/FilePreProcessModel';
 
 let _fileModel = new FilePreProcessModel();
 let _allowedFileTypes = ['geojson', 'csv', 'gpx', 'kml', 'wkt', 'osm'];//, 'shp', 'rar', 'zip'];
-import { ImportWizardState } from '../Stores/States';
+import { ImportWizardState } from '../../stores/States';
 import { observer } from 'mobx-react';
 
 @observer

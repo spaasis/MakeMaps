@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Filter } from '../Stores/Filter';
+import { Filter } from '../../stores/Filter';
 
 let Slider = require('react-slider');
 let Draggable = require('react-draggable');

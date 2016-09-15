@@ -1,9 +1,9 @@
 import * as React from 'react';
 let Modal = require('react-modal');
 let Select = require('react-select');
-import { SymbolTypes, CalculateLimits } from './../common_items/common';
-import { AppState, SymbolMenuState } from '../Stores/States';
-import { Layer, SymbolOptions } from '../Stores/Layer';
+import { SymbolTypes, CalculateLimits } from '../../common_items/common';
+import { AppState, SymbolMenuState } from '../../stores/States';
+import { Layer, SymbolOptions } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 
 @observer
@@ -158,7 +158,6 @@ export class SymbolMenu extends React.Component<{
         if (this.props.state.autoRefresh)
             this.props.state.editingLayer.refresh();
     }
-
     getIcon(shape: string, fa: string, stroke: string, fill: string, onClick) {
         let circleIcon =
             <svg viewBox="0 0 69.529271 95.44922" height="40" width="40">
@@ -222,9 +221,6 @@ export class SymbolMenu extends React.Component<{
     }
 
     render() {
-        if (this.props.state.visibleMenu !== 3)
-            return <div/>;
-
         let layer = this.props.state.editingLayer;
         let sym: SymbolOptions = layer.symbolOptions;
         let state: SymbolMenuState = this.props.state.symbolMenuState;

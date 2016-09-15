@@ -2,19 +2,21 @@ declare var require: any;
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { observer } from 'mobx-react';
-import { AppState, ImportWizardState, SaveState } from './Stores/States';
-import { Layer, ColorOptions, SymbolOptions } from './Stores/Layer';
-import { Legend } from './Stores/Legend';
+import { AppState, ImportWizardState, SaveState } from '../stores/States';
+import { Layer, ColorOptions, SymbolOptions, ClusterOptions } from '../stores/Layer';
+import { Legend } from '../stores/Legend';
 import { LayerImportWizard } from './import_wizard/LayerImportWizard';
 import { MakeMapsMenu } from './menu/Menu';
 import { MapInitModel } from '../models/MapInitModel';
-import { LayerTypes, SymbolTypes, GetSymbolSize, LoadExternalMap } from './common_items/common';
+import { LayerTypes, SymbolTypes, GetSymbolSize, LoadExternalMap } from '../common_items/common';
 import { OnScreenFilter } from './misc/OnScreenFilter';
 import { OnScreenLegend } from './misc/OnScreenLegend';
 import { WelcomeScreen } from './misc/WelcomeScreen';
 import 'leaflet';
 import 'Leaflet.extra-markers';
 import 'leaflet-fullscreen';
+import 'leaflet.markercluster'
+
 let Modal = require('react-modal');
 let d3 = require('d3');
 let chroma = require('chroma-js');
@@ -133,7 +135,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         this.props.state.importWizardShown = false;
         this.props.state.editingLayer = l;
         this.props.state.menuShown = true;
-        this.props.state.map.fitBounds(l.layerType === LayerTypes.HeatMap ? (l.layer as any)._latlngs : l.layer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
+        this.props.state.map.fitBounds(l.layerType === LayerTypes.HeatMap ? (l.displayLayer as any)._latlngs : l.displayLayer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
 
     }
 
@@ -170,11 +172,12 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             newLayer.geoJSON = lyr.geoJSON;
             newLayer.colorOptions = new ColorOptions(lyr.colorOptions);
             newLayer.symbolOptions = new SymbolOptions(lyr.symbolOptions);
+            newLayer.clusterOptions = new ClusterOptions(lyr.clusterOptions);
             newLayer.refresh();
             this.props.state.layers.push(newLayer);
 
             this.props.state.layerMenuState.order.push({ name: newLayer.name, id: newLayer.id });
-            this.props.state.map.fitBounds(newLayer.layerType === LayerTypes.HeatMap ? (newLayer.layer as any)._latlngs : newLayer.layer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
+            this.props.state.map.fitBounds(newLayer.layerType === LayerTypes.HeatMap ? (newLayer.displayLayer as any)._latlngs : newLayer.displayLayer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
         }
 
         this.props.state.welcomeShown = false;
@@ -191,14 +194,14 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     changeLayerOrder() {
         for (let i of this.props.state.layerMenuState.order) {
             let layer = this.props.state.layers.filter(lyr => lyr.id == i.id)[0];
-            if (layer.layer) {
+            if (layer.displayLayer) {
                 if (layer.layerType !== LayerTypes.HeatMap) {
-                    (layer.layer as any).bringToFront();
+                    (layer.displayLayer as any).bringToFront();
 
                 }
                 else {//for some reason this places the heat map to the top and will not come back down
-                    this.props.state.map.removeLayer(layer.layer);
-                    this.props.state.map.addLayer(layer.layer);
+                    this.props.state.map.removeLayer(layer.displayLayer);
+                    this.props.state.map.addLayer(layer.displayLayer);
 
                 }
             }
@@ -259,7 +262,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         };
         saveData.layers = saveData.layers.slice();
 
-        saveData.layers.forEach(function(e) { delete e.appState; delete e.layer; delete e.values; });
+        saveData.layers.forEach(function(e) { delete e.appState; delete e.displayLayer; delete e.values; });
         saveData.filters.forEach(function(e) { delete e.appState });
         let blob = new Blob([JSON.stringify(saveData)], { type: "text/plain;charset=utf-8" });
         (window as any).saveAs(blob, 'map.mmap');

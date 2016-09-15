@@ -49,7 +49,7 @@ export class Filter {
         this.filterValues = {};
         this.filteredIndices = [];
         if (this.layer.layerType !== LayerTypes.HeatMap) {
-            this.layer.layer.eachLayer(function(layer: any) {
+            this.layer.displayLayer.eachLayer(function(layer: any) {
                 let val = layer.feature.properties[this.fieldToFilter];
                 if (this.filterValues[val]) {
                     this.filterValues[val].push(layer._leaflet_id);
@@ -77,7 +77,7 @@ export class Filter {
 
                     if (filteredIndex === -1 && (+val < this.currentMin || +val > this.currentMax)) { //If not yet filtered and values over thresholds
                         this.filterValues[val].map(function(id) {
-                            let layer = this.layer.layer._layers[id];
+                            let layer = this.layer.displayLayer.getLayer(id);
                             if (this.remove) {
                                 if (layer._icon) {
                                     layer._icon.style.display = 'none';
@@ -101,7 +101,7 @@ export class Filter {
                     }
                     else if (filteredIndex > -1 && (+val >= this.currentMin && +val <= this.currentMax)) { //If filtered and within thresholds
                         this.filterValues[val].map(function(id) {
-                            let layer = this.layer.layer._layers[id];
+                            let layer = this.layer.displayLayer.getLayer(id);
                             if (shouldLayerBeAdded.call(this, layer)) {
                                 if (this.remove) {
                                     if (layer._icon) {
@@ -124,6 +124,7 @@ export class Filter {
                         }, this);
                         this.filteredIndices.splice(filteredIndex, 1);
                     }
+                    // this.layer.refreshCluster();
                 }
             }
             else {
@@ -144,7 +145,7 @@ export class Filter {
                 for (let i in arr) {
                     arr[i][2] = arr[i][2] / max;
                 }
-                (this.layer.layer as any).setLatLngs(arr);
+                (this.layer.displayLayer as any).setLatLngs(arr);
             }
         }
 

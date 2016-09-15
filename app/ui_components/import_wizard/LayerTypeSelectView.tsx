@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { LayerType } from "./LayerType";
-import { LayerTypes } from "../common_items/common";
-import { ImportWizardState, AppState } from '../Stores/States';
-import { Layer } from '../Stores/Layer';
+import { LayerTypes } from "../../common_items/common";
+import { ImportWizardState, AppState } from '../../stores/States';
+import { Layer } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 
 @observer
@@ -69,7 +69,7 @@ export class LayerTypeSelectView extends React.Component<{
                             name = 'Heatmap'
                             type = {LayerTypes.HeatMap}
                             imageURL = 'app/images/heatpreview.png'
-                            description = 'Turn your point data into an intensity map with this layer type. In development!'
+                            description = 'Turn your point data into an intensity map with this layer type. A really effective map type for large point datasets'
                             onClick = {this.onMapTypeClick}
                             selected = {layer.layerType === LayerTypes.HeatMap}
                             />

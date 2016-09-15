@@ -4,9 +4,9 @@ let ColorPicker = require('react-color');
 import { ColorScheme } from './ColorScheme';
 let Modal = require('react-modal');
 let chroma = require('chroma-js');
-import { AppState } from '../Stores/States';
-import { Layer, ColorOptions } from '../Stores/Layer';
-import { LayerTypes, SymbolTypes, CalculateLimits } from "../common_items/common";
+import { AppState } from '../../stores/States';
+import { Layer, ColorOptions } from '../../stores/Layer';
+import { LayerTypes, SymbolTypes, CalculateLimits } from "../../common_items/common";
 import { observer } from 'mobx-react';
 
 @observer
@@ -86,24 +86,28 @@ export class ColorMenu extends React.Component<{
         this.calculateValues();
     }
 
-    onCustomLimitChange = (step: number, e) => {
+    onCustomLimitBlur = (step: number, e) => {
         let layer = this.props.state.editingLayer;
         let limits = layer.colorOptions.limits;
         let val = e.currentTarget.valueAsNumber;
-        if (step === 0 && val > layer.values[layer.colorOptions.colorField][0])//the lowest limit cannot be increased, since this would lead to some items not having a color
-            return
         if (limits[step + 1] !== undefined && limits[step + 1] <= val) { //if collides with the next limit
             limits = this.increaseLimitStep(limits, val, step);
         }
         else if (limits[step - 1] !== undefined && limits[step - 1] >= val) { //if collides with the previous limit
             limits = this.decreaseLimitStep(limits, val, step);
         }
-        else {
-            limits[step] = val;
-        }
         if (this.props.state.autoRefresh)
             layer.refresh();
 
+    }
+
+    onCustomLimitChange = (step: number, e) => {
+        let layer = this.props.state.editingLayer;
+        let val = (e.currentTarget as any).valueAsNumber;
+        if (step === 0 && val > layer.values[layer.colorOptions.colorField][0])//the lowest limit cannot be increased, since this would lead to some items not having a color
+            return
+        else
+            layer.colorOptions.limits[step] = val;
     }
 
     increaseLimitStep = (limits: number[], val: number, step: number) => {
@@ -258,6 +262,7 @@ export class ColorMenu extends React.Component<{
                             type='number'
                             value={limits[row]}
                             onChange={this.onCustomLimitChange.bind(this, row)}
+                            onBlur={this.onCustomLimitBlur.bind(this, row)}
                             style={{
                                 width: 100,
                             }}
@@ -274,8 +279,6 @@ export class ColorMenu extends React.Component<{
     }
 
     render() {
-        if (this.props.state.visibleMenu !== 2)
-            return <div />;
         let col = this.props.state.editingLayer.colorOptions;
         let layer = this.props.state.editingLayer;
         let state = this.props.state.colorMenuState;
@@ -329,7 +332,9 @@ export class ColorMenu extends React.Component<{
                             id='multipleSelect'
                             type='checkbox'
                             onChange={(e) => {
-                                this.props.state.editingLayer.colorOptions.useMultipleFillColors = (e.target as any).checked;
+                                layer.colorOptions.useMultipleFillColors = (e.target as any).checked;
+                                if (this.props.state.autoRefresh)
+                                    layer.refresh();
                             } }
                             checked={col.useMultipleFillColors}/>
                     </label>
@@ -479,7 +484,7 @@ export class ColorMenu extends React.Component<{
                                                 min={10}
                                                 step={1}
                                                 onChange={(e) => {
-                                                    this.props.state.editingLayer.colorOptions.heatMapRadius = (e.currentTarget as any).valueAsNumber;
+                                                    layer.colorOptions.heatMapRadius = (e.currentTarget as any).valueAsNumber;
                                                 } }
                                                 value={col.heatMapRadius}/>
                                         </div>
