@@ -3,9 +3,9 @@ import * as React from 'react';
 let Select = require('react-select');
 
 var coords;
-import { DefaultProjections } from "../common_items/common";
+import { DefaultProjections } from "../../common_items/common";
 
-import { ImportWizardState } from '../Stores/States';
+import { ImportWizardState } from '../../stores/States';
 import { observer } from 'mobx-react';
 
 @observer

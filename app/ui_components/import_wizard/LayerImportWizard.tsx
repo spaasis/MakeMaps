@@ -4,12 +4,12 @@ import { LayerTypeSelectView } from './LayerTypeSelectView';
 import { FileUploadView } from './FileUploadView';
 import { FileDetailsView } from './FileDetailsView';
 import { FilePreProcessModel } from '../../models/FilePreProcessModel';
-import { LayerTypes } from "../common_items/common";
+import { LayerTypes } from "../../common_items/common";
 
 let _fileModel = new FilePreProcessModel();
 
-import { ImportWizardState, AppState } from '../Stores/States';
-import { Layer } from '../Stores/Layer';
+import { ImportWizardState, AppState } from '../../stores/States';
+import { Layer } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 
 @observer
@@ -94,7 +94,11 @@ export class LayerImportWizard extends React.Component<{
         else if (state.coordinateSystem && state.coordinateSystem !== 'WGS84') {
             layer.geoJSON = _fileModel.ProjectCoords(layer.geoJSON, state.coordinateSystem);
         }
-
+        layer.getValues()
+        if (layer.pointFeatureCount > 500) {
+            layer.clusterOptions.useClustering = true;
+            alert('The dataset contains a large number of map points. In order to boost performance, we have enabled map clustering. If you wish, you may turn this off in the clustering options');
+        }
         layer.getColors();
         this.props.submit(layer);
     }

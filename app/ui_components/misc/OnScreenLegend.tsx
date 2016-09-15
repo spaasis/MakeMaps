@@ -1,8 +1,8 @@
 import * as React from 'react';
 let Draggable = require('react-draggable');
-import { LayerTypes, SymbolTypes, GetItemBetweenLimits } from '../common_items/common';
-import { AppState } from '../Stores/States';
-import { Layer, SymbolOptions, ColorOptions } from '../Stores/Layer';
+import { LayerTypes, SymbolTypes, GetItemBetweenLimits } from '../../common_items/common';
+import { AppState } from '../../stores/States';
+import { Layer, SymbolOptions, ColorOptions } from '../../stores/Layer';
 import { TextEditor } from './TextEditor';
 
 import { observer } from 'mobx-react';
@@ -15,7 +15,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         let col = options.colorOptions;
         let sym = options.symbolOptions;
         if (col.colors && col.colors.length !== 0 && col.useMultipleFillColors && sym.symbolType !== SymbolTypes.Chart && (sym.symbolType !== SymbolTypes.Icon || sym.iconField !== col.colorField)) {
-            let percentages = this.props.state.legend.showPercentages ? this.getStepPercentages(layer.geoJSON, col.colorField, col.limits) : {};
+            let percentages = this.props.state.legend.showPercentages ? this.getStepPercentages(layer.values[col.colorField], col.limits) : {};
             choroLegend = this.createMultiColorLegend(options, percentages);
         }
         if (sym.symbolType === SymbolTypes.Chart && col.chartColors) {
@@ -25,7 +25,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             scaledLegend = this.createScaledSizeLegend(options);
         }
         if (sym.symbolType === SymbolTypes.Icon) {
-            let percentages = this.props.state.legend.showPercentages && sym.iconLimits.length > 1 ? this.getStepPercentages(layer.geoJSON, sym.iconField, sym.iconLimits) : {};
+            let percentages = this.props.state.legend.showPercentages && sym.iconLimits.length > 1 ? this.getStepPercentages(layer.values[sym.iconField], sym.iconLimits) : {};
             iconLegend = this.createIconLegend(options, percentages, layer.name);
         }
         if (sym.symbolType === SymbolTypes.Blocks) {
@@ -291,7 +291,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), (limits[i] + limits[i + 1]) / 2);
 
                 divs.push(<div key={i} style={{ display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}>
-                    {getIcon(icon.shape, icon.fa, col.color, fillColor, fillColor != '000' ? layer.colorOptions.iconTextColor : 'FFF')}
+                    {!icon ? '' : getIcon(icon.shape, icon.fa, col.color, fillColor, fillColor != '000' ? layer.colorOptions.iconTextColor : 'FFF')}
                     <span style={{ marginLeft: '3px', marginRight: '3px' }}>
                         {limits[i].toFixed(0) + '-'} {this.props.state.legend.horizontal ? <br/> : ''} {limits[i + 1].toFixed(0)}
                         {this.props.state.legend.showPercentages ? <br/> : null}
@@ -397,25 +397,20 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             </div >);
     }
 
-    getStepPercentages(geoJSON: any, field: string, limits: number[]) {
-        let counts: { [stepId: number]: number } = {};
-        let totalCount = geoJSON.features.length;
-        geoJSON.features.map(function(feat) {
-
-            let val = feat.properties[field];
-            for (let i in limits) {
-                if (val <= limits[+i + 1]) {
-                    if (counts[i]) {
-                        counts[i]++;
-                    }
-                    else {
-                        counts[i] = 1;
-                    }
-                    break;
-                }
+    getStepPercentages(values: number[], limits: number[]) {
+        let counts: number[] = [];
+        let totalCount = values.length;
+        let step = 0;
+        let currentLimit = limits[step + 1];
+        for (let i = 0; i < totalCount; i++) {
+            if (values[i] > currentLimit) {
+                step++;
+                currentLimit = limits[step + 1];
             }
-
-        });
+            if (!counts[step])
+                counts[step] = 0;
+            counts[step]++;
+        }
 
         for (let i in counts) {
             counts[i] = +(counts[i] / totalCount * 100).toFixed(2);

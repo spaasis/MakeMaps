@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { LayerTypes, SymbolTypes } from './../common_items/common';
+import { LayerTypes, SymbolTypes } from '../../common_items/common';
 let Select = require('react-select');
-import { AppState } from '../Stores/States';
-import { Filter } from '../Stores/Filter';
+import { AppState } from '../../stores/States';
+import { Filter } from '../../stores/Filter';
 import { observer } from 'mobx-react';
 
 @observer
@@ -94,8 +94,6 @@ export class FilterMenu extends React.Component<{
     }
 
     render() {
-        if (this.props.state.visibleMenu !== 4)
-            return <div/>;
         let layer = this.props.state.editingLayer;
         let filter = this.props.state.editingFilter;
         let state = this.props.state.filterMenuState;

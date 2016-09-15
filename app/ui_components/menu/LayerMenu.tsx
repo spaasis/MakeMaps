@@ -1,7 +1,7 @@
 import * as React from 'react';
 let Sortable = require('react-sortablejs')
-import { AppState } from '../Stores/States';
-import { Layer } from '../Stores/Layer';
+import { AppState } from '../../stores/States';
+import { Layer } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 let Select = require('react-select');
 
@@ -70,13 +70,11 @@ export class LayerMenu extends React.Component<{
         let layerInfo = this.props.state.layers.filter(lyr => lyr.id == id)[0];
         if (layerInfo) {
             this.props.state.layers = this.props.state.layers.filter((lyr) => { return lyr.id != id });
-            this.props.state.map.removeLayer(layerInfo.layer);
+            this.props.state.map.removeLayer(layerInfo.displayLayer);
             this.props.state.layerMenuState.order = this.props.state.layerMenuState.order.filter((l) => { return l.id != id });
         }
     }
     render() {
-        if (this.props.state.visibleMenu !== 1)
-            return <div/>
         let layerStyle = {
             cursor: 'pointer',
             background: 'white',

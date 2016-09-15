@@ -30,7 +30,7 @@ export class Layer {
     /** The variable by which to create the heat map*/
     @observable heatMapVariable: string;
     /** The Leaflet layer. Will be modified by changing options*/
-    layer: L.GeoJSON;
+    displayLayer: L.GeoJSON;
     /** The function to run on every feature of the layer. Is used to place pop-ups to map features */
     onEachFeature: (feature: any, layer: L.GeoJSON) => void = addPopups.bind(this);
     /** The coloring options of the layer. Contains ie. border color and opacity */
@@ -39,8 +39,8 @@ export class Layer {
     @observable symbolOptions: SymbolOptions = new SymbolOptions();
     @observable clusterOptions: ClusterOptions = new ClusterOptions();
     appState: AppState;
-
-
+    toggleCluster: boolean = true;
+    pointFeatureCount: number = 0;
     values: { [field: string]: any[]; } = undefined;
 
 
@@ -50,7 +50,7 @@ export class Layer {
 
     /** Update layer based on changed options and properties. */
     refresh() {
-        let layer = this.layer;
+        let layer = this.displayLayer;
         console.time("LayerCreate")
         let col: ColorOptions = JSON.parse(JSON.stringify(this.colorOptions));
         let sym: SymbolOptions = JSON.parse(JSON.stringify(this.symbolOptions));
@@ -63,7 +63,7 @@ export class Layer {
                 weight: 1,
             }
         }
-        if (layer && this.layerType !== LayerTypes.HeatMap) {
+        if (layer && this.layerType !== LayerTypes.HeatMap && !this.toggleCluster) {
             let that = this;
             let path = false;
             layer.eachLayer(function(l: any) {
@@ -81,9 +81,7 @@ export class Layer {
             if (path) {
                 this.refreshFilter();
             }
-            if ((layer as any).refreshClusters) {
-                (layer as any).refreshClusters();
-            }
+            this.refreshCluster();
             console.timeEnd("LayerCreate")
         }
         else if (this.geoJSON) {
@@ -106,6 +104,14 @@ export class Layer {
                     let markers = L.markerClusterGroup({
                         iconCreateFunction: this.createClusteredIcon.bind(this),
                     });
+
+                    markers.on('clustermouseover', function(c: any) {
+                        c.layer.openPopup();
+                    });
+                    markers.on('clustermouseout', function(c: any) {
+                        c.layer.closePopup();
+
+                    });
                     markers.addLayer(layer);
                     layer = markers as any;
                     this.appState.map.addLayer(layer);
@@ -115,14 +121,15 @@ export class Layer {
                     layer.addTo(this.appState.map);
                 }
                 console.timeEnd("LayerRender")
-                if (this.layer)
-                    this.appState.map.removeLayer(this.layer)
-                this.layer = layer;
+                if (this.displayLayer)
+                    this.appState.map.removeLayer(this.displayLayer)
+                this.displayLayer = layer;
+                this.refreshFilter();
                 if (!this.values) {
                     this.values = {};
-                    getValues(this)
+                    this.getValues();
                 }
-                this.refreshFilter();
+                this.toggleCluster = false;
             }
 
         }
@@ -149,25 +156,30 @@ export class Layer {
         }
     }
 
+    /**  Manually trigger popup update without refreshing the layer*/
     refreshPopUps() {
         console.time('refreshPopUps')
-        if (this.layer && this.popupHeaders.length > 0) {
-            this.layer.eachLayer(function(l: any) {
+        if (this.displayLayer && this.popupHeaders.length > 0) {
+            this.displayLayer.eachLayer(function(l: any) {
                 addPopups.call(this, l.feature, l);
             }, this)
         }
         console.timeEnd('refreshPopUps')
     }
 
-    /**
-     * getColors - calculates the color values based on a field name (colorOptions.colorField)
-     */
+    /** Manually trigger cluster update*/
+    refreshCluster() {
+        if ((this.displayLayer as any).refreshClusters) {
+            (this.displayLayer as any).refreshClusters();
+        }
+    }
+
+    /** GetColors - calculates the color values based on a field name (colorOptions.colorField)  */
     getColors() {
         let opts = this.colorOptions;
         if (!opts.colorField) {
-            opts.colorField = this.layerType === LayerTypes.HeatMap ? this.heatMapVariable : this.numberHeaders[0] ? this.numberHeaders[0].label : undefined;
+            return;
         }
-
 
         let values = (this.geoJSON as any).features.map(function(item) {
             return item.properties[opts.colorField];
@@ -178,41 +190,103 @@ export class Layer {
         opts.colors = opts.revert ? colors.reverse() : colors;
     }
 
-    createClusteredIcon(cluster) {
-        let arithmetic: number;
-        if (this.clusterOptions.arithmetic) {
-            arithmetic = cluster.arithmetic(this.clusterOptions.arithmetic, this.clusterOptions.arithmeticVariable);
+    /** Get feature values in their own dictionary to reduce the amount of common calculations*/
+    getValues() {
+        if (!this.values)
+            this.values = {};
+        console.time("Layer.GetValues");
+        let pointCount = 0;
+        this.geoJSON.features.map(function(feat) {
+            if (feat.geometry.type == 'Point') {
+                pointCount++;
+            }
+            for (let i in feat.properties) {
+                if (!this.values[i])
+                    this.values[i] = [];
+
+                this.values[i].push(feat.properties[i]);
+
+            }
+        }, this);
+
+        for (let i in this.headers.slice()) {
+            let header = this.headers[i].label;
+
+            if (this.values[header]) {
+                this.values[header].sort(function(a, b) { return a - b })
+            }
         }
-        let count = cluster.getChildCount();
+        this.pointFeatureCount = pointCount;
+        console.timeEnd("Layer.GetValues");
+
+    }
+
+    createClusteredIcon(cluster) {
+
+        let values = [];
+        let sum = 0;
+        let col = this.colorOptions;
+        let clu = this.clusterOptions;
+        let count = 0;
+        let markers = cluster.getAllChildMarkers();
+        for (let i = 0; i < markers.length; i++) {
+            let marker = markers[i];
+            // console.log(marker)
+            if (marker._icon && marker._icon.style.display == 'none')
+                continue;
+            let val = marker.feature.properties[col.colorField];
+            if (!isNaN(parseFloat(val))) {//if is numeric
+                values.push(+val);
+                sum += val;
+            }
+            count++;
+        }
+        let avg = values.length > 0 ? (sum / values.length).toFixed(0) : 0;
 
         let fillColor;
-        if (!arithmetic) {
+        if (!col.colorField || !col.useMultipleFillColors) {
             fillColor = count >= 100 ? '#fc4925' : count >= 50 ? '#ea9d38' : count >= 20 ? '#deea38' : '#85ea38';
         }
         else {
-            let col = this.colorOptions;
-            fillColor = GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), arithmetic); //TODO: check if variable is the same, own variable and limits to clusters?
+            fillColor = GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), +avg); //TODO: check if variable is the same, own variable and limits to clusters?
         }
         let style = {
             background: fillColor,
-            minWidth: 40,
-            minHeight: 40,
+            minWidth: 50,
+            minHeight: 50,
             borderRadius: '30px',
             display: 'flex',
-            flexDirection: 'column',
-            textAlign: 'center'
+            alignItems: 'center',
+            border: '1px solid ' + col.color,
+            opacity: col.fillOpacity
         }
         let icon =
             <div style={style}>
-                {arithmetic ? <b style={{ display: 'block' }}>{arithmetic}</b> : null}
-                <b style={{ display: 'block' }} > {count}</b>
+                <div style={{
+                    textAlign: 'center',
+                    background: '#FFF',
+                    width: '100%',
+                    borderRadius: '30px'
+                }}>
+                    <b style={{ display: 'block' }} > {count}</b>
+                </div>
             </div>
 
         let html: string = reactDOMServer.renderToString(icon);
 
-
+        let popupContent =
+            (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '') +
+            (clu.showSum && col.colorField && col.useMultipleFillColors ? (clu.sumText + ' ' + sum + '<br/>') : '') +
+            (clu.showAvg && col.colorField && col.useMultipleFillColors ? (clu.avgText + ' ' + avg + '<br/>') : '') +
+            'Click or zoom to expand';
+        cluster.bindPopup(popupContent);
+        // let center = cluster.getBounds().getCenter();
+        // console.log(cluster.getBounds().getNorth);
+        // let popup = L.popup({ offset: new L.Point(60, cluster.getBounds().getNorth()) }).setContent(popupContent);
+        // cluster.bindPopup(popup);
         return L.divIcon({
-            html: html, className: ''
+            html: html, className: '',
+            iconAnchor: L.point(25, 25),
         });
     }
 }
@@ -280,34 +354,10 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
     }
 }
 
-/** Get feature values in their own dictionary to reduce the amount of common calculations*/
-function getValues(layer: Layer) {
-    console.time("Layer.GetValues");
-    layer.geoJSON.features.map(function(feat) {
-        for (let i in feat.properties) {
-            if (!layer.values[i])
-                layer.values[i] = [];
-
-            layer.values[i].push(feat.properties[i]);
-
-        }
-    });
-
-    for (let i in layer.headers.slice()) {
-        let header = layer.headers[i].label;
-
-        if (layer.values[header]) {
-            layer.values[header].sort(function(a, b) { return a - b })
-        }
-    }
-    console.timeEnd("Layer.GetValues");
-
-}
-
 function getScaleSymbolMaxValues() {
     let maxXradius, minXradius, maxYradius, minYradius;
     let sym: SymbolOptions = this.symbolOptions;
-    this.layer.eachLayer(function(layer) {
+    this.displayLayer.eachLayer(function(layer) {
         let xVal = layer.feature.properties[sym.sizeXVar];
         let yVal = layer.feature.properties[sym.sizeYVar];
         let r = 10;
@@ -669,13 +719,22 @@ export class SymbolOptions {
 
 export class ClusterOptions {
     @observable useClustering: boolean;
-    @observable arithmetic: 'avg' | 'sum' | '';
-    @observable arithmeticVariable: string;
-
+    /** Show count on clustered marker hover*/
+    @observable showCount: boolean;
+    @observable countText: string;
+    @observable showAvg: boolean;
+    @observable avgText: string;
+    @observable showSum: boolean;
+    @observable sumText: string;
 
     constructor(prev?: ClusterOptions) {
-        this.useClustering = prev && prev.useClustering || true;
-        this.arithmetic = prev && prev.arithmetic || 'avg';
-        this.arithmeticVariable = prev && prev.arithmeticVariable || 'boarders';
+        this.useClustering = prev && prev.useClustering || false;
+        this.showCount = prev && prev.showCount || true;
+        this.countText = prev && prev.countText || 'map points';
+        this.showAvg = prev && prev.showAvg || false;
+        this.avgText = prev && prev.avgText || 'avg:';
+        this.showAvg = prev && prev.showAvg || false;
+        this.sumText = prev && prev.sumText || 'sum:';
+
     }
 }

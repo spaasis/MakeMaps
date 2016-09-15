@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { AppState } from '../Stores/States';
-import { Legend } from '../Stores/Legend';
+import { AppState } from '../../stores/States';
+import { Legend } from '../../stores/Legend';
 import { observer } from 'mobx-react';
 import { TextEditor } from '../misc/TextEditor';
 let Modal = require('react-modal');
@@ -10,33 +10,7 @@ export class LegendMenu extends React.Component<{
 }, {}>{
 
     render() {
-        if (this.props.state.visibleMenu !== 5)
-            return <div/>
         let legend = this.props.state.legend;
-        let metaStyle = {
-            overlay: {
-                position: 'fixed',
-                height: 600,
-                width: 300,
-                right: 230,
-                bottom: '',
-                top: 20,
-                left: '',
-                backgroundColor: ''
-
-            },
-            content: {
-                border: '4px solid #6891e2',
-                borderRadius: 15,
-                padding: '0px',
-                height: 650,
-                width: 300,
-                right: '',
-                bottom: '',
-                top: '',
-                left: '',
-            }
-        }
 
         return (
             <div className="makeMaps-options">

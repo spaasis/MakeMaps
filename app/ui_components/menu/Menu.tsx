@@ -4,12 +4,13 @@ import { ColorMenu } from './ColorMenu';
 import { SymbolMenu } from './SymbolMenu';
 import { FilterMenu } from './FilterMenu';
 import { LegendMenu } from './LegendMenu';
+import { ClusterMenu } from './ClusterMenu';
 import { PopUpMenu } from './PopUpMenu';
 import { ExportMenu } from './ExportMenu';
-import { LayerTypes, SymbolTypes } from '../common_items/common';
-import { AppState } from '../Stores/States';
-import { Layer, ColorOptions, SymbolOptions } from '../Stores/Layer';
-import { Legend } from '../Stores/Legend';
+import { LayerTypes, SymbolTypes } from '../../common_items/common';
+import { AppState } from '../../stores/States';
+import { Layer, ColorOptions, SymbolOptions } from '../../stores/Layer';
+import { Legend } from '../../stores/Legend';
 import { observer } from 'mobx-react';
 import { MenuEntry } from './MenuEntry';
 
@@ -69,10 +70,14 @@ export class MakeMapsMenu extends React.Component<{
             case 5:
                 return <LegendMenu state = {this.props.state}  />;
             case 6:
-                return <PopUpMenu
+                return <ClusterMenu
                     state = {this.props.state}
                     />;
             case 7:
+                return <PopUpMenu
+                    state = {this.props.state}
+                    />;
+            case 8:
                 return <ExportMenu
                     state={this.props.state}
                     saveImage = {() => {
@@ -110,14 +115,15 @@ export class MakeMapsMenu extends React.Component<{
                         <MenuEntry text="Symbols" id={3} active={this.props.state.visibleMenu == 3} fa='map-marker' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.layerType === LayerTypes.ChoroplethMap || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
                         <MenuEntry text="Filters" id={4} active={this.props.state.visibleMenu == 4} fa='sliders' onClick = {this.onActiveMenuChange} />
                         <MenuEntry text="Legend" id={5} active={this.props.state.visibleMenu == 5} fa='map-o' onClick = {this.onActiveMenuChange}/>
-                        <MenuEntry text="Pop-ups" id={6} active={this.props.state.visibleMenu == 6} fa='newspaper-o' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
-                        <MenuEntry text="Download" id={7} active={this.props.state.visibleMenu == 7} fa='download' onClick = {this.onActiveMenuChange}/>
+                        <MenuEntry text="Cluster" id={6} active={this.props.state.visibleMenu == 6} fa='asterisk' onClick = {this.onActiveMenuChange}/>
+                        <MenuEntry text="Pop-ups" id={7} active={this.props.state.visibleMenu == 7} fa='newspaper-o' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
+                        <MenuEntry text="Download" id={8} active={this.props.state.visibleMenu == 8} fa='download' onClick = {this.onActiveMenuChange}/>
                     </div >
                     <div className={this.props.state.visibleMenu > 0 ? 'menuOpen' : document.getElementsByClassName('menuOpen').length > 0 ? 'menuClose' : ''}
                         style ={{ float: 'right', width: this.props.state.visibleMenu > 0 ? 250 : 0, height: '100%', background: '#ededed' }}>
 
                         {
-                            this.props.state.visibleMenu !== 0 && this.props.state.visibleMenu !== 1 && this.props.state.visibleMenu !== 4 && this.props.state.visibleMenu !== 5 && this.props.state.visibleMenu !== 7 ?
+                            this.props.state.visibleMenu !== 0 && this.props.state.visibleMenu !== 1 && this.props.state.visibleMenu !== 4 && this.props.state.visibleMenu !== 5 && this.props.state.visibleMenu !== 8 ?
                                 <div>
                                     <label>Select layer to edit</label>
                                     <Select
