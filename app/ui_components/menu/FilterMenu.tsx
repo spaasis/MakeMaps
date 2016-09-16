@@ -11,6 +11,7 @@ export class FilterMenu extends React.Component<{
 }, {}>{
 
     onFilterVariableChange = (val) => {
+
         if (val) {
             this.props.state.editingFilter.fieldToFilter = val.value;
             this.props.state.editingFilter.title = val.value;
@@ -54,7 +55,7 @@ export class FilterMenu extends React.Component<{
         let filter = new Filter();
         filter.id = this.props.state.nextFilterId;
         filter.layer = this.props.state.editingLayer;
-        filter.fieldToFilter = this.props.state.editingLayer.numberHeaders[0].label;
+        filter.fieldToFilter = this.props.state.editingLayer.numberHeaders[0].value;
         filter.title = filter.fieldToFilter;
 
         filter.appState = this.props.state;

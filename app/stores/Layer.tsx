@@ -157,13 +157,11 @@ export class Layer {
 
     /**  Manually trigger popup update without refreshing the layer*/
     refreshPopUps() {
-        console.time('refreshPopUps')
-        if (this.displayLayer && this.popupHeaders.length > 0) {
+        if (this.displayLayer && this.popupHeaders.slice().length > 0) {
             this.displayLayer.eachLayer(function(l: any) {
                 addPopups.call(this, l.feature, l);
             }, this)
         }
-        console.timeEnd('refreshPopUps')
     }
 
     /** Manually trigger cluster update*/
@@ -209,7 +207,7 @@ export class Layer {
         }, this);
 
         for (let i in this.headers.slice()) {
-            let header = this.headers[i].label;
+            let header = this.headers[i].value;
 
             if (this.values[header]) {
                 this.values[header].sort(function(a, b) { return a - b })
@@ -554,15 +552,17 @@ function createHeatLayer(l: Layer) {
 }
 
 function addPopups(feature, layer: L.GeoJSON) {
-    let headers: string[] = [];
-    this.popupHeaders.map(function(h) { headers.push(h.label) })
     let popupContent = '';
-    for (var prop in feature.properties) {
-        if (headers.indexOf(prop) != -1) {
-            popupContent += prop + ": " + feature.properties[prop];
+    let headers = this.popupHeaders.slice();
+    for (let h in headers) {
+        let header = headers[h];
+        let prop = feature.properties[header.value];
+        if (prop != undefined) {
+            popupContent += header.label + ": " + prop;
             popupContent += "<br />";
         }
     }
+
     if (popupContent != '')
         layer.bindPopup(popupContent);
 

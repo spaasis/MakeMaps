@@ -44,6 +44,7 @@ interface ISelectData {
 interface IHeader extends ISelectData {
     /**  The data type of a field. Number/string (datetime and others TODO)*/
     type: string,
+    decimalAccuracy: number,
 }
 
 

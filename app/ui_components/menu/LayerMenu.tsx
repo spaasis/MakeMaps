@@ -25,12 +25,6 @@ export class LayerMenu extends React.Component<{
     //     })
     // }
 
-    onBaseMapChange = (e: ISelectData) => {
-        this.props.state.map.removeLayer(this.props.state.activeBaseLayer);
-        this.props.state.activeBaseLayer = e.value;
-        this.props.state.map.addLayer(this.props.state.activeBaseLayer);
-    }
-
     areOrdersDifferent(first: { name: string, id: number }[], second: { name: string, id: number }[]) {
         if (first.length !== second.length)
             return true;
@@ -75,6 +69,13 @@ export class LayerMenu extends React.Component<{
         }
     }
     render() {
+        let menuState = this.props.state.layerMenuState;
+        let layers = [];
+        if (this.props.state.layers) {
+            for (let layer of this.props.state.layers) {
+                layers.push({ value: layer, label: layer.name });
+            }
+        }
         let layerStyle = {
             cursor: 'pointer',
             background: 'white',
@@ -92,14 +93,18 @@ export class LayerMenu extends React.Component<{
                 <label>Select the base map</label>
                 <Select
                     options={this.props.state.obsBaseLayers}
-                    onChange={this.onBaseMapChange}
+                    onChange={(e: ISelectData) => {
+                        this.props.state.map.removeLayer(this.props.state.activeBaseLayer);
+                        this.props.state.activeBaseLayer = e.value;
+                        this.props.state.map.addLayer(this.props.state.activeBaseLayer);
+                    } }
                     value={{ value: this.props.state.activeBaseLayer, label: this.props.state.activeBaseLayer.options.id }}
                     clearable={false}
                     />
                 <hr/>
                 <label>Drag and drop to reorder</label>
                 <Sortable className='layerList' onChange={this.handleSort.bind(this)}>
-                    {this.props.state.layerMenuState.order.map(function(layer) {
+                    {menuState.order.map(function(layer) {
                         return <div style={layerStyle} key={layer.id} data-id={layer.id} >
                             {layer.name}
                             <i className="fa fa-times" onClick = {this.deleteLayer.bind(this, layer.id)}/>
@@ -115,8 +120,84 @@ export class LayerMenu extends React.Component<{
                     this.props.addNewLayer();
                 } }>Add new layer</button>
 
+                <hr/>
+                <Select
+                    options={layers}
+                    onChange = {(val: { label: string, value: Layer }) => {
+                        menuState.editingLayer = val.value;
+                    } }
+                    value = {menuState.editingLayer}
+                    valueRenderer = {(option: Layer) => {
+                        return option ? option.name : '';
+                    } }
+                    clearable={false}
+                    />
+                {menuState.editingLayer ?
+                    this.renderH.call(this)
+                    : null}
+
+
             </div>
         );
+    }
+    renderH() {
+        let arr = [];
+        let menuState = this.props.state.layerMenuState;
+        let headers = menuState.editingLayer.headers.slice()
+        let columnCount = 2;
+        for (let i = 0; i < headers.length; i += columnCount) {
+            let h = headers[i]
+
+            arr.push(
+                <tr key={i}>
+                    <td>
+                        {h.value}
+                    </td>
+                    <td>
+                        <input type='text' value={h.label} onChange={(e) => { h.label = (e.currentTarget as any).value } } onBlur={(e) => { menuState.editingLayer.refreshPopUps() } } onKeyPress={(e) => { if (e.charCode == 13) { menuState.editingLayer.refreshPopUps() } } }/>
+                    </td>
+
+                </tr>
+            );
+        }
+        return (
+            <table style={{ width: '100%' }}>
+                <tbody>
+                    <tr>
+                        <th>Value</th>
+                        <th>Show as</th>
+                    </tr>
+                    {arr.map(function(td) {
+                        return td;
+                    })}
+                </tbody>
+            </table>
+        );
+
+    }
+    renderHeaders() {
+        let arr = [];
+        let menuState = this.props.state.layerMenuState;
+        menuState.editingLayer.headers.map(function(h) {
+            arr.push(
+                <div key={h.value} style={{ display: 'flex', clear: 'both' }}>
+                    <b>{h.value}</b>
+                    <input type='text' value={h.label} onChange={(e) => { h.label = (e.currentTarget as any).value } } onBlur={menuState.editingLayer.refreshPopUps()}/>
+                </div>
+            )
+        });
+
+        return <div>
+            <label>Headers</label>
+            <br/>
+            <label style={{ marginTop: 0, display: 'inline-block', float: 'left' }}>Value</label>
+            <label style={{ marginTop: 0, display: 'inline-block', float: 'right' }}>Display as</label>
+
+            {arr.map(function(r) {
+                return r;
+            })}
+        </div>
+
     }
 
 

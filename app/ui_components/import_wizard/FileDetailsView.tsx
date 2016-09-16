@@ -46,6 +46,7 @@ export class FileDetailsView extends React.Component<
     goBack = () => {
         this.props.goBack();
     }
+
     proceed = () => {
         let custom = (document.getElementById('customProj') as any).value;
         let values = {

@@ -40,50 +40,6 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             {blockLegend}
         </div>
     }
-
-    onMetaChange = (e) => {
-        this.props.state.legend.meta = e.target.value;
-    }
-
-
-    render() {
-        let layers = this.props.state.layers;
-        let legend = this.props.state.legend;
-
-        return (
-            <div className='legend' style={{
-                width: 'auto',
-                textAlign: 'center',
-                position: 'absolute',
-                left: legend.left ? 0 : '',
-                right: legend.right ? 0 : '',
-                bottom: legend.bottom ? 15 : '', //15 to keep the legend above map attributions
-                top: legend.top ? 0 : '',
-                background: "#FFF",
-                borderRadius: 15,
-                zIndex: 600
-            }}>
-                <h2 className='legendHeader'>{legend.title}</h2>
-                <div>
-                    {
-                        layers.map(function(m) {
-                            return this.createLegend(m);
-                        }, this)
-                    }
-                </div>
-                <div style={{ clear: 'both', }}>
-                    <TextEditor
-                        style={{ width: '100%', minHeight: legend.edit ? '40px' : '' }}
-                        content={legend.meta}
-                        onChange={this.onMetaChange}
-                        edit={legend.edit}/>
-                </div>
-            </div >
-
-
-        );
-    }
-
     createMultiColorLegend(layer: Layer, percentages) {
         let divs = [];
         let limits = layer.colorOptions.limits;
@@ -109,7 +65,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             </div >);
         }
         return <div style={{ margin: '5px', float: 'left', textAlign: 'center' }}>
-            {layer.colorOptions.colorField}
+            {this.getHeaderLabel.call(this, layer.colorOptions.colorField)}
             <div style= {{ display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}>
                 {divs.map(function(d) { return d })}
             </div >
@@ -185,7 +141,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             }
 
             return <div style= {{ float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}>
-                {y ? layer.symbolOptions.sizeYVar : layer.symbolOptions.sizeXVar}
+                {y ? this.getHeaderLabel.call(this, layer.symbolOptions.sizeYVar) : this.getHeaderLabel.call(this, layer.symbolOptions.sizeXVar)}
                 <div>
                     {divs.map(function(d) { return d })}
                 </div>
@@ -231,7 +187,8 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             }
 
             return <div style= {{ float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}>
-                {layer.symbolOptions.sizeXVar}
+                {this.getHeaderLabel.call(this, layer.symbolOptions.sizeXVar)}
+
                 <div>
                     {divs.map(function(d) { return d })}
                 </div>
@@ -287,7 +244,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 </div >);
             }
             return <div style={{ margin: '5px', float: 'left', textAlign: 'center' }}>
-                {layer.symbolOptions.iconField}
+                {this.getHeaderLabel.call(this, layer.symbolOptions.iconField)}
                 <div style= {{ display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}>
                     {divs.map(function(d) { return d })}
                 </div >
@@ -410,5 +367,62 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             return layer.symbolOptions.iconLimits.indexOf(item) < 0;
         })).sort(function(a, b) { return a - b });
     }
+
+    getHeaderLabel(value: string) {
+        let layers = this.props.state.layers.slice();
+        for (let i in layers) {
+            let lyr = layers[i];
+            for (let i in lyr.headers.slice()) {
+                let head = lyr.headers[i];
+                if (head.value == value)
+                    return head.label;
+            }
+        }
+    }
+
+    onMetaChange = (e) => {
+        this.props.state.legend.meta = e.target.value;
+    }
+
+
+    render() {
+        let layers = this.props.state.layers;
+        let legend = this.props.state.legend;
+
+        return (
+            <div className='legend' style={{
+                width: 'auto',
+                textAlign: 'center',
+                position: 'absolute',
+                left: legend.left ? 0 : '',
+                right: legend.right ? 0 : '',
+                bottom: legend.bottom ? 15 : '', //15 to keep the legend above map attributions
+                top: legend.top ? 0 : '',
+                background: "#FFF",
+                borderRadius: 15,
+                zIndex: 600
+            }}>
+                <h2 className='legendHeader'>{legend.title}</h2>
+                <div>
+                    {
+                        layers.map(function(m) {
+                            return this.createLegend(m);
+                        }, this)
+                    }
+                </div>
+                <div style={{ clear: 'both', }}>
+                    <TextEditor
+                        style={{ width: '100%', minHeight: legend.edit ? '40px' : '' }}
+                        content={legend.meta}
+                        onChange={this.onMetaChange}
+                        edit={legend.edit}/>
+                </div>
+            </div >
+
+
+        );
+    }
+
+
 
 }

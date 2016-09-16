@@ -144,6 +144,7 @@ export class LegendMenuState {
 export class LayerMenuState {
     /** The current order of layers */
     @observable order: { name: string, id: number }[] = [];
+    @observable editingLayer: Layer;
 
 }
 

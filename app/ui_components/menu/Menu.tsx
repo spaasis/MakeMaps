@@ -37,10 +37,6 @@ export class MakeMapsMenu extends React.Component<{
     onActiveMenuChange = (item: number) => {
         this.props.state.visibleMenu = this.props.state.visibleMenu === item ? 0 : item;
     }
-    onLayerSelectionChange = (val: { label: string, value: Layer }) => {
-        this.props.state.visibleMenu = 0;
-        this.props.state.editingLayer = val.value;
-    }
 
     addNewLayer = () => {
         this.props.state.editingLayer = null;
@@ -128,7 +124,9 @@ export class MakeMapsMenu extends React.Component<{
                                     <label>Select layer to edit</label>
                                     <Select
                                         options={layers}
-                                        onChange = {this.onLayerSelectionChange}
+                                        onChange = {(val: { label: string, value: Layer }) => {
+                                            this.props.state.editingLayer = val.value;
+                                        } }
                                         value = {this.props.state.editingLayer}
                                         valueRenderer = {(option: Layer) => {
                                             return option ? option.name : '';
