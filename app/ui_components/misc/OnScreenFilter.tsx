@@ -107,7 +107,7 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
                 <div style={{ display: 'inline-flex' }}>
                     <input type='number' style={{ width: '70px' }} value={this.props.state.currentMin.toFixed(0)} onChange={this.onCurrentMinChange}/>
                     <Slider className='horizontal-slider'
-                        onChange={this.onFilterScaleChange}
+                        onAfterChange={this.onFilterScaleChange}
                         value={[this.props.state.currentMin, this.props.state.currentMax]}
                         min={this.props.state.totalMin - 1}
                         max={this.props.state.totalMax + 1}

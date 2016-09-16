@@ -39,6 +39,7 @@ export class Layer {
     @observable symbolOptions: SymbolOptions = new SymbolOptions();
     @observable clusterOptions: ClusterOptions = new ClusterOptions();
     appState: AppState;
+    /** Is clustering being toggled on/off? If so, redraw by removing and adding the layer once*/
     toggleCluster: boolean = true;
     pointFeatureCount: number = 0;
     values: { [field: string]: any[]; } = undefined;
@@ -78,9 +79,7 @@ export class Layer {
                     l.setIcon(icon);
                 }
             });
-            if (path) {
-                this.refreshFilter();
-            }
+            this.refreshFilter();
             this.refreshCluster();
             console.timeEnd("LayerCreate")
         }
@@ -222,7 +221,6 @@ export class Layer {
     }
 
     createClusteredIcon(cluster) {
-
         let values = [];
         let sum = 0;
         let col = this.colorOptions;
@@ -231,14 +229,14 @@ export class Layer {
         let markers = cluster.getAllChildMarkers();
         for (let i = 0; i < markers.length; i++) {
             let marker = markers[i];
-            // console.log(marker)
-            if (marker._icon && marker._icon.style.display == 'none')
+            if (marker.options.icon && marker.options.icon.options.className.indexOf('marker-hidden') > -1)
                 continue;
             let val = marker.feature.properties[col.colorField];
             if (!isNaN(parseFloat(val))) {//if is numeric
                 values.push(+val);
                 sum += val;
             }
+
             count++;
         }
         let avg = values.length > 0 ? (sum / values.length).toFixed(0) : 0;
@@ -255,7 +253,7 @@ export class Layer {
             minWidth: 50,
             minHeight: 50,
             borderRadius: '30px',
-            display: 'flex',
+            display: count > 0 ? 'flex' : 'none',
             alignItems: 'center',
             border: '1px solid ' + col.color,
             opacity: col.fillOpacity
@@ -273,13 +271,14 @@ export class Layer {
             </div>
 
         let html: string = reactDOMServer.renderToString(icon);
-
-        let popupContent =
-            (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '') +
-            (clu.showSum && col.colorField && col.useMultipleFillColors ? (clu.sumText + ' ' + sum + '<br/>') : '') +
-            (clu.showAvg && col.colorField && col.useMultipleFillColors ? (clu.avgText + ' ' + avg + '<br/>') : '') +
-            'Click or zoom to expand';
-        cluster.bindPopup(popupContent);
+        if (count > 0) {
+            let popupContent =
+                (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '') +
+                (clu.showSum && col.colorField && col.useMultipleFillColors ? (clu.sumText + ' ' + sum + '<br/>') : '') +
+                (clu.showAvg && col.colorField && col.useMultipleFillColors ? (clu.avgText + ' ' + avg + '<br/>') : '') +
+                'Click or zoom to expand';
+            cluster.bindPopup(popupContent);
+        }
         // let center = cluster.getBounds().getCenter();
         // console.log(cluster.getBounds().getNorth);
         // let popup = L.popup({ offset: new L.Point(60, cluster.getBounds().getNorth()) }).setContent(popupContent);

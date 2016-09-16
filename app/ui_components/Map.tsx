@@ -96,7 +96,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             layers: this.props.state.activeBaseLayer,
             fullscreenControl: true,
             worldCopyJump: true,
-            preferCanvas: true,
         };
         this.props.state.map = L.map('map', props).setView([0, 0], 2);
 

@@ -190,6 +190,10 @@ hr{
   z-index: 600;
 }
 
+.marker-hidden{
+  display: none !important; 
+}
+
 /* The animation code */
 @keyframes menuOpen {
    from {width:0}
