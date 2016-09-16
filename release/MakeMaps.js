@@ -132,7 +132,6 @@
 	            layers: this.props.state.activeBaseLayer,
 	            fullscreenControl: true,
 	            worldCopyJump: true,
-	            preferCanvas: true,
 	        };
 	        this.props.state.map = L.map('map', props).setView([0, 0], 2);
 	        this.props.state.map.doubleClickZoom.disable();
@@ -23102,9 +23101,7 @@
 	                    l.setIcon(icon);
 	                }
 	            });
-	            if (path_1) {
-	                this.refreshFilter();
-	            }
+	            this.refreshFilter();
 	            this.refreshCluster();
 	            console.timeEnd("LayerCreate");
 	        }
@@ -23181,6 +23178,7 @@
 	    Layer.prototype.refreshCluster = function () {
 	        if (this.displayLayer.refreshClusters) {
 	            this.displayLayer.refreshClusters();
+	            console.log('refreshClusters');
 	        }
 	    };
 	    Layer.prototype.getColors = function () {
@@ -23229,7 +23227,7 @@
 	        var markers = cluster.getAllChildMarkers();
 	        for (var i = 0; i < markers.length; i++) {
 	            var marker = markers[i];
-	            if (marker._icon && marker._icon.style.display == 'none')
+	            if (marker.options.icon && marker.options.icon.options.className.indexOf('marker-hidden') > -1)
 	                continue;
 	            var val = marker.feature.properties[col.colorField];
 	            if (!isNaN(parseFloat(val))) {
@@ -23251,7 +23249,7 @@
 	            minWidth: 50,
 	            minHeight: 50,
 	            borderRadius: '30px',
-	            display: 'flex',
+	            display: count > 0 ? 'flex' : 'none',
 	            alignItems: 'center',
 	            border: '1px solid ' + col.color,
 	            opacity: col.fillOpacity
@@ -23263,11 +23261,13 @@
 	            borderRadius: '30px'
 	        }}, React.createElement("b", {style: { display: 'block' }}, " ", count)));
 	        var html = reactDOMServer.renderToString(icon);
-	        var popupContent = (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '') +
-	            (clu.showSum && col.colorField && col.useMultipleFillColors ? (clu.sumText + ' ' + sum + '<br/>') : '') +
-	            (clu.showAvg && col.colorField && col.useMultipleFillColors ? (clu.avgText + ' ' + avg + '<br/>') : '') +
-	            'Click or zoom to expand';
-	        cluster.bindPopup(popupContent);
+	        if (count > 0) {
+	            var popupContent = (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '') +
+	                (clu.showSum && col.colorField && col.useMultipleFillColors ? (clu.sumText + ' ' + sum + '<br/>') : '') +
+	                (clu.showAvg && col.colorField && col.useMultipleFillColors ? (clu.avgText + ' ' + avg + '<br/>') : '') +
+	                'Click or zoom to expand';
+	            cluster.bindPopup(popupContent);
+	        }
 	        return L.divIcon({
 	            html: html, className: '',
 	            iconAnchor: L.point(25, 25),
@@ -60316,12 +60316,14 @@
 	            this.layer.displayLayer.eachLayer(function (layer) {
 	                var val = layer.feature.properties[this.fieldToFilter];
 	                if (this.filterValues[val]) {
-	                    this.filterValues[val].push(layer._leaflet_id);
+	                    this.filterValues[val].push(layer);
 	                }
 	                else
-	                    this.filterValues[val] = [layer._leaflet_id];
+	                    this.filterValues[val] = [layer];
 	            }, this);
 	        }
+	        this.previousLower = this.totalMin;
+	        this.previousUpper = this.totalMax;
 	        if (layerUpdate) {
 	            this.filterLayer();
 	        }
@@ -60331,56 +60333,66 @@
 	        if (this.show) {
 	            if (this.layer.layerType !== common_1.LayerTypes.HeatMap) {
 	                for (var val in this.filterValues) {
-	                    var filteredIndex = this.filteredIndices.indexOf(+val);
-	                    if (filteredIndex === -1 && (+val < this.currentMin || +val > this.currentMax)) {
-	                        this.filterValues[val].map(function (id) {
-	                            var layer = this.layer.displayLayer.getLayer(id);
-	                            if (this.remove) {
-	                                if (layer._icon) {
-	                                    layer._icon.style.display = 'none';
-	                                }
-	                                else if (layer._path) {
-	                                    layer._path.style.display = 'none';
-	                                }
-	                                if (layer._shadow) {
-	                                    layer._shadow.style.display = 'none';
-	                                }
-	                            }
-	                            else {
-	                                if (layer.setOpacity)
-	                                    layer.setOpacity(0.2);
-	                                else
-	                                    layer.setStyle({ fillOpacity: 0.2, opacity: 0.2 });
-	                            }
-	                        }, this);
-	                        this.filteredIndices.push(+val);
-	                    }
-	                    else if (filteredIndex > -1 && (+val >= this.currentMin && +val <= this.currentMax)) {
-	                        this.filterValues[val].map(function (id) {
-	                            var layer = this.layer.displayLayer.getLayer(id);
-	                            if (shouldLayerBeAdded.call(this, layer)) {
+	                    if ((this.previousLower <= +val && +val < this.currentMin) || (this.currentMin <= +val && +val < this.previousLower) ||
+	                        (this.previousUpper < +val && +val <= this.currentMax) || (this.currentMax < +val && +val <= this.previousUpper)) {
+	                        var filteredIndex = this.filteredIndices.indexOf(+val);
+	                        if (filteredIndex === -1 && (+val < this.currentMin || +val > this.currentMax)) {
+	                            this.filterValues[val].map(function (layer) {
 	                                if (this.remove) {
 	                                    if (layer._icon) {
-	                                        layer._icon.style.display = 'block';
+	                                        layer._icon.style.display = 'none';
+	                                        if (layer._shadow) {
+	                                            layer._shadow.style.display = 'none';
+	                                        }
 	                                    }
-	                                    else if (layer._path) {
-	                                        layer._path.style.display = 'block';
+	                                    else if (layer.setStyle) {
+	                                        layer._path.style.display = 'none';
 	                                    }
-	                                    if (layer._shadow) {
-	                                        layer._shadow.style.display = 'block';
+	                                    else if (layer.options.icon) {
+	                                        layer.options.icon.options.className += ' marker-hidden';
+	                                        layer.setIcon(layer.options.icon);
 	                                    }
 	                                }
 	                                else {
 	                                    if (layer.setOpacity)
-	                                        layer.setOpacity(this.layer.colorOptions.fillOpacity);
+	                                        layer.setOpacity(0.2);
 	                                    else
-	                                        layer.setStyle({ fillOpacity: this.layer.colorOptions.fillOpacity, opacity: this.layer.colorOptions.opacity });
+	                                        layer.setStyle({ fillOpacity: 0.2, opacity: 0.2 });
 	                                }
-	                            }
-	                        }, this);
-	                        this.filteredIndices.splice(filteredIndex, 1);
+	                            }, this);
+	                            this.filteredIndices.push(+val);
+	                        }
+	                        else if (filteredIndex > -1 && (+val >= this.currentMin && +val <= this.currentMax)) {
+	                            this.filterValues[val].map(function (layer) {
+	                                if (shouldLayerBeAdded.call(this, layer)) {
+	                                    if (this.remove) {
+	                                        if (layer._icon) {
+	                                            layer._icon.style.display = 'block';
+	                                            if (layer._shadow) {
+	                                                layer._shadow.style.display = 'block';
+	                                            }
+	                                        }
+	                                        else if (layer._path) {
+	                                            layer._path.style.display = 'block';
+	                                        }
+	                                        else if (layer.options.icon) {
+	                                            layer.options.icon.options.className = layer.options.icon.options.className.replace(' marker-hidden', '');
+	                                            layer.setIcon(layer.options.icon);
+	                                        }
+	                                    }
+	                                    else {
+	                                        if (layer.setOpacity)
+	                                            layer.setOpacity(this.layer.colorOptions.fillOpacity);
+	                                        else
+	                                            layer.setStyle({ fillOpacity: this.layer.colorOptions.fillOpacity, opacity: this.layer.colorOptions.opacity });
+	                                    }
+	                                }
+	                            }, this);
+	                            this.filteredIndices.splice(filteredIndex, 1);
+	                        }
 	                    }
 	                }
+	                this.layer.refreshCluster();
 	            }
 	            else {
 	                var arr_1 = [];
@@ -60402,6 +60414,8 @@
 	                }
 	                this.layer.displayLayer.setLatLngs(arr_1);
 	            }
+	            this.previousLower = this.currentMin;
+	            this.previousUpper = this.currentMax;
 	        }
 	        function shouldLayerBeAdded(layer) {
 	            var _this = this;
@@ -73927,7 +73941,7 @@
 	    };
 	    OnScreenFilter.prototype.render = function () {
 	        var _this = this;
-	        return React.createElement(Draggable, {handle: '.filterhead'}, React.createElement("div", {className: 'filter'}, React.createElement("h3", {className: 'filterhead'}, this.props.state.title), this.renderSteps.call(this), React.createElement("div", {style: { display: 'inline-flex' }}, React.createElement("input", {type: 'number', style: { width: '70px' }, value: this.props.state.currentMin.toFixed(0), onChange: this.onCurrentMinChange}), React.createElement(Slider, {className: 'horizontal-slider', onChange: this.onFilterScaleChange, value: [this.props.state.currentMin, this.props.state.currentMax], min: this.props.state.totalMin - 1, max: this.props.state.totalMax + 1, withBars: true}, React.createElement("div", {className: 'minHandle'}), React.createElement("div", {className: 'maxHandle'})), React.createElement("input", {type: 'number', style: { width: '70px' }, value: this.props.state.currentMax.toFixed(0), onChange: this.onCurrentMaxChange}), React.createElement("div", {style: { display: 'inline-block', cursor: 'pointer' }, onClick: function () {
+	        return React.createElement(Draggable, {handle: '.filterhead'}, React.createElement("div", {className: 'filter'}, React.createElement("h3", {className: 'filterhead'}, this.props.state.title), this.renderSteps.call(this), React.createElement("div", {style: { display: 'inline-flex' }}, React.createElement("input", {type: 'number', style: { width: '70px' }, value: this.props.state.currentMin.toFixed(0), onChange: this.onCurrentMinChange}), React.createElement(Slider, {className: 'horizontal-slider', onAfterChange: this.onFilterScaleChange, value: [this.props.state.currentMin, this.props.state.currentMax], min: this.props.state.totalMin - 1, max: this.props.state.totalMax + 1, withBars: true}, React.createElement("div", {className: 'minHandle'}), React.createElement("div", {className: 'maxHandle'})), React.createElement("input", {type: 'number', style: { width: '70px' }, value: this.props.state.currentMax.toFixed(0), onChange: this.onCurrentMaxChange}), React.createElement("div", {style: { display: 'inline-block', cursor: 'pointer' }, onClick: function () {
 	            _this.props.state.lockDistance = !_this.props.state.lockDistance;
 	        }}, React.createElement("i", {style: { color: 'cecece', fontSize: 20, padding: 4 }, className: !this.props.state.lockDistance ? 'fa fa-unlock-alt' : 'fa fa-lock'})))));
 	    };
