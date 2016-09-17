@@ -64,7 +64,7 @@ export class AppState {
     map: L.Map;
 }
 
-/** The state to be saved when exportin a map to a file*/
+/** The state to be saved when exporting a map to a file*/
 export class SaveState {
     baseLayerId: 'string';
     /** The layers of the map.*/

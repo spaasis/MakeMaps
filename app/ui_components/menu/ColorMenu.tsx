@@ -5,7 +5,7 @@ import { ColorScheme } from './ColorScheme';
 let Modal = require('react-modal');
 let chroma = require('chroma-js');
 import { AppState } from '../../stores/States';
-import { Layer, ColorOptions } from '../../stores/Layer';
+import { Layer, ColorOptions, IHeader } from '../../stores/Layer';
 import { LayerTypes, SymbolTypes, CalculateLimits } from "../../common_items/common";
 import { observer } from 'mobx-react';
 
@@ -45,33 +45,18 @@ export class ColorMenu extends React.Component<{
         this.props.state.colorMenuState.startColor = hex;
     }
 
-    onChoroVariableChange = (e) => {
-        this.props.state.editingLayer.colorOptions.colorField = e.label;
-        this.calculateValues();
-    }
-    onSchemeChange = (e) => {
-        this.props.state.editingLayer.colorOptions.colorScheme = e.value;
-        this.calculateValues();
-    }
     onOpacityChange = (e) => {
         let val: number = e.target.valueAsNumber;
         let layer = this.props.state.editingLayer;
         if (layer.colorOptions.opacity !== val || layer.colorOptions.fillOpacity !== val) {
             layer.colorOptions.opacity = e.target.valueAsNumber;
             layer.colorOptions.fillOpacity = e.target.valueAsNumber;
-            layer.refresh();
+            if (this.props.state.autoRefresh)
+                layer.refresh();
         }
-    }
-    onStepsChange = (e) => {
-        this.props.state.editingLayer.colorOptions.steps = e.target.valueAsNumber;
-        this.calculateValues();
     }
     onModeChange = (mode) => {
         this.props.state.editingLayer.colorOptions.mode = mode;
-        this.calculateValues();
-    }
-    onRevertChange = (e) => {
-        this.props.state.editingLayer.colorOptions.revert = e.target.checked;
         this.calculateValues();
     }
     onCustomSchemeChange = (e) => {
@@ -104,7 +89,7 @@ export class ColorMenu extends React.Component<{
     onCustomLimitChange = (step: number, e) => {
         let layer = this.props.state.editingLayer;
         let val = (e.currentTarget as any).valueAsNumber;
-        if (step === 0 && val > layer.values[layer.colorOptions.colorField][0])//the lowest limit cannot be increased, since this would lead to some items not having a color
+        if (step === 0 && val > layer.values[layer.colorOptions.colorField.value][0])//the lowest limit cannot be increased, since this would lead to some items not having a color
             return
         else
             layer.colorOptions.limits[step] = val;
@@ -148,7 +133,7 @@ export class ColorMenu extends React.Component<{
      */
     calculateValues = () => {
         let lyr: Layer = this.props.state.editingLayer;
-        let field: string = lyr.colorOptions.colorField;
+        let field: string = lyr.colorOptions.colorField.value;
         let uniqueValues: number[] = lyr.values[field].filter(function(e, i, arr) {
             return arr.lastIndexOf(e) === i;
         });
@@ -267,7 +252,7 @@ export class ColorMenu extends React.Component<{
                                 width: 100,
                             }}
                             onClick={function(e) { e.stopPropagation(); } }
-                            step='any'/>
+                            step={1 * 10 ** (-layer.colorOptions.colorField.decimalAccuracy)}/>
 
                     </li>);
                 row++;
@@ -382,7 +367,10 @@ export class ColorMenu extends React.Component<{
                                     <label>Select the color variable</label>
                                     <Select
                                         options={layer.numberHeaders}
-                                        onChange={this.onChoroVariableChange}
+                                        onChange={(e: IHeader) => {
+                                            this.props.state.editingLayer.colorOptions.colorField = e;
+                                            this.calculateValues();
+                                        } }
                                         value={col.colorField}
                                         clearable={false}
                                         />
@@ -412,14 +400,20 @@ export class ColorMenu extends React.Component<{
                                                 options = {_gradientOptions}
                                                 optionRenderer={this.renderScheme}
                                                 valueRenderer = {this.renderScheme}
-                                                onChange={this.onSchemeChange}
+                                                onChange={(e) => {
+                                                    this.props.state.editingLayer.colorOptions.colorScheme = e.value;
+                                                    this.calculateValues();
+                                                } }
                                                 value={col.colorScheme}
                                                 />
                                             <label htmlFor='revertSelect'>Revert</label>
                                             <input
                                                 id='revertSelect'
                                                 type='checkbox'
-                                                onChange={this.onRevertChange}
+                                                onChange={(e) => {
+                                                    this.props.state.editingLayer.colorOptions.revert = (e.target as any).checked;
+                                                    this.calculateValues();
+                                                } }
                                                 checked={col.revert}/>
                                         </div>
                                     }
@@ -429,7 +423,10 @@ export class ColorMenu extends React.Component<{
                                         max={100}
                                         min={2}
                                         step={1}
-                                        onChange={this.onStepsChange}
+                                        onChange={(e) => {
+                                            this.props.state.editingLayer.colorOptions.steps = (e.target as any).valueAsNumber;
+                                            this.calculateValues();
+                                        } }
                                         value={col.steps}/>
                                     {col.useCustomScheme ?
                                         <div>

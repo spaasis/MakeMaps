@@ -53,7 +53,7 @@ export class FileUploadView extends React.Component<{
             let head, delim;
             [head, delim] = _fileModel.ParseHeadersFromCSV(this.props.state.content);
             for (let i of head) {
-                layer.headers.push({ value: i.name, label: i.name, type: i.type });
+                layer.headers.push({ value: i.name, label: i.name, type: i.type, decimalAccuracy: 0 });
             }
             this.props.state.delimiter = delim;
         }

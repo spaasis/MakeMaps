@@ -122,12 +122,6 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
                         <i style={{ color: 'cecece', fontSize: 20, padding: 4 }} className={!this.props.state.lockDistance ? 'fa fa-unlock-alt' : 'fa fa-lock'}/>
                     </div>
                 </div>
-                {
-
-                    // <label>Lock distance
-                    //     <input type='checkbox' checked={this.props.state.lockDistance} onChange={this.onLockDistanceChange}/>
-                    // </label>
-                }
             </div>
         </Draggable>
     }

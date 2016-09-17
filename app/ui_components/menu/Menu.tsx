@@ -116,7 +116,7 @@ export class MakeMapsMenu extends React.Component<{
                         <MenuEntry text="Download" id={8} active={this.props.state.visibleMenu == 8} fa='download' onClick = {this.onActiveMenuChange}/>
                     </div >
                     <div className={this.props.state.visibleMenu > 0 ? 'menuOpen' : document.getElementsByClassName('menuOpen').length > 0 ? 'menuClose' : ''}
-                        style ={{ float: 'right', width: this.props.state.visibleMenu > 0 ? 250 : 0, height: '100%', background: '#ededed' }}>
+                        style ={{ float: 'right', width: this.props.state.visibleMenu > 0 ? 250 : 0, height: '100%', overflowY: 'auto', background: '#ededed' }}>
 
                         {
                             this.props.state.visibleMenu !== 0 && this.props.state.visibleMenu !== 1 && this.props.state.visibleMenu !== 4 && this.props.state.visibleMenu !== 5 && this.props.state.visibleMenu !== 8 ?

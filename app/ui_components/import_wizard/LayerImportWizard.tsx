@@ -9,7 +9,7 @@ import { LayerTypes } from "../../common_items/common";
 let _fileModel = new FilePreProcessModel();
 
 import { ImportWizardState, AppState } from '../../stores/States';
-import { Layer } from '../../stores/Layer';
+import { Layer, IHeader } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 
 @observer
@@ -46,10 +46,10 @@ export class LayerImportWizard extends React.Component<{
                     let isnumber = !isNaN(parseFloat(props[h]));
                     if (isnumber)
                         props[h] = +props[h];
-                    let header = state.layer.headers.slice().filter(function(e) { return e.label === h })[0];
+                    let header = state.layer.headers.slice().filter(function(e) { return e.value === h })[0];
 
                     if (!header) {
-                        state.layer.headers.push({ value: h, label: h, type: isnumber ? 'number' : 'string' });
+                        state.layer.headers.push(new IHeader({ value: h, type: isnumber ? 'number' : 'string' }));
                     }
                     else {
                         if (header.type === 'number' && !isnumber) { //previously marked as number but new value is text => mark as string

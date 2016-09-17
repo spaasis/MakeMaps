@@ -4,6 +4,7 @@ let proj4 = require('proj4');
 let togeojson = require('togeojson');
 let wkt = require('wellknown');
 let osmtogeojson = require('osmtogeojson');
+import { IHeader } from '../stores/Layer';
 // declare function shp(any): { any }
 export class FilePreProcessModel {
 
@@ -50,6 +51,8 @@ export class FilePreProcessModel {
      * @param  latField  latitude field name
      * @param  lonField  longitude field name
      * @param  delim     delimiter
+     * @param  coordSystem coordinate system
+     * @param  headers  layer headers
      * @return           GeoJSON object
      */
     public ParseCSVToGeoJSON(input: string, latField: string, lonField: string, delim: string, coordSystem: string, headers: IHeader[]) {

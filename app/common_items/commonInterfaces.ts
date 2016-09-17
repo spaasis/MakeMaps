@@ -40,15 +40,6 @@ interface ISelectData {
     label: string
 }
 
-/** The interface for imported data columns/headers/property names */
-interface IHeader extends ISelectData {
-    /**  The data type of a field. Number/string (datetime and others TODO)*/
-    type: string,
-    decimalAccuracy: number,
-}
-
-
-
 interface IIcon {
     /** If creating Icon symbols, the font-awesome class name to display*/
     fa?: string,

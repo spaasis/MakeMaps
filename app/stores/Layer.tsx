@@ -59,7 +59,7 @@ export class Layer {
             return {
                 fillOpacity: opts.fillOpacity,
                 opacity: opts.opacity,
-                fillColor: opts.colors.slice().length == 0 || !opts.useMultipleFillColors ? opts.fillColor : GetItemBetweenLimits(opts.limits.slice(), opts.colors.slice(), feature.properties[opts.colorField]),
+                fillColor: opts.colors.slice().length == 0 || !opts.useMultipleFillColors ? opts.fillColor : GetItemBetweenLimits(opts.limits.slice(), opts.colors.slice(), feature.properties[opts.colorField.value]),
                 color: opts.color,
                 weight: 1,
             }
@@ -158,10 +158,13 @@ export class Layer {
     /**  Manually trigger popup update without refreshing the layer*/
     refreshPopUps() {
         if (this.displayLayer && this.popupHeaders.slice().length > 0) {
+            console.time('refreshPopUps');
             this.displayLayer.eachLayer(function(l: any) {
                 addPopups.call(this, l.feature, l);
             }, this)
+            console.timeEnd('refreshPopUps');
         }
+
     }
 
     /** Manually trigger cluster update*/
@@ -179,7 +182,7 @@ export class Layer {
         }
 
         let values = (this.geoJSON as any).features.map(function(item) {
-            return item.properties[opts.colorField];
+            return item.properties[opts.colorField.value];
         });
         let colors = [];
         opts.limits = chroma.limits(values, opts.mode, opts.steps);
@@ -229,7 +232,7 @@ export class Layer {
             let marker = markers[i];
             if (marker.options.icon && marker.options.icon.options.className.indexOf('marker-hidden') > -1)
                 continue;
-            let val = marker.feature.properties[col.colorField];
+            let val = marker.feature.properties[col.colorField.value];
             if (!isNaN(parseFloat(val))) {//if is numeric
                 values.push(+val);
                 sum += val;
@@ -237,7 +240,7 @@ export class Layer {
 
             count++;
         }
-        let avg = values.length > 0 ? (sum / values.length).toFixed(0) : 0;
+        let avg = values.length > 0 ? (sum / values.length).toFixed(col.colorField.decimalAccuracy) : 0;
 
         let fillColor;
         if (!col.colorField || !col.useMultipleFillColors) {
@@ -272,13 +275,12 @@ export class Layer {
         if (count > 0) {
             let popupContent =
                 (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '') +
-                (clu.showSum && col.colorField && col.useMultipleFillColors ? (clu.sumText + ' ' + sum + '<br/>') : '') +
+                (clu.showSum && col.colorField && col.useMultipleFillColors ? (clu.sumText + ' ' + sum.toFixed(col.colorField.decimalAccuracy) + '<br/>') : '') +
                 (clu.showAvg && col.colorField && col.useMultipleFillColors ? (clu.avgText + ' ' + avg + '<br/>') : '') +
                 'Click or zoom to expand';
             cluster.bindPopup(popupContent);
         }
         // let center = cluster.getBounds().getCenter();
-        // console.log(cluster.getBounds().getNorth);
         // let popup = L.popup({ offset: new L.Point(60, cluster.getBounds().getNorth()) }).setContent(popupContent);
         // cluster.bindPopup(popup);
         return L.divIcon({
@@ -292,13 +294,13 @@ export class Layer {
 function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.LatLng): L.Marker {
 
     if (col.colors && col.limits)
-        col.fillColor = col.colors.slice().length == 0 || !col.useMultipleFillColors ? col.fillColor : GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField]);
+        col.fillColor = col.colors.slice().length == 0 || !col.useMultipleFillColors ? col.fillColor : GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value]);
     let borderColor = col.color;
-    let x: number = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-    let y: number = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+    let x: number = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+    let y: number = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
     switch (sym.symbolType) {
         case SymbolTypes.Icon:
-            let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), feature.properties[sym.iconField]);
+            let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), feature.properties[sym.iconField.value]);
             let customIcon = L.ExtraMarkers.icon({
                 icon: icon ? icon.fa : sym.icons[0].fa,
                 prefix: 'fa',
@@ -355,10 +357,10 @@ function getScaleSymbolMaxValues() {
     let maxXradius, minXradius, maxYradius, minYradius;
     let sym: SymbolOptions = this.symbolOptions;
     this.displayLayer.eachLayer(function(layer) {
-        let xVal = layer.feature.properties[sym.sizeXVar];
-        let yVal = layer.feature.properties[sym.sizeYVar];
         let r = 10;
         if (sym.sizeXVar) {
+            let xVal = layer.feature.properties[sym.sizeXVar.value];
+
             r = GetSymbolSize(xVal, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit);
             //calculate min and max values and -size
             if (!sym.actualMaxXValue && !sym.actualMinXValue) {
@@ -387,6 +389,7 @@ function getScaleSymbolMaxValues() {
             }
         }
         if (sym.sizeYVar) {
+            let yVal = layer.feature.properties[sym.sizeYVar.value];
             r = GetSymbolSize(yVal, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit);
             //calculate min and max values and -size
             if (!sym.actualMaxYValue && !sym.actualMinYValue) {
@@ -553,12 +556,14 @@ function createHeatLayer(l: Layer) {
 
 function addPopups(feature, layer: L.GeoJSON) {
     let popupContent = '';
-    let headers = this.popupHeaders.slice();
+
+    let headers: IHeader[] = this.popupHeaders.slice();
+
     for (let h in headers) {
         let header = headers[h];
         let prop = feature.properties[header.value];
         if (prop != undefined) {
-            popupContent += header.label + ": " + prop;
+            popupContent += header.label + ": " + (header.type == 'number' ? prop.toFixed(header.decimalAccuracy) : prop);
             popupContent += "<br />";
         }
     }
@@ -581,8 +586,8 @@ function addPopups(feature, layer: L.GeoJSON) {
 
 
 export class ColorOptions implements L.PathOptions {
-    /** If not empty, use choropleth coloring */
-    @observable colorField: string;
+    /** Field to color layers by*/
+    @observable colorField: IHeader;
     /** Is the scale user-made?*/
     @observable useCustomScheme: boolean;
     /** Color name array to use in choropleth*/
@@ -607,11 +612,11 @@ export class ColorOptions implements L.PathOptions {
     @observable fillOpacity: number = 0.8;
     /** Border opacity. Default 0.8*/
     @observable opacity: number = 0.8;
-
+    /** Whether to use choropleth colors/user-defined color steps or not*/
     @observable useMultipleFillColors: boolean;
-
+    /** The l.heat radius, in meters */
     @observable heatMapRadius: number = 25;
-
+    /** Chart symbol colors*/
     @observable chartColors: { [field: string]: string; } = undefined;
 
     /**
@@ -651,14 +656,14 @@ export class SymbolOptions {
         return this.icons.slice().length;
     }
 
-    /** Name of the field by which to calculate icon values*/
-    @observable iconField: string;
+    /** Field by which to calculate icon values*/
+    @observable iconField: IHeader;
     /** The steps of the field values by which to choose the icons */
     @observable iconLimits: number[];
-    /** The name of the field to scale size x-axis by*/
-    @observable sizeXVar: string;
-    /** The name of the field to scale size y-axis by*/
-    @observable sizeYVar: string;
+    /** The field to scale size x-axis by*/
+    @observable sizeXVar: IHeader;
+    /** The field to scale size y-axis by*/
+    @observable sizeYVar: IHeader;
     /** The name of the field to scale block size by*/
     @observable blockSizeVar: string;
     /** The minimum allowed size when scaling*/
@@ -735,5 +740,23 @@ export class ClusterOptions {
         this.showAvg = prev && prev.showAvg || false;
         this.sumText = prev && prev.sumText || 'sum:';
 
+    }
+}
+
+/** The interface for imported data columns/headers/property names */
+export class IHeader {
+    /** Actual data value. Used to, for example, get properties from GeoJSON layers*/
+    @observable value: string = '';
+    /** Display text. Can be modified by the user*/
+    @observable label?: string = '';
+    /**  The data type of a field. Number/string (datetime and others TODO)*/
+    @observable type: 'string' | 'number';
+    @observable decimalAccuracy?: number;
+
+    constructor(prev?: IHeader) {
+        this.value = prev && prev.value || '';
+        this.label = prev && prev.label || this.value && this.value[0].toUpperCase() + this.value.slice(1);;
+        this.type = prev && prev.type || 'string';
+        this.decimalAccuracy = prev && prev.decimalAccuracy || 0;
     }
 }

@@ -3,7 +3,7 @@ let Modal = require('react-modal');
 let Select = require('react-select');
 import { SymbolTypes, CalculateLimits } from '../../common_items/common';
 import { AppState, SymbolMenuState } from '../../stores/States';
-import { Layer, SymbolOptions } from '../../stores/Layer';
+import { Layer, SymbolOptions, IHeader } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 
 @observer
@@ -30,7 +30,7 @@ export class SymbolMenu extends React.Component<{
     onXVariableChange = (val) => {
         let sym = this.props.state.editingLayer.symbolOptions;
 
-        sym.sizeXVar = val ? val.value : '';
+        sym.sizeXVar = val ? val : '';
         sym.sizeMultiplier = sym.sizeMultiplier ? sym.sizeMultiplier : 1;
         if (this.props.state.autoRefresh)
             this.props.state.editingLayer.refresh();
@@ -39,7 +39,7 @@ export class SymbolMenu extends React.Component<{
 
     onYVariableChange = (val) => {
         let sym = this.props.state.editingLayer.symbolOptions;
-        sym.sizeYVar = val ? val.value : '';
+        sym.sizeYVar = val ? val : '';
         sym.sizeMultiplier = sym.sizeMultiplier ? sym.sizeMultiplier : 1;
         if (this.props.state.autoRefresh)
             this.props.state.editingLayer.refresh();
@@ -91,7 +91,7 @@ export class SymbolMenu extends React.Component<{
         sym.icons = use ? sym.icons : [sym.icons.slice()[0]];
         sym.iconLimits = use ? sym.iconLimits : [];
         if (use) {
-            this.calculateIconValues(sym.iconField, sym.iconCount)
+            this.calculateIconValues(sym.iconField.value, sym.iconCount)
         }
         if (this.props.state.autoRefresh)
             this.props.state.editingLayer.refresh();
@@ -100,7 +100,7 @@ export class SymbolMenu extends React.Component<{
 
     onIconFieldChange = (val: IHeader) => {
         let layer = this.props.state.editingLayer;
-        layer.symbolOptions.iconField = val.value;
+        layer.symbolOptions.iconField = val;
         this.calculateIconValues(val.value, layer.symbolOptions.iconCount);
         if (this.props.state.autoRefresh)
             layer.refresh();
@@ -116,7 +116,7 @@ export class SymbolMenu extends React.Component<{
             layer.symbolOptions.icons.pop();
         }
         if (layer.symbolOptions.iconCount > 0) {
-            this.calculateIconValues(layer.symbolOptions.iconField, layer.symbolOptions.iconCount)
+            this.calculateIconValues(layer.symbolOptions.iconField.value, layer.symbolOptions.iconCount)
         }
         if (this.props.state.autoRefresh)
             layer.refresh();
@@ -433,6 +433,7 @@ export class SymbolMenu extends React.Component<{
                             <br/>
 
                         </label>
+                        <br/>
                         <i>TIP: hover over symbol segments to see corresponding value</i>
                     </div>
 
@@ -545,11 +546,12 @@ export class SymbolMenu extends React.Component<{
     }
 
     renderSteps() {
+        let layer = this.props.state.editingLayer;
         let rows = [];
         let steps: number[] = [];
-        for (let i in this.props.state.editingLayer.symbolOptions.iconLimits.slice()) {
-            if (+i !== this.props.state.editingLayer.symbolOptions.iconLimits.slice().length - 1) {
-                let step: number = this.props.state.editingLayer.symbolOptions.iconLimits[i];
+        for (let i in layer.symbolOptions.iconLimits.slice()) {
+            if (+i !== layer.symbolOptions.iconLimits.slice().length - 1) {
+                let step: number = layer.symbolOptions.iconLimits[i];
                 steps.push(step);
             }
         }
@@ -567,8 +569,9 @@ export class SymbolMenu extends React.Component<{
 
                         }}
                         onChange={this.onStepLimitChange.bind(this, row)}
-                        step='any'/>
-                    {this.getIcon(this.props.state.editingLayer.symbolOptions.icons[row].shape, this.props.state.editingLayer.symbolOptions.icons[row].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, row))}
+                        step={1 * 10 ** (-layer.symbolOptions.iconField.decimalAccuracy)}
+                        />
+                    {this.getIcon(layer.symbolOptions.icons[row].shape, layer.symbolOptions.icons[row].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, row))}
                 </li>);
             row++;
         }

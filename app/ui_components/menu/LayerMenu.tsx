@@ -133,28 +133,38 @@ export class LayerMenu extends React.Component<{
                     clearable={false}
                     />
                 {menuState.editingLayer ?
-                    this.renderH.call(this)
+                    this.renderHeaders.call(this)
                     : null}
 
 
             </div>
         );
     }
-    renderH() {
+    renderHeaders() {
         let arr = [];
         let menuState = this.props.state.layerMenuState;
         let headers = menuState.editingLayer.headers.slice()
         let columnCount = 2;
-        for (let i = 0; i < headers.length; i += columnCount) {
+        for (let i = 0; i < headers.length; i++) {
             let h = headers[i]
 
             arr.push(
                 <tr key={i}>
                     <td>
-                        {h.value}
+                        <input type='text' style={{ width: 120 }}
+                            value={h.label}
+                            onChange={(e) => { h.label = (e.currentTarget as any).value } }
+                            onBlur={(e) => { menuState.editingLayer.refreshPopUps() } }
+                            onKeyPress={(e) => { if (e.charCode == 13) { menuState.editingLayer.refreshPopUps() } } }/>
                     </td>
                     <td>
-                        <input type='text' value={h.label} onChange={(e) => { h.label = (e.currentTarget as any).value } } onBlur={(e) => { menuState.editingLayer.refreshPopUps() } } onKeyPress={(e) => { if (e.charCode == 13) { menuState.editingLayer.refreshPopUps() } } }/>
+                        <input type='number' style={{ width: 40 }}
+                            value={h.decimalAccuracy}
+                            onChange={(e) => { h.decimalAccuracy = (e.currentTarget as any).valueAsNumber; menuState.editingLayer.refreshPopUps(); } }
+                            min={0}
+                            />
+
+
                     </td>
 
                 </tr>
@@ -164,8 +174,8 @@ export class LayerMenu extends React.Component<{
             <table style={{ width: '100%' }}>
                 <tbody>
                     <tr>
-                        <th>Value</th>
-                        <th>Show as</th>
+                        <th>Name</th>
+                        <th>Decimals</th>
                     </tr>
                     {arr.map(function(td) {
                         return td;
@@ -173,30 +183,6 @@ export class LayerMenu extends React.Component<{
                 </tbody>
             </table>
         );
-
-    }
-    renderHeaders() {
-        let arr = [];
-        let menuState = this.props.state.layerMenuState;
-        menuState.editingLayer.headers.map(function(h) {
-            arr.push(
-                <div key={h.value} style={{ display: 'flex', clear: 'both' }}>
-                    <b>{h.value}</b>
-                    <input type='text' value={h.label} onChange={(e) => { h.label = (e.currentTarget as any).value } } onBlur={menuState.editingLayer.refreshPopUps()}/>
-                </div>
-            )
-        });
-
-        return <div>
-            <label>Headers</label>
-            <br/>
-            <label style={{ marginTop: 0, display: 'inline-block', float: 'left' }}>Value</label>
-            <label style={{ marginTop: 0, display: 'inline-block', float: 'right' }}>Display as</label>
-
-            {arr.map(function(r) {
-                return r;
-            })}
-        </div>
 
     }
 
