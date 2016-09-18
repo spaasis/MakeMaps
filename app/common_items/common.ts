@@ -40,13 +40,13 @@ function GetSymbolSize(val: number, sizeMultiplier: number, minSize: number, max
 
 
 /** Calculate a set of limits between a minimum and maximum values*/
-function CalculateLimits(min: number, max: number, count: number) {
+function CalculateLimits(min: number, max: number, count: number, accuracy: number) {
     let limits: number[] = [];
     for (let i = +min; i < max; i += (max - min) / count) {
-        limits.push(+i.toFixed(3));
+        limits.push(+i.toFixed(accuracy));
     }
-    if (limits.indexOf(max) === -1)
-        limits.push(max)
+    if (limits.indexOf(+max.toFixed(accuracy)) === -1)
+        limits.push(+max.toFixed(accuracy))
     return limits;
 }
 

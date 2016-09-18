@@ -149,12 +149,9 @@ export class ColorMenu extends React.Component<{
                 limits = uniqueValues;
             }
             else
-                limits = CalculateLimits(lyr.values[field][0], lyr.values[field][lyr.values[field].length - 1], steps);
+                limits = CalculateLimits(lyr.values[field][0], lyr.values[field][lyr.values[field].length - 1], steps, lyr.colorOptions.colorField.decimalAccuracy);
         }
-        // for (let i in limits) {
-        //     limits[i] = Math.round(limits[i]); //TODO: layer-specific accuracy on decimals. For example two decimal accuracy:  * 100) / 100
-        // }
-        //
+
         let colors: string[];
         if (!lyr.colorOptions.useCustomScheme) {
             colors = chroma.scale(lyr.colorOptions.colorScheme).colors(limits.length - 1);
@@ -205,77 +202,20 @@ export class ColorMenu extends React.Component<{
         return limits;
     }
 
-
     /**  Manually save values when autoRefresh is disabled */
     saveOptions = () => {
         this.props.state.editingLayer.refresh();
-    }
-    renderSteps() {
-        let layer = this.props.state.editingLayer;
-        let limits = layer.colorOptions.limits.slice();
-        let rows = [];
-        let row = 0;
-        if (layer.layerType === LayerTypes.SymbolMap && layer.symbolOptions.symbolType === SymbolTypes.Chart) {
-            for (let i of layer.symbolOptions.chartFields) {
-                rows.push(
-                    <li key={i.label}
-                        style={{ background: layer.colorOptions.chartColors[i.value] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer' }}
-                        onClick={this.toggleColorPick.bind(this, 'chartfield' + i.value)}>
-                        <i style={{ background: 'white', borderRadius: 5 }}>
-                            {i.label}
-                        </i>
-                    </li>);
-                row++;
-            }
-        }
-        else {
-            let steps: number[] = [];
-            for (let i in limits) {
-                if (+i !== limits.length - 1) {
-                    let step: number = limits[i];
-                    steps.push(step);
-                }
-            }
-            for (let i of steps) {
-                rows.push(
-                    <li key={row}
-                        style={{ background: layer.colorOptions.colors[row] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer' }}
-                        onClick={this.toggleColorPick.bind(this, 'step' + row)}>
-
-                        <input
-                            id={row + 'min'}
-                            type='number'
-                            value={limits[row]}
-                            onChange={this.onCustomLimitChange.bind(this, row)}
-                            onBlur={this.onCustomLimitBlur.bind(this, row)}
-                            style={{
-                                width: 100,
-                            }}
-                            onClick={function(e) { e.stopPropagation(); } }
-                            step={1 * 10 ** (-layer.colorOptions.colorField.decimalAccuracy)}/>
-
-                    </li>);
-                row++;
-            }
-        }
-        return <div>
-            <ul id='customSteps' style={{ listStyle: 'none', padding: 0 }}>{rows.map(function(r) { return r })}</ul>
-        </div>
     }
 
     render() {
         let col = this.props.state.editingLayer.colorOptions;
         let layer = this.props.state.editingLayer;
         let state = this.props.state.colorMenuState;
+        let autoRefresh = this.props.state.autoRefresh;
 
         let fillColorBlockStyle = {
             background: col.fillColor,
             color: this.getOppositeColor(col.fillColor),
-            border: '1px solid ' + col.color,
-        }
-        let borderColorBlockStyle = {
-            background: col.color,
-            color: this.getOppositeColor(col.color),
             border: '1px solid ' + col.color,
         }
         let iconTextColorBlockStyle = {
@@ -309,6 +249,113 @@ export class ColorMenu extends React.Component<{
             }
         }
         let isChart = layer.layerType === LayerTypes.SymbolMap && layer.symbolOptions.symbolType === SymbolTypes.Chart;
+
+        //separated some components for readability
+        let colorPicker = <Modal
+            isOpen={state.colorSelectOpen}
+            style={colorSelectStyle}
+            >
+
+            <ColorPicker.SwatchesPicker
+                width={300}
+                height={600}
+                overlowY='auto'
+                color={state.startColor}
+                onChange={this.onColorSelect}
+                />
+            <button
+                className='primaryButton'
+                onClick={this.toggleColorPick.bind(this, state.editing)}
+                style={{ position: 'absolute', left: 80 }}>OK</button>
+        </Modal>;
+
+        let stepModes = <div>
+            <label forHTML='quantiles'>
+                Quantiles
+                <input
+                    type='radio'
+                    onChange={this.onModeChange.bind(this, 'q')}
+                    checked={col.mode === 'q'}
+                    name='mode'
+                    id='quantiles'
+                    />
+                <br/>
+            </label>
+            <label forHTML='kmeans'>
+                K-means
+                <input
+                    type='radio'
+                    onChange={this.onModeChange.bind(this, 'k')}
+                    checked={col.mode === 'k'}
+                    name='mode'
+                    id='kmeans'
+                    />
+                <br/>
+
+            </label>
+            <label forHTML='equidistant'>
+                Equidistant
+                <input
+                    type='radio'
+                    onChange={this.onModeChange.bind(this, 'e')}
+                    checked={col.mode === 'e'}
+                    name='mode'
+                    id='equidistant'
+                    />
+                <br/>
+
+            </label>
+        </div>;
+
+        let colorBlocks = <div>
+            {col.useMultipleFillColors || layer.layerType === LayerTypes.HeatMap || isChart ?
+                null :
+                <div className='colorBlock' style={fillColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'fillColor')}>Fill</div>
+            }
+            {layer.layerType === LayerTypes.HeatMap ? null :
+                <div className='colorBlock'
+                    style={{ background: col.color, border: '1px solid ' + col.color, cursor: 'pointer' }}
+                    onClick={this.toggleColorPick.bind(this, 'borderColor')}>Border
+                    <input type='number' min={0} max={15} step={1} value={col.weight} style={{ position: 'absolute', right: 0, width: 40 }}
+                        onClick={(e) => { e.stopPropagation(); } }
+                        onChange={(e) => { col.weight = (e.currentTarget as any).valueAsNumber; if (autoRefresh) layer.refresh(); } }/>
+                </div>
+            }
+            {layer.layerType === LayerTypes.SymbolMap && layer.symbolOptions.symbolType === SymbolTypes.Icon ?
+                <div className='colorBlock' style={iconTextColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'iconTextColor')}>Icon</div>
+                : null
+            }
+
+        </div>
+
+        let colorSchemeOptions = <div>
+            Or
+            <br/>
+            <label>Select a color scheme</label>
+            <Select
+                clearable = {false}
+                searchable = {false}
+                options = {_gradientOptions}
+                optionRenderer={this.renderScheme}
+                valueRenderer = {this.renderScheme}
+                onChange={(e) => {
+                    this.props.state.editingLayer.colorOptions.colorScheme = e.value;
+                    this.calculateValues();
+                } }
+                value={col.colorScheme}
+                />
+            <label htmlFor='revertSelect'>Revert</label>
+            <input
+                id='revertSelect'
+                type='checkbox'
+                onChange={(e) => {
+                    this.props.state.editingLayer.colorOptions.revert = (e.target as any).checked;
+                    this.calculateValues();
+                } }
+                checked={col.revert}/>
+        </div>
+
+
         return (
             <div className="makeMaps-options">
                 {layer.layerType === LayerTypes.ChoroplethMap || layer.layerType === LayerTypes.HeatMap || isChart ? null :
@@ -317,45 +364,18 @@ export class ColorMenu extends React.Component<{
                             id='multipleSelect'
                             type='checkbox'
                             onChange={(e) => {
-                                layer.colorOptions.useMultipleFillColors = (e.target as any).checked;
-                                if (this.props.state.autoRefresh)
+                                col.useMultipleFillColors = (e.target as any).checked;
+                                if (autoRefresh)
                                     layer.refresh();
                             } }
                             checked={col.useMultipleFillColors}/>
                     </label>
                 }
-                {col.useMultipleFillColors || layer.layerType === LayerTypes.HeatMap || isChart ?
-                    null :
-                    <div className='colorBlock' style={fillColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'fillColor')}>Fill</div>
-                }
-                {layer.layerType === LayerTypes.HeatMap ? null :
-                    <div className='colorBlock' style={borderColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'borderColor')}>Border</div>
-                }
-                {layer.layerType === LayerTypes.SymbolMap && layer.symbolOptions.symbolType === SymbolTypes.Icon ?
-                    <div className='colorBlock' style={iconTextColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'iconTextColor')}>Icon</div>
-                    : null
-                }
-
+                {colorBlocks}
                 <label>Opacity
                     <input type='number' max={1} min={0} step={0.1} onChange={this.onOpacityChange} value={col.opacity}/>
                 </label>
-                <Modal
-                    isOpen={state.colorSelectOpen}
-                    style={colorSelectStyle}
-                    >
-
-                    <ColorPicker.SwatchesPicker
-                        width={300}
-                        height={600}
-                        overlowY='auto'
-                        color={state.startColor}
-                        onChange={this.onColorSelect}
-                        />
-                    <button
-                        className='primaryButton'
-                        onClick={this.toggleColorPick.bind(this, state.editing)}
-                        style={{ position: 'absolute', left: 80 }}>OK</button>
-                </Modal>
+                {colorPicker}
                 {isChart ? <div>
                     {this.renderSteps()}
                 </div> : null}
@@ -378,7 +398,6 @@ export class ColorMenu extends React.Component<{
                             }
 
                             {col.colorField ?
-
                                 <div>
                                     <label htmlFor='customScale'>Set custom scheme</label>
                                     <input
@@ -390,32 +409,7 @@ export class ColorMenu extends React.Component<{
                                     {col.useCustomScheme ?
                                         null
                                         :
-                                        <div>
-                                            Or
-                                            <br/>
-                                            <label>Select a color scheme</label>
-                                            <Select
-                                                clearable = {false}
-                                                searchable = {false}
-                                                options = {_gradientOptions}
-                                                optionRenderer={this.renderScheme}
-                                                valueRenderer = {this.renderScheme}
-                                                onChange={(e) => {
-                                                    this.props.state.editingLayer.colorOptions.colorScheme = e.value;
-                                                    this.calculateValues();
-                                                } }
-                                                value={col.colorScheme}
-                                                />
-                                            <label htmlFor='revertSelect'>Revert</label>
-                                            <input
-                                                id='revertSelect'
-                                                type='checkbox'
-                                                onChange={(e) => {
-                                                    this.props.state.editingLayer.colorOptions.revert = (e.target as any).checked;
-                                                    this.calculateValues();
-                                                } }
-                                                checked={col.revert}/>
-                                        </div>
+                                        colorSchemeOptions
                                     }
                                     <label>Steps</label>
                                     <input
@@ -434,43 +428,7 @@ export class ColorMenu extends React.Component<{
                                             {this.renderSteps()}
                                         </div>
                                         :
-                                        <div>
-                                            <label forHTML='quantiles'>
-                                                Quantiles
-                                                <input
-                                                    type='radio'
-                                                    onChange={this.onModeChange.bind(this, 'q')}
-                                                    checked={col.mode === 'q'}
-                                                    name='mode'
-                                                    id='quantiles'
-                                                    />
-                                                <br/>
-                                            </label>
-                                            <label forHTML='kmeans'>
-                                                K-means
-                                                <input
-                                                    type='radio'
-                                                    onChange={this.onModeChange.bind(this, 'k')}
-                                                    checked={col.mode === 'k'}
-                                                    name='mode'
-                                                    id='kmeans'
-                                                    />
-                                                <br/>
-
-                                            </label>
-                                            <label forHTML='equidistant'>
-                                                Equidistant
-                                                <input
-                                                    type='radio'
-                                                    onChange={this.onModeChange.bind(this, 'e')}
-                                                    checked={col.mode === 'e'}
-                                                    name='mode'
-                                                    id='equidistant'
-                                                    />
-                                                <br/>
-
-                                            </label>
-                                        </div>
+                                        stepModes
                                     }
                                     {layer.layerType === LayerTypes.HeatMap ?
                                         <div>
@@ -481,7 +439,8 @@ export class ColorMenu extends React.Component<{
                                                 min={10}
                                                 step={1}
                                                 onChange={(e) => {
-                                                    layer.colorOptions.heatMapRadius = (e.currentTarget as any).valueAsNumber;
+                                                    if (autoRefresh)
+                                                        layer.colorOptions.heatMapRadius = (e.currentTarget as any).valueAsNumber;
                                                 } }
                                                 value={col.heatMapRadius}/>
                                         </div>
@@ -493,13 +452,65 @@ export class ColorMenu extends React.Component<{
                         </div>
                         : null
                 }
-                {this.props.state.autoRefresh ? null :
+                {autoRefresh ? null :
                     <button className='menuButton' onClick={this.saveOptions}>Refresh map</button>
                 }
             </div >
         );
     }
 
+    renderSteps() {
+        let layer = this.props.state.editingLayer;
+        let limits = layer.colorOptions.limits.slice();
+        let rows = [];
+        let row = 0;
+        if (layer.layerType === LayerTypes.SymbolMap && layer.symbolOptions.symbolType === SymbolTypes.Chart) {
+            for (let i of layer.symbolOptions.chartFields) {
+                rows.push(
+                    <li key={i.label}
+                        style={{ background: layer.colorOptions.chartColors[i.value] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer' }}
+                        onClick={this.toggleColorPick.bind(this, 'chartfield' + i.value)}>
+                        <i style={{ background: 'white', borderRadius: 5 }}>
+                            {i.label}
+                        </i>
+                    </li>);
+                row++;
+            }
+        }
+        else {
+            let steps: number[] = [];
+            for (let i in limits) {
+                if (+i !== limits.length - 1) {
+                    let step: number = limits[i];
+                    steps.push(step);
+                }
+            }
+            for (let i of steps) {
+                rows.push(
+                    <li key={row}
+                        style={{ background: layer.colorOptions.colors[row] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer', height: 32 }}
+                        onClick={this.toggleColorPick.bind(this, 'step' + row)}>
+
+                        <input
+                            id={row + 'min'}
+                            type='number'
+                            value={limits[row]}
+                            onChange={this.onCustomLimitChange.bind(this, row)}
+                            onBlur={this.onCustomLimitBlur.bind(this, row)}
+                            style={{
+                                width: 100,
+                            }}
+                            onClick={function(e) { e.stopPropagation(); } }
+                            step={1 * 10 ** (-layer.colorOptions.colorField.decimalAccuracy)}/>
+
+                    </li>);
+                row++;
+            }
+        }
+        return <div>
+            <ul id='customSteps' style={{ listStyle: 'none', padding: 0 }}>{rows.map(function(r) { return r })}</ul>
+        </div>
+    }
 }
 const _gradientOptions: { value: string }[] =
     [

@@ -90,8 +90,8 @@ export class SymbolMenu extends React.Component<{
         this.props.state.editingLayer.symbolOptions.useMultipleIcons = use;
         sym.icons = use ? sym.icons : [sym.icons.slice()[0]];
         sym.iconLimits = use ? sym.iconLimits : [];
-        if (use) {
-            this.calculateIconValues(sym.iconField.value, sym.iconCount)
+        if (use && sym.iconField) {
+            this.calculateIconValues(sym.iconField.value, sym.iconCount, sym.iconField.decimalAccuracy)
         }
         if (this.props.state.autoRefresh)
             this.props.state.editingLayer.refresh();
@@ -101,22 +101,23 @@ export class SymbolMenu extends React.Component<{
     onIconFieldChange = (val: IHeader) => {
         let layer = this.props.state.editingLayer;
         layer.symbolOptions.iconField = val;
-        this.calculateIconValues(val.value, layer.symbolOptions.iconCount);
+        this.calculateIconValues(val.value, layer.symbolOptions.iconCount, val.decimalAccuracy);
         if (this.props.state.autoRefresh)
             layer.refresh();
 
     }
     onIconStepCountChange = (amount: number) => {
-        let layer = this.props.state.editingLayer;
 
+        let layer = this.props.state.editingLayer;
+        let opt = layer.symbolOptions
         if (amount == 1) {
-            layer.symbolOptions.icons.push({ shape: 'circle', fa: faIcons[Math.floor(Math.random() * faIcons.length)] }); //add random icon
+            opt.icons.push({ shape: 'circle', fa: faIcons[Math.floor(Math.random() * faIcons.length)] }); //add random icon
         }
-        else if (amount == -1 && layer.symbolOptions.iconCount > 1) {
-            layer.symbolOptions.icons.pop();
+        else if (amount == -1 && opt.iconCount > 1) {
+            opt.icons.pop();
         }
-        if (layer.symbolOptions.iconCount > 0) {
-            this.calculateIconValues(layer.symbolOptions.iconField.value, layer.symbolOptions.iconCount)
+        if (opt.iconCount > 0) {
+            this.calculateIconValues(opt.iconField.value, opt.iconCount, opt.iconField.decimalAccuracy)
         }
         if (this.props.state.autoRefresh)
             layer.refresh();
@@ -215,9 +216,9 @@ export class SymbolMenu extends React.Component<{
 
     }
 
-    calculateIconValues(fieldName: string, steps: number) {
+    calculateIconValues(fieldValue: string, steps: number, accuracy: number) {
         let values = this.props.state.editingLayer.values;
-        this.props.state.editingLayer.symbolOptions.iconLimits = CalculateLimits(values[fieldName][0], values[fieldName][values[fieldName].length - 1], steps); //get limits by min and max value
+        this.props.state.editingLayer.symbolOptions.iconLimits = CalculateLimits(values[fieldValue][0], values[fieldValue][values[fieldValue].length - 1], steps, accuracy); //get limits by min and max value
     }
 
     render() {

@@ -49,7 +49,7 @@ export class LayerImportWizard extends React.Component<{
                     let header = state.layer.headers.slice().filter(function(e) { return e.value === h })[0];
 
                     if (!header) {
-                        state.layer.headers.push(new IHeader({ value: h, type: isnumber ? 'number' : 'string' }));
+                        state.layer.headers.push(new IHeader({ value: h, type: isnumber ? 'number' : 'string', label: undefined, decimalAccuracy: undefined }));
                     }
                     else {
                         if (header.type === 'number' && !isnumber) { //previously marked as number but new value is text => mark as string

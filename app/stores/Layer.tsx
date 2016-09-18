@@ -61,7 +61,7 @@ export class Layer {
                 opacity: opts.opacity,
                 fillColor: opts.colors.slice().length == 0 || !opts.useMultipleFillColors ? opts.fillColor : GetItemBetweenLimits(opts.limits.slice(), opts.colors.slice(), feature.properties[opts.colorField.value]),
                 color: opts.color,
-                weight: 1,
+                weight: opts.weight,
             }
         }
         if (layer && this.layerType !== LayerTypes.HeatMap && !this.toggleCluster) {
@@ -300,7 +300,7 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
     let y: number = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
     switch (sym.symbolType) {
         case SymbolTypes.Icon:
-            let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), feature.properties[sym.iconField.value]);
+            let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), sym.iconField ? feature.properties[sym.iconField.value] : 0);
             let customIcon = L.ExtraMarkers.icon({
                 icon: icon ? icon.fa : sym.icons[0].fa,
                 prefix: 'fa',
@@ -339,15 +339,15 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
         case SymbolTypes.Blocks:
             let side = Math.ceil(Math.sqrt(feature.properties[sym.blockSizeVar] / sym.blockValue));
             let blockCount = Math.ceil(feature.properties[sym.blockSizeVar] / sym.blockValue);
-            let blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, borderColor);
+            let blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, borderColor, col.weight);
             let blockMarker = L.divIcon({ iconAnchor: L.point(5 * side, 5 * side), html: blockHtml, className: '' });
             return L.marker(latlng, { icon: blockMarker });
         case SymbolTypes.Rectangle:
-            let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: 1px solid ' + borderColor + '"/>';
+            let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + borderColor + '"/>';
             let rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
             return L.marker(latlng, { icon: rectIcon });
         default:
-            let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: 1px solid ' + borderColor + ';border-radius: 30px;"/>';
+            let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + borderColor + ';border-radius: 30px;"/>';
             let circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
             return L.marker(latlng, { icon: circleIcon });
     }
@@ -485,7 +485,7 @@ function makePieChart(options) {
     return "";
 }
 
-function makeBlockSymbol(sideLength: number, blockAmount: number, fillColor: string, borderColor: string) {
+function makeBlockSymbol(sideLength: number, blockAmount: number, fillColor: string, borderColor: string, borderWeight: number) {
     let arr = [];
     for (let i = sideLength; i > 0; i--) {
 
@@ -509,7 +509,7 @@ function makeBlockSymbol(sideLength: number, blockAmount: number, fillColor: str
                 backgroundColor: i + sideLength * c <= blockAmount ? fillColor : 'transparent',
                 margin: 0,
                 padding: 0,
-                border: i + sideLength * c <= blockAmount ? '1px solid ' + borderColor : '0px',
+                border: i + sideLength * c <= blockAmount ? borderWeight + 'px solid ' + borderColor : '0px',
             }
             columns.push(<td style={style} key={i + c}/>);
         }
@@ -608,6 +608,8 @@ export class ColorOptions implements L.PathOptions {
     @observable fillColor: string = '#E0E62D';
     /** Border color. Default black*/
     @observable color: string = '#000';
+    /** Border width. Default 1*/
+    @observable weight: number = 1;
     /** Main opacity. Default 0.8*/
     @observable fillOpacity: number = 0.8;
     /** Border opacity. Default 0.8*/
@@ -618,6 +620,8 @@ export class ColorOptions implements L.PathOptions {
     @observable heatMapRadius: number = 25;
     /** Chart symbol colors*/
     @observable chartColors: { [field: string]: string; } = undefined;
+
+
 
     /**
      * @param  prev   previous options to copy
@@ -635,6 +639,7 @@ export class ColorOptions implements L.PathOptions {
         this.iconTextColor = prev && prev.iconTextColor || '#FFF';
         this.fillColor = prev && prev.fillColor || '#E0E62D';
         this.color = prev && prev.color || '#000';
+        this.weight = prev && prev.weight || 1;
         this.fillOpacity = prev && prev.fillOpacity || 0.8;
         this.opacity = prev && prev.opacity || 0.8;
         this.useMultipleFillColors = prev && prev.useMultipleFillColors || false;
@@ -748,10 +753,10 @@ export class IHeader {
     /** Actual data value. Used to, for example, get properties from GeoJSON layers*/
     @observable value: string = '';
     /** Display text. Can be modified by the user*/
-    @observable label?: string = '';
+    @observable label: string = '';
     /**  The data type of a field. Number/string (datetime and others TODO)*/
     @observable type: 'string' | 'number';
-    @observable decimalAccuracy?: number;
+    @observable decimalAccuracy: number;
 
     constructor(prev?: IHeader) {
         this.value = prev && prev.value || '';
