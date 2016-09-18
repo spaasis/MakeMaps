@@ -166,6 +166,7 @@
 	    };
 	    MapMain.prototype.loadSavedMap = function (saved) {
 	        console.time("LoadSavedMap");
+	        var headers;
 	        if (saved.baseLayerId) {
 	            var oldBase = this.props.state.activeBaseLayer;
 	            var newBase = void 0;
@@ -183,15 +184,32 @@
 	        for (var i in saved.layers) {
 	            var lyr = saved.layers[i];
 	            var newLayer = new Layer_1.Layer(this.props.state);
+	            headers = [];
+	            for (var j in lyr.headers) {
+	                headers.push(new Layer_1.IHeader(lyr.headers[j]));
+	            }
+	            var popupHeaders = [];
+	            for (var k in lyr.popupHeaders) {
+	                popupHeaders.push(getHeaderByValue(lyr.popupHeaders[k].value));
+	            }
+	            var chartFields = [];
+	            for (var k in lyr.symbolOptions.chartFields) {
+	                chartFields.push(getHeaderByValue(lyr.popupHeaders[k].value));
+	            }
 	            newLayer.id = _currentLayerId++;
 	            newLayer.name = lyr.name;
-	            newLayer.headers = lyr.headers;
-	            newLayer.popupHeaders = lyr.popupHeaders;
+	            newLayer.headers = headers;
+	            newLayer.popupHeaders = popupHeaders;
 	            newLayer.layerType = lyr.layerType;
 	            newLayer.heatMapVariable = lyr.heatMapVariable;
 	            newLayer.geoJSON = lyr.geoJSON;
 	            newLayer.colorOptions = new Layer_1.ColorOptions(lyr.colorOptions);
+	            newLayer.colorOptions.colorField = lyr.colorOptions.colorField ? getHeaderByValue(lyr.colorOptions.colorField.value) : undefined;
 	            newLayer.symbolOptions = new Layer_1.SymbolOptions(lyr.symbolOptions);
+	            newLayer.symbolOptions.iconField = lyr.symbolOptions.iconField ? getHeaderByValue(lyr.symbolOptions.iconField.value) : undefined;
+	            newLayer.symbolOptions.sizeXVar = lyr.symbolOptions.sizeXVar ? getHeaderByValue(lyr.symbolOptions.sizeXVar.value) : undefined;
+	            newLayer.symbolOptions.sizeYVar = lyr.symbolOptions.sizeYVar ? getHeaderByValue(lyr.symbolOptions.sizeYVar.value) : undefined;
+	            newLayer.symbolOptions.chartFields = chartFields;
 	            newLayer.clusterOptions = new Layer_1.ClusterOptions(lyr.clusterOptions);
 	            newLayer.refresh();
 	            this.props.state.layers.push(newLayer);
@@ -202,6 +220,9 @@
 	        this.props.state.editingLayer = this.props.state.layers[0];
 	        this.props.state.menuShown = !this.props.state.embed;
 	        console.timeEnd("LoadSavedMap");
+	        function getHeaderByValue(value) {
+	            return headers.filter(function (h) { return h.value == value; })[0];
+	        }
 	    };
 	    MapMain.prototype.changeLayerOrder = function () {
 	        var _loop_1 = function(i) {
@@ -274,8 +295,19 @@
 	                padding: '0px',
 	            }
 	        };
-	        return (React.createElement("div", null, React.createElement("div", {id: 'map'}), this.props.state.embed ? null :
-	            React.createElement("div", null, React.createElement(Modal, {isOpen: this.props.state.welcomeShown, style: modalStyle}, React.createElement(WelcomeScreen_1.WelcomeScreen, {loadMap: this.loadSavedMap.bind(this), openLayerImport: this.startLayerImport.bind(this)})), React.createElement(Modal, {isOpen: this.props.state.importWizardShown, style: modalStyle}, React.createElement(LayerImportWizard_1.LayerImportWizard, {state: new States_1.ImportWizardState(), appState: this.props.state, submit: this.layerImportSubmit.bind(this), cancel: this.cancelLayerImport.bind(this)})), React.createElement(Menu_1.MakeMapsMenu, {state: this.props.state, addLayer: this.startLayerImport.bind(this), changeLayerOrder: this.changeLayerOrder.bind(this), saveImage: this.saveImage, saveFile: this.saveFile.bind(this)})), this.getFilters(), this.showLegend()));
+	        return (React.createElement("div", null, 
+	            React.createElement("div", {id: 'map'}), 
+	            this.props.state.embed ? null :
+	                React.createElement("div", null, 
+	                    React.createElement(Modal, {isOpen: this.props.state.welcomeShown, style: modalStyle}, 
+	                        React.createElement(WelcomeScreen_1.WelcomeScreen, {loadMap: this.loadSavedMap.bind(this), openLayerImport: this.startLayerImport.bind(this)})
+	                    ), 
+	                    React.createElement(Modal, {isOpen: this.props.state.importWizardShown, style: modalStyle}, 
+	                        React.createElement(LayerImportWizard_1.LayerImportWizard, {state: new States_1.ImportWizardState(), appState: this.props.state, submit: this.layerImportSubmit.bind(this), cancel: this.cancelLayerImport.bind(this)})
+	                    ), 
+	                    React.createElement(Menu_1.MakeMapsMenu, {state: this.props.state, addLayer: this.startLayerImport.bind(this), changeLayerOrder: this.changeLayerOrder.bind(this), saveImage: this.saveImage, saveFile: this.saveFile.bind(this)})), 
+	            this.getFilters(), 
+	            this.showLegend()));
 	    };
 	    MapMain = __decorate([
 	        mobx_react_1.observer, 
@@ -23009,6 +23041,10 @@
 	        mobx_1.observable, 
 	        __metadata('design:type', Array)
 	    ], LayerMenuState.prototype, "order", void 0);
+	    __decorate([
+	        mobx_1.observable, 
+	        __metadata('design:type', Layer_1.Layer)
+	    ], LayerMenuState.prototype, "editingLayer", void 0);
 	    return LayerMenuState;
 	}());
 	exports.LayerMenuState = LayerMenuState;
@@ -23082,7 +23118,7 @@
 	            return {
 	                fillOpacity: opts.fillOpacity,
 	                opacity: opts.opacity,
-	                fillColor: opts.colors.slice().length == 0 || !opts.useMultipleFillColors ? opts.fillColor : common_1.GetItemBetweenLimits(opts.limits.slice(), opts.colors.slice(), feature.properties[opts.colorField]),
+	                fillColor: opts.colors.slice().length == 0 || !opts.useMultipleFillColors ? opts.fillColor : common_1.GetItemBetweenLimits(opts.limits.slice(), opts.colors.slice(), feature.properties[opts.colorField.value]),
 	                color: opts.color,
 	                weight: 1,
 	            };
@@ -23167,18 +23203,17 @@
 	        }
 	    };
 	    Layer.prototype.refreshPopUps = function () {
-	        console.time('refreshPopUps');
-	        if (this.displayLayer && this.popupHeaders.length > 0) {
+	        if (this.displayLayer && this.popupHeaders.slice().length > 0) {
+	            console.time('refreshPopUps');
 	            this.displayLayer.eachLayer(function (l) {
 	                addPopups.call(this, l.feature, l);
 	            }, this);
+	            console.timeEnd('refreshPopUps');
 	        }
-	        console.timeEnd('refreshPopUps');
 	    };
 	    Layer.prototype.refreshCluster = function () {
 	        if (this.displayLayer.refreshClusters) {
 	            this.displayLayer.refreshClusters();
-	            console.log('refreshClusters');
 	        }
 	    };
 	    Layer.prototype.getColors = function () {
@@ -23187,7 +23222,7 @@
 	            return;
 	        }
 	        var values = this.geoJSON.features.map(function (item) {
-	            return item.properties[opts.colorField];
+	            return item.properties[opts.colorField.value];
 	        });
 	        var colors = [];
 	        opts.limits = chroma.limits(values, opts.mode, opts.steps);
@@ -23210,7 +23245,7 @@
 	            }
 	        }, this);
 	        for (var i in this.headers.slice()) {
-	            var header = this.headers[i].label;
+	            var header = this.headers[i].value;
 	            if (this.values[header]) {
 	                this.values[header].sort(function (a, b) { return a - b; });
 	            }
@@ -23229,14 +23264,14 @@
 	            var marker = markers[i];
 	            if (marker.options.icon && marker.options.icon.options.className.indexOf('marker-hidden') > -1)
 	                continue;
-	            var val = marker.feature.properties[col.colorField];
+	            var val = marker.feature.properties[col.colorField.value];
 	            if (!isNaN(parseFloat(val))) {
 	                values.push(+val);
 	                sum += val;
 	            }
 	            count++;
 	        }
-	        var avg = values.length > 0 ? (sum / values.length).toFixed(0) : 0;
+	        var avg = values.length > 0 ? (sum / values.length).toFixed(col.colorField.decimalAccuracy) : 0;
 	        var fillColor;
 	        if (!col.colorField || !col.useMultipleFillColors) {
 	            fillColor = count >= 100 ? '#fc4925' : count >= 50 ? '#ea9d38' : count >= 20 ? '#deea38' : '#85ea38';
@@ -23254,16 +23289,22 @@
 	            border: '1px solid ' + col.color,
 	            opacity: col.fillOpacity
 	        };
-	        var icon = React.createElement("div", {style: style}, React.createElement("div", {style: {
-	            textAlign: 'center',
-	            background: '#FFF',
-	            width: '100%',
-	            borderRadius: '30px'
-	        }}, React.createElement("b", {style: { display: 'block' }}, " ", count)));
+	        var icon = React.createElement("div", {style: style}, 
+	            React.createElement("div", {style: {
+	                textAlign: 'center',
+	                background: '#FFF',
+	                width: '100%',
+	                borderRadius: '30px'
+	            }}, 
+	                React.createElement("b", {style: { display: 'block' }}, 
+	                    " ", 
+	                    count)
+	            )
+	        );
 	        var html = reactDOMServer.renderToString(icon);
 	        if (count > 0) {
 	            var popupContent = (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '') +
-	                (clu.showSum && col.colorField && col.useMultipleFillColors ? (clu.sumText + ' ' + sum + '<br/>') : '') +
+	                (clu.showSum && col.colorField && col.useMultipleFillColors ? (clu.sumText + ' ' + sum.toFixed(col.colorField.decimalAccuracy) + '<br/>') : '') +
 	                (clu.showAvg && col.colorField && col.useMultipleFillColors ? (clu.avgText + ' ' + avg + '<br/>') : '') +
 	                'Click or zoom to expand';
 	            cluster.bindPopup(popupContent);
@@ -23322,13 +23363,13 @@
 	exports.Layer = Layer;
 	function getMarker(col, sym, feature, latlng) {
 	    if (col.colors && col.limits)
-	        col.fillColor = col.colors.slice().length == 0 || !col.useMultipleFillColors ? col.fillColor : common_1.GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField]);
+	        col.fillColor = col.colors.slice().length == 0 || !col.useMultipleFillColors ? col.fillColor : common_1.GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value]);
 	    var borderColor = col.color;
-	    var x = sym.sizeXVar ? common_1.GetSymbolSize(feature.properties[sym.sizeXVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-	    var y = sym.sizeYVar ? common_1.GetSymbolSize(feature.properties[sym.sizeYVar], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+	    var x = sym.sizeXVar ? common_1.GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+	    var y = sym.sizeYVar ? common_1.GetSymbolSize(feature.properties[sym.sizeYVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
 	    switch (sym.symbolType) {
 	        case common_1.SymbolTypes.Icon:
-	            var icon = common_1.GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), feature.properties[sym.iconField]);
+	            var icon = common_1.GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), feature.properties[sym.iconField.value]);
 	            var customIcon = L.ExtraMarkers.icon({
 	                icon: icon ? icon.fa : sym.icons[0].fa,
 	                prefix: 'fa',
@@ -23383,10 +23424,9 @@
 	    var maxXradius, minXradius, maxYradius, minYradius;
 	    var sym = this.symbolOptions;
 	    this.displayLayer.eachLayer(function (layer) {
-	        var xVal = layer.feature.properties[sym.sizeXVar];
-	        var yVal = layer.feature.properties[sym.sizeYVar];
 	        var r = 10;
 	        if (sym.sizeXVar) {
+	            var xVal = layer.feature.properties[sym.sizeXVar.value];
 	            r = common_1.GetSymbolSize(xVal, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit);
 	            if (!sym.actualMaxXValue && !sym.actualMinXValue) {
 	                sym.actualMinXValue = xVal;
@@ -23414,6 +23454,7 @@
 	            }
 	        }
 	        if (sym.sizeYVar) {
+	            var yVal = layer.feature.properties[sym.sizeYVar.value];
 	            r = common_1.GetSymbolSize(yVal, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit);
 	            if (!sym.actualMaxYValue && !sym.actualMinYValue) {
 	                sym.actualMinYValue = yVal;
@@ -23508,9 +23549,11 @@
 	    var table = React.createElement("table", {style: {
 	        width: 10 * sideLength,
 	        borderCollapse: 'collapse'
-	    }}, React.createElement("tbody", null, arr.map(function (td) {
-	        return td;
-	    })));
+	    }}, 
+	        React.createElement("tbody", null, arr.map(function (td) {
+	            return td;
+	        }))
+	    );
 	    return reactDOMServer.renderToString(table);
 	}
 	function createHeatLayer(l) {
@@ -23537,12 +23580,13 @@
 	    return L.heatLayer(arr, { relative: false, gradient: gradient, radius: l.colorOptions.heatMapRadius, max: max, minOpacity: l.colorOptions.fillOpacity });
 	}
 	function addPopups(feature, layer) {
-	    var headers = [];
-	    this.popupHeaders.map(function (h) { headers.push(h.label); });
 	    var popupContent = '';
-	    for (var prop in feature.properties) {
-	        if (headers.indexOf(prop) != -1) {
-	            popupContent += prop + ": " + feature.properties[prop];
+	    var headers = this.popupHeaders.slice();
+	    for (var h in headers) {
+	        var header = headers[h];
+	        var prop = feature.properties[header.value];
+	        if (prop != undefined) {
+	            popupContent += header.label + ": " + (header.type == 'number' ? prop.toFixed(header.decimalAccuracy) : prop);
 	            popupContent += "<br />";
 	        }
 	    }
@@ -23587,7 +23631,7 @@
 	    }
 	    __decorate([
 	        mobx_1.observable, 
-	        __metadata('design:type', String)
+	        __metadata('design:type', IHeader)
 	    ], ColorOptions.prototype, "colorField", void 0);
 	    __decorate([
 	        mobx_1.observable, 
@@ -23701,7 +23745,7 @@
 	    ], SymbolOptions.prototype, "iconCount", null);
 	    __decorate([
 	        mobx_1.observable, 
-	        __metadata('design:type', String)
+	        __metadata('design:type', IHeader)
 	    ], SymbolOptions.prototype, "iconField", void 0);
 	    __decorate([
 	        mobx_1.observable, 
@@ -23709,11 +23753,11 @@
 	    ], SymbolOptions.prototype, "iconLimits", void 0);
 	    __decorate([
 	        mobx_1.observable, 
-	        __metadata('design:type', String)
+	        __metadata('design:type', IHeader)
 	    ], SymbolOptions.prototype, "sizeXVar", void 0);
 	    __decorate([
 	        mobx_1.observable, 
-	        __metadata('design:type', String)
+	        __metadata('design:type', IHeader)
 	    ], SymbolOptions.prototype, "sizeYVar", void 0);
 	    __decorate([
 	        mobx_1.observable, 
@@ -23819,6 +23863,35 @@
 	    return ClusterOptions;
 	}());
 	exports.ClusterOptions = ClusterOptions;
+	var IHeader = (function () {
+	    function IHeader(prev) {
+	        this.value = '';
+	        this.label = '';
+	        this.value = prev && prev.value || '';
+	        this.label = prev && prev.label || this.value && this.value[0].toUpperCase() + this.value.slice(1);
+	        ;
+	        this.type = prev && prev.type || 'string';
+	        this.decimalAccuracy = prev && prev.decimalAccuracy || 0;
+	    }
+	    __decorate([
+	        mobx_1.observable, 
+	        __metadata('design:type', String)
+	    ], IHeader.prototype, "value", void 0);
+	    __decorate([
+	        mobx_1.observable, 
+	        __metadata('design:type', String)
+	    ], IHeader.prototype, "label", void 0);
+	    __decorate([
+	        mobx_1.observable, 
+	        __metadata('design:type', Object)
+	    ], IHeader.prototype, "type", void 0);
+	    __decorate([
+	        mobx_1.observable, 
+	        __metadata('design:type', Number)
+	    ], IHeader.prototype, "decimalAccuracy", void 0);
+	    return IHeader;
+	}());
+	exports.IHeader = IHeader;
 
 
 /***/ },
@@ -36073,6 +36146,7 @@
 	var FileDetailsView_1 = __webpack_require__(190);
 	var FilePreProcessModel_1 = __webpack_require__(174);
 	var _fileModel = new FilePreProcessModel_1.FilePreProcessModel();
+	var Layer_1 = __webpack_require__(162);
 	var mobx_react_1 = __webpack_require__(159);
 	var LayerImportWizard = (function (_super) {
 	    __extends(LayerImportWizard, _super);
@@ -36103,9 +36177,9 @@
 	                    var isnumber = !isNaN(parseFloat(props[h]));
 	                    if (isnumber)
 	                        props[h] = +props[h];
-	                    var header = state.layer.headers.slice().filter(function (e) { return e.label === h; })[0];
+	                    var header = state.layer.headers.slice().filter(function (e) { return e.value === h; })[0];
 	                    if (!header) {
-	                        state.layer.headers.push({ value: h, label: h, type: isnumber ? 'number' : 'string' });
+	                        state.layer.headers.push(new Layer_1.IHeader({ value: h, type: isnumber ? 'number' : 'string' }));
 	                    }
 	                    else {
 	                        if (header.type === 'number' && !isnumber) {
@@ -36150,9 +36224,11 @@
 	        var _this = this;
 	        switch (this.props.state.step) {
 	            case 0:
-	                return React.createElement("div", {style: { minWidth: 1000 }}, React.createElement(LayerTypeSelectView_1.LayerTypeSelectView, {state: this.props.state, appState: this.props.appState, cancel: function () {
-	                    _this.props.cancel();
-	                }}));
+	                return React.createElement("div", {style: { minWidth: 1000 }}, 
+	                    React.createElement(LayerTypeSelectView_1.LayerTypeSelectView, {state: this.props.state, appState: this.props.appState, cancel: function () {
+	                        _this.props.cancel();
+	                    }})
+	                );
 	            case 1:
 	                return React.createElement(FileUploadView_1.FileUploadView, {state: this.props.state, saveValues: this.setFileInfo.bind(this), goBack: this.previousStep.bind(this)});
 	            case 2:
@@ -36226,9 +36302,18 @@
 	    LayerTypeSelectView.prototype.render = function () {
 	        var _this = this;
 	        var layer = this.props.state.layer;
-	        return (React.createElement("div", null, React.createElement("div", null, React.createElement("h2", null, "Select a map type to create"), React.createElement("hr", null), React.createElement("div", {style: { height: 600 }}, React.createElement(LayerType_1.LayerType, {name: 'Choropleth', type: common_1.LayerTypes.ChoroplethMap, imageURL: 'app/images/choropreview.png', description: 'Use this type to create clean and easy to read maps from your polygon data. Color the areas by a single value by selecting a predefined color scheme or define your own.', onClick: this.onMapTypeClick, selected: layer.layerType == common_1.LayerTypes.ChoroplethMap}), React.createElement(LayerType_1.LayerType, {name: 'Symbol map', type: common_1.LayerTypes.SymbolMap, imageURL: 'app/images/symbolpreview.png', description: 'Use icons and charts to bring your point data to life! Scale symbol size by a value and give them choropleth-style coloring to create multi-value maps.', onClick: this.onMapTypeClick, selected: layer.layerType == common_1.LayerTypes.SymbolMap}), React.createElement(LayerType_1.LayerType, {name: 'Heatmap', type: common_1.LayerTypes.HeatMap, imageURL: 'app/images/heatpreview.png', description: 'Turn your point data into an intensity map with this layer type. A really effective map type for large point datasets', onClick: this.onMapTypeClick, selected: layer.layerType === common_1.LayerTypes.HeatMap}))), React.createElement("button", {className: 'secondaryButton', style: { position: 'absolute', left: 15, bottom: 15 }, onClick: function () {
-	            _this.props.cancel();
-	        }}, "Cancel"), React.createElement("button", {className: 'primaryButton', disabled: layer.layerType === undefined, style: { position: 'absolute', right: 15, bottom: 15 }, onClick: this.proceed}, "Continue")));
+	        return (React.createElement("div", null, 
+	            React.createElement("div", null, 
+	                React.createElement("h2", null, "Select a map type to create"), 
+	                React.createElement("hr", null), 
+	                React.createElement("div", {style: { height: 600 }}, 
+	                    React.createElement(LayerType_1.LayerType, {name: 'Choropleth', type: common_1.LayerTypes.ChoroplethMap, imageURL: 'app/images/choropreview.png', description: 'Use this type to create clean and easy to read maps from your polygon data. Color the areas by a single value by selecting a predefined color scheme or define your own.', onClick: this.onMapTypeClick, selected: layer.layerType == common_1.LayerTypes.ChoroplethMap}), 
+	                    React.createElement(LayerType_1.LayerType, {name: 'Symbol map', type: common_1.LayerTypes.SymbolMap, imageURL: 'app/images/symbolpreview.png', description: 'Use icons and charts to bring your point data to life! Scale symbol size by a value and give them choropleth-style coloring to create multi-value maps.', onClick: this.onMapTypeClick, selected: layer.layerType == common_1.LayerTypes.SymbolMap}), 
+	                    React.createElement(LayerType_1.LayerType, {name: 'Heatmap', type: common_1.LayerTypes.HeatMap, imageURL: 'app/images/heatpreview.png', description: 'Turn your point data into an intensity map with this layer type. A really effective map type for large point datasets', onClick: this.onMapTypeClick, selected: layer.layerType === common_1.LayerTypes.HeatMap}))), 
+	            React.createElement("button", {className: 'secondaryButton', style: { position: 'absolute', left: 15, bottom: 15 }, onClick: function () {
+	                _this.props.cancel();
+	            }}, "Cancel"), 
+	            React.createElement("button", {className: 'primaryButton', disabled: layer.layerType === undefined, style: { position: 'absolute', right: 15, bottom: 15 }, onClick: this.proceed}, "Continue")));
 	    };
 	    LayerTypeSelectView = __decorate([
 	        mobx_react_1.observer, 
@@ -36272,7 +36357,10 @@
 	            bottom: 5,
 	            left: 79
 	        };
-	        return (React.createElement("div", {style: style, onClick: this.props.onClick.bind(this, this.props.type)}, React.createElement("h3", null, this.props.name), React.createElement("img", {src: this.props.imageURL, alt: this.props.name, style: { width: '100%' }}), React.createElement("p", null, this.props.description)));
+	        return (React.createElement("div", {style: style, onClick: this.props.onClick.bind(this, this.props.type)}, 
+	            React.createElement("h3", null, this.props.name), 
+	            React.createElement("img", {src: this.props.imageURL, alt: this.props.name, style: { width: '100%' }}), 
+	            React.createElement("p", null, this.props.description)));
 	    };
 	    return LayerType;
 	}(React.Component));
@@ -36342,7 +36430,7 @@
 	                _a = _fileModel.ParseHeadersFromCSV(_this.props.state.content), head = _a[0], delim = _a[1];
 	                for (var _i = 0, head_1 = head; _i < head_1.length; _i++) {
 	                    var i = head_1[_i];
-	                    layer.headers.push({ value: i.name, label: i.name, type: i.type });
+	                    layer.headers.push({ value: i.name, label: i.name, type: i.type, decimalAccuracy: 0 });
 	                }
 	                _this.props.state.delimiter = delim;
 	            }
@@ -36368,11 +36456,25 @@
 	            color: 'grey',
 	            fontWeight: 'bold'
 	        };
-	        return (React.createElement("div", null, React.createElement("div", null, React.createElement("h2", null, " Upload the file containing the data "), React.createElement("hr", null), React.createElement("p", null, "Currently supported file types: "), React.createElement("p", null, " GeoJSON, CSV(point data with coordinates in two columns), KML, GPX, WKT, OSM"), React.createElement(Dropzone, {style: dropStyle, onDrop: this.onDrop.bind(this), accept: _allowedFileTypes.map(function (type) { return '.' + type; }).join(', ')}, this.props.state.fileName ? React.createElement("span", null, React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), " ", this.props.state.fileName, " ") : React.createElement("span", null, "Drop file or click to open upload menu")), React.createElement("label", null, "Give a name to the layer"), React.createElement("input", {type: "text", onChange: function (e) {
-	            layer.name = e.target.value;
-	        }, value: layer.name})), React.createElement("button", {className: 'secondaryButton', style: { position: 'absolute', left: 15, bottom: 15 }, onClick: function () {
-	            _this.props.goBack();
-	        }}, "Previous"), React.createElement("button", {className: 'primaryButton', disabled: this.props.state.content === undefined || layer.name === '', style: { position: 'absolute', right: 15, bottom: 15 }, onClick: this.proceed.bind(this)}, "Continue")));
+	        return (React.createElement("div", null, 
+	            React.createElement("div", null, 
+	                React.createElement("h2", null, " Upload the file containing the data "), 
+	                React.createElement("hr", null), 
+	                React.createElement("p", null, "Currently supported file types: "), 
+	                React.createElement("p", null, " GeoJSON, CSV(point data with coordinates in two columns), KML, GPX, WKT, OSM"), 
+	                React.createElement(Dropzone, {style: dropStyle, onDrop: this.onDrop.bind(this), accept: _allowedFileTypes.map(function (type) { return '.' + type; }).join(', ')}, this.props.state.fileName ? React.createElement("span", null, 
+	                    React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), 
+	                    " ", 
+	                    this.props.state.fileName, 
+	                    " ") : React.createElement("span", null, "Drop file or click to open upload menu")), 
+	                React.createElement("label", null, "Give a name to the layer"), 
+	                React.createElement("input", {type: "text", onChange: function (e) {
+	                    layer.name = e.target.value;
+	                }, value: layer.name})), 
+	            React.createElement("button", {className: 'secondaryButton', style: { position: 'absolute', left: 15, bottom: 15 }, onClick: function () {
+	                _this.props.goBack();
+	            }}, "Previous"), 
+	            React.createElement("button", {className: 'primaryButton', disabled: this.props.state.content === undefined || layer.name === '', style: { position: 'absolute', right: 15, bottom: 15 }, onClick: this.proceed.bind(this)}, "Continue")));
 	    };
 	    FileUploadView = __decorate([
 	        mobx_react_1.observer, 
@@ -42555,11 +42657,31 @@
 	        this.props.state.coordinateSystem = 'WGS84';
 	    };
 	    FileDetailsView.prototype.render = function () {
-	        return React.createElement("div", {style: { height: '100%' }}, React.createElement("div", null, React.createElement("h2", null, "Just a few more details"), React.createElement("hr", null), this.props.state.isGeoJSON ?
-	            null :
-	            React.createElement("div", null, React.createElement("label", null, "Select the latitude/Y field name"), React.createElement(Select, {options: this.activeLayer.numberHeaders, onChange: this.onLatitudeSelectionChange, value: this.props.state.latitudeField}), React.createElement("label", null, "Select the longitude/X field name"), React.createElement(Select, {options: this.activeLayer.numberHeaders, onChange: this.onLongitudeSelectionChange, value: this.props.state.longitudeField})), React.createElement("label", null, "Select the coordinate system"), React.createElement(Select, {options: coords, onChange: this.onCoordinateSystemChange, value: this.props.state.coordinateSystem}), React.createElement("p", null, " Not sure? Try with the default (WGS84) and see if the data lines up."), React.createElement("p", null, "Coordinate system missing? Get the Proj4-string for your system from", React.createElement("a", {href: 'http://spatialreference.org/ref/'}, " Spatial Reference")), React.createElement("input", {id: 'customProj', defaultValue: 'Insert custom Proj4-string here', style: { width: 400 }}), this.props.state.isHeatMap ?
-	            React.createElement("div", null, React.createElement("label", null, "Select heat map variable"), React.createElement(Select, {options: this.activeLayer.numberHeaders, onChange: this.onHeatValueChange, value: this.activeLayer.heatMapVariable}))
-	            : null), React.createElement("button", {className: 'secondaryButton', style: { position: 'absolute', left: 15, bottom: 15 }, onClick: this.goBack}, "Go back"), React.createElement("button", {className: 'primaryButton', disabled: !this.props.state.coordinateSystem || (this.props.state.isHeatMap && !this.activeLayer.heatMapVariable) || (!this.props.state.isGeoJSON && (!this.props.state.latitudeField || !this.props.state.longitudeField)), style: { position: 'absolute', right: 15, bottom: 15 }, onClick: this.proceed}, "Make a map!"));
+	        return React.createElement("div", {style: { height: '100%' }}, 
+	            React.createElement("div", null, 
+	                React.createElement("h2", null, "Just a few more details"), 
+	                React.createElement("hr", null), 
+	                this.props.state.isGeoJSON ?
+	                    null :
+	                    React.createElement("div", null, 
+	                        React.createElement("label", null, "Select the latitude/Y field name"), 
+	                        React.createElement(Select, {options: this.activeLayer.numberHeaders, onChange: this.onLatitudeSelectionChange, value: this.props.state.latitudeField}), 
+	                        React.createElement("label", null, "Select the longitude/X field name"), 
+	                        React.createElement(Select, {options: this.activeLayer.numberHeaders, onChange: this.onLongitudeSelectionChange, value: this.props.state.longitudeField})), 
+	                React.createElement("label", null, "Select the coordinate system"), 
+	                React.createElement(Select, {options: coords, onChange: this.onCoordinateSystemChange, value: this.props.state.coordinateSystem}), 
+	                React.createElement("p", null, " Not sure? Try with the default (WGS84) and see if the data lines up."), 
+	                React.createElement("p", null, 
+	                    "Coordinate system missing? Get the Proj4-string for your system from", 
+	                    React.createElement("a", {href: 'http://spatialreference.org/ref/'}, " Spatial Reference")), 
+	                React.createElement("input", {id: 'customProj', defaultValue: 'Insert custom Proj4-string here', style: { width: 400 }}), 
+	                this.props.state.isHeatMap ?
+	                    React.createElement("div", null, 
+	                        React.createElement("label", null, "Select heat map variable"), 
+	                        React.createElement(Select, {options: this.activeLayer.numberHeaders, onChange: this.onHeatValueChange, value: this.activeLayer.heatMapVariable}))
+	                    : null), 
+	            React.createElement("button", {className: 'secondaryButton', style: { position: 'absolute', left: 15, bottom: 15 }, onClick: this.goBack}, "Go back"), 
+	            React.createElement("button", {className: 'primaryButton', disabled: !this.props.state.coordinateSystem || (this.props.state.isHeatMap && !this.activeLayer.heatMapVariable) || (!this.props.state.isGeoJSON && (!this.props.state.latitudeField || !this.props.state.longitudeField)), style: { position: 'absolute', right: 15, bottom: 15 }, onClick: this.proceed}, "Make a map!"));
 	    };
 	    FileDetailsView = __decorate([
 	        mobx_react_1.observer, 
@@ -44758,10 +44880,6 @@
 	        this.onActiveMenuChange = function (item) {
 	            _this.props.state.visibleMenu = _this.props.state.visibleMenu === item ? 0 : item;
 	        };
-	        this.onLayerSelectionChange = function (val) {
-	            _this.props.state.visibleMenu = 0;
-	            _this.props.state.editingLayer = val.value;
-	        };
 	        this.addNewLayer = function () {
 	            _this.props.state.editingLayer = null;
 	            _this.props.state.visibleMenu = 0;
@@ -44802,6 +44920,7 @@
 	        }
 	    };
 	    MakeMapsMenu.prototype.render = function () {
+	        var _this = this;
 	        var layers = [];
 	        if (this.props.state.layers) {
 	            for (var _i = 0, _a = this.props.state.layers; _i < _a.length; _i++) {
@@ -44818,12 +44937,29 @@
 	            zIndex: 999
 	        };
 	        return (!this.props.state.menuShown ? null :
-	            React.createElement("div", {style: menuStyle, className: 'menu'}, React.createElement("div", {style: { float: 'left', display: 'flex', flexFlow: 'column', height: '100%' }}, React.createElement(MenuEntry_1.MenuEntry, {text: "Layers", id: 1, active: this.props.state.visibleMenu === 1, fa: 'bars', onClick: this.onActiveMenuChange}), React.createElement(MenuEntry_1.MenuEntry, {text: "Colors", id: 2, active: this.props.state.visibleMenu == 2, fa: 'paint-brush', onClick: this.onActiveMenuChange, hide: !this.props.state.editingLayer}), React.createElement(MenuEntry_1.MenuEntry, {text: "Symbols", id: 3, active: this.props.state.visibleMenu == 3, fa: 'map-marker', onClick: this.onActiveMenuChange, hide: !this.props.state.editingLayer || this.props.state.editingLayer.layerType === common_1.LayerTypes.ChoroplethMap || this.props.state.editingLayer.layerType === common_1.LayerTypes.HeatMap}), React.createElement(MenuEntry_1.MenuEntry, {text: "Filters", id: 4, active: this.props.state.visibleMenu == 4, fa: 'sliders', onClick: this.onActiveMenuChange}), React.createElement(MenuEntry_1.MenuEntry, {text: "Legend", id: 5, active: this.props.state.visibleMenu == 5, fa: 'map-o', onClick: this.onActiveMenuChange}), React.createElement(MenuEntry_1.MenuEntry, {text: "Cluster", id: 6, active: this.props.state.visibleMenu == 6, fa: 'asterisk', onClick: this.onActiveMenuChange}), React.createElement(MenuEntry_1.MenuEntry, {text: "Pop-ups", id: 7, active: this.props.state.visibleMenu == 7, fa: 'newspaper-o', onClick: this.onActiveMenuChange, hide: !this.props.state.editingLayer || this.props.state.editingLayer.layerType === common_1.LayerTypes.HeatMap}), React.createElement(MenuEntry_1.MenuEntry, {text: "Download", id: 8, active: this.props.state.visibleMenu == 8, fa: 'download', onClick: this.onActiveMenuChange})), React.createElement("div", {className: this.props.state.visibleMenu > 0 ? 'menuOpen' : document.getElementsByClassName('menuOpen').length > 0 ? 'menuClose' : '', style: { float: 'right', width: this.props.state.visibleMenu > 0 ? 250 : 0, height: '100%', background: '#ededed' }}, this.props.state.visibleMenu !== 0 && this.props.state.visibleMenu !== 1 && this.props.state.visibleMenu !== 4 && this.props.state.visibleMenu !== 5 && this.props.state.visibleMenu !== 8 ?
-	                React.createElement("div", null, React.createElement("label", null, "Select layer to edit"), React.createElement(Select, {options: layers, onChange: this.onLayerSelectionChange, value: this.props.state.editingLayer, valueRenderer: function (option) {
-	                    return option ? option.name : '';
-	                }, clearable: false}), React.createElement("br", null))
-	                :
-	                    null, this.getActiveMenu())));
+	            React.createElement("div", {style: menuStyle, className: 'menu'}, 
+	                React.createElement("div", {style: { float: 'left', display: 'flex', flexFlow: 'column', height: '100%' }}, 
+	                    React.createElement(MenuEntry_1.MenuEntry, {text: "Layers", id: 1, active: this.props.state.visibleMenu === 1, fa: 'bars', onClick: this.onActiveMenuChange}), 
+	                    React.createElement(MenuEntry_1.MenuEntry, {text: "Colors", id: 2, active: this.props.state.visibleMenu == 2, fa: 'paint-brush', onClick: this.onActiveMenuChange, hide: !this.props.state.editingLayer}), 
+	                    React.createElement(MenuEntry_1.MenuEntry, {text: "Symbols", id: 3, active: this.props.state.visibleMenu == 3, fa: 'map-marker', onClick: this.onActiveMenuChange, hide: !this.props.state.editingLayer || this.props.state.editingLayer.layerType === common_1.LayerTypes.ChoroplethMap || this.props.state.editingLayer.layerType === common_1.LayerTypes.HeatMap}), 
+	                    React.createElement(MenuEntry_1.MenuEntry, {text: "Filters", id: 4, active: this.props.state.visibleMenu == 4, fa: 'sliders', onClick: this.onActiveMenuChange}), 
+	                    React.createElement(MenuEntry_1.MenuEntry, {text: "Legend", id: 5, active: this.props.state.visibleMenu == 5, fa: 'map-o', onClick: this.onActiveMenuChange}), 
+	                    React.createElement(MenuEntry_1.MenuEntry, {text: "Cluster", id: 6, active: this.props.state.visibleMenu == 6, fa: 'asterisk', onClick: this.onActiveMenuChange}), 
+	                    React.createElement(MenuEntry_1.MenuEntry, {text: "Pop-ups", id: 7, active: this.props.state.visibleMenu == 7, fa: 'newspaper-o', onClick: this.onActiveMenuChange, hide: !this.props.state.editingLayer || this.props.state.editingLayer.layerType === common_1.LayerTypes.HeatMap}), 
+	                    React.createElement(MenuEntry_1.MenuEntry, {text: "Download", id: 8, active: this.props.state.visibleMenu == 8, fa: 'download', onClick: this.onActiveMenuChange})), 
+	                React.createElement("div", {className: this.props.state.visibleMenu > 0 ? 'menuOpen' : document.getElementsByClassName('menuOpen').length > 0 ? 'menuClose' : '', style: { float: 'right', width: this.props.state.visibleMenu > 0 ? 250 : 0, height: '100%', overflowY: 'auto', background: '#ededed' }}, 
+	                    this.props.state.visibleMenu !== 0 && this.props.state.visibleMenu !== 1 && this.props.state.visibleMenu !== 4 && this.props.state.visibleMenu !== 5 && this.props.state.visibleMenu !== 8 ?
+	                        React.createElement("div", null, 
+	                            React.createElement("label", null, "Select layer to edit"), 
+	                            React.createElement(Select, {options: layers, onChange: function (val) {
+	                                _this.props.state.editingLayer = val.value;
+	                            }, value: this.props.state.editingLayer, valueRenderer: function (option) {
+	                                return option ? option.name : '';
+	                            }, clearable: false}), 
+	                            React.createElement("br", null))
+	                        :
+	                            null, 
+	                    this.getActiveMenu())));
 	    };
 	    MakeMapsMenu = __decorate([
 	        mobx_react_1.observer, 
@@ -44860,13 +44996,7 @@
 	var LayerMenu = (function (_super) {
 	    __extends(LayerMenu, _super);
 	    function LayerMenu() {
-	        var _this = this;
 	        _super.apply(this, arguments);
-	        this.onBaseMapChange = function (e) {
-	            _this.props.state.map.removeLayer(_this.props.state.activeBaseLayer);
-	            _this.props.state.activeBaseLayer = e.value;
-	            _this.props.state.map.addLayer(_this.props.state.activeBaseLayer);
-	        };
 	    }
 	    LayerMenu.prototype.areOrdersDifferent = function (first, second) {
 	        if (first.length !== second.length)
@@ -44915,6 +45045,14 @@
 	    };
 	    LayerMenu.prototype.render = function () {
 	        var _this = this;
+	        var menuState = this.props.state.layerMenuState;
+	        var layers = [];
+	        if (this.props.state.layers) {
+	            for (var _i = 0, _a = this.props.state.layers; _i < _a.length; _i++) {
+	                var layer = _a[_i];
+	                layers.push({ value: layer, label: layer.name });
+	            }
+	        }
 	        var layerStyle = {
 	            cursor: 'pointer',
 	            background: 'white',
@@ -44927,14 +45065,66 @@
 	            lineHeight: '20px',
 	            border: '1px solid gray'
 	        };
-	        return (React.createElement("div", {className: "makeMaps-options"}, React.createElement("label", null, "Select the base map"), React.createElement(Select, {options: this.props.state.obsBaseLayers, onChange: this.onBaseMapChange, value: { value: this.props.state.activeBaseLayer, label: this.props.state.activeBaseLayer.options.id }, clearable: false}), React.createElement("hr", null), React.createElement("label", null, "Drag and drop to reorder"), React.createElement(Sortable, {className: 'layerList', onChange: this.handleSort.bind(this)}, this.props.state.layerMenuState.order.map(function (layer) {
-	            return React.createElement("div", {style: layerStyle, key: layer.id, "data-id": layer.id}, layer.name, React.createElement("i", {className: "fa fa-times", onClick: this.deleteLayer.bind(this, layer.id)}));
-	        }, this)), this.props.state.autoRefresh ? null :
+	        return (React.createElement("div", {className: "makeMaps-options"}, 
+	            React.createElement("label", null, "Select the base map"), 
+	            React.createElement(Select, {options: this.props.state.obsBaseLayers, onChange: function (e) {
+	                _this.props.state.map.removeLayer(_this.props.state.activeBaseLayer);
+	                _this.props.state.activeBaseLayer = e.value;
+	                _this.props.state.map.addLayer(_this.props.state.activeBaseLayer);
+	            }, value: { value: this.props.state.activeBaseLayer, label: this.props.state.activeBaseLayer.options.id }, clearable: false}), 
+	            React.createElement("hr", null), 
+	            React.createElement("label", null, "Drag and drop to reorder"), 
+	            React.createElement(Sortable, {className: 'layerList', onChange: this.handleSort.bind(this)}, menuState.order.map(function (layer) {
+	                return React.createElement("div", {style: layerStyle, key: layer.id, "data-id": layer.id}, 
+	                    layer.name, 
+	                    React.createElement("i", {className: "fa fa-times", onClick: this.deleteLayer.bind(this, layer.id)}));
+	            }, this)), 
+	            this.props.state.autoRefresh ? null :
+	                React.createElement("button", {className: 'menuButton', onClick: function () {
+	                    _this.props.saveOrder();
+	                }}, "Save"), 
 	            React.createElement("button", {className: 'menuButton', onClick: function () {
-	                _this.props.saveOrder();
-	            }}, "Save"), React.createElement("button", {className: 'menuButton', onClick: function () {
-	            _this.props.addNewLayer();
-	        }}, "Add new layer")));
+	                _this.props.addNewLayer();
+	            }}, "Add new layer"), 
+	            React.createElement("hr", null), 
+	            React.createElement(Select, {options: layers, onChange: function (val) {
+	                menuState.editingLayer = val.value;
+	            }, value: menuState.editingLayer, valueRenderer: function (option) {
+	                return option ? option.name : '';
+	            }, clearable: false}), 
+	            menuState.editingLayer ?
+	                this.renderHeaders.call(this)
+	                : null));
+	    };
+	    LayerMenu.prototype.renderHeaders = function () {
+	        var arr = [];
+	        var menuState = this.props.state.layerMenuState;
+	        var headers = menuState.editingLayer.headers.slice();
+	        var columnCount = 2;
+	        var _loop_1 = function(i) {
+	            var h = headers[i];
+	            arr.push(React.createElement("tr", {key: i}, 
+	                React.createElement("td", null, 
+	                    React.createElement("input", {type: 'text', style: { width: 120 }, value: h.label, onChange: function (e) { h.label = e.currentTarget.value; }, onBlur: function (e) { menuState.editingLayer.refreshPopUps(); }, onKeyPress: function (e) { if (e.charCode == 13) {
+	                        menuState.editingLayer.refreshPopUps();
+	                    } }})
+	                ), 
+	                React.createElement("td", null, 
+	                    React.createElement("input", {type: 'number', style: { width: 40 }, value: h.decimalAccuracy, onChange: function (e) { h.decimalAccuracy = e.currentTarget.valueAsNumber; menuState.editingLayer.refreshPopUps(); }, min: 0})
+	                )));
+	        };
+	        for (var i = 0; i < headers.length; i++) {
+	            _loop_1(i);
+	        }
+	        return (React.createElement("table", {style: { width: '100%' }}, 
+	            React.createElement("tbody", null, 
+	                React.createElement("tr", null, 
+	                    React.createElement("th", null, "Name"), 
+	                    React.createElement("th", null, "Decimals")), 
+	                arr.map(function (td) {
+	                    return td;
+	                }))
+	        ));
 	    };
 	    LayerMenu = __decorate([
 	        mobx_react_1.observer, 
@@ -46389,33 +46579,18 @@
 	                layer.refresh();
 	            _this.props.state.colorMenuState.startColor = hex;
 	        };
-	        this.onChoroVariableChange = function (e) {
-	            _this.props.state.editingLayer.colorOptions.colorField = e.label;
-	            _this.calculateValues();
-	        };
-	        this.onSchemeChange = function (e) {
-	            _this.props.state.editingLayer.colorOptions.colorScheme = e.value;
-	            _this.calculateValues();
-	        };
 	        this.onOpacityChange = function (e) {
 	            var val = e.target.valueAsNumber;
 	            var layer = _this.props.state.editingLayer;
 	            if (layer.colorOptions.opacity !== val || layer.colorOptions.fillOpacity !== val) {
 	                layer.colorOptions.opacity = e.target.valueAsNumber;
 	                layer.colorOptions.fillOpacity = e.target.valueAsNumber;
-	                layer.refresh();
+	                if (_this.props.state.autoRefresh)
+	                    layer.refresh();
 	            }
-	        };
-	        this.onStepsChange = function (e) {
-	            _this.props.state.editingLayer.colorOptions.steps = e.target.valueAsNumber;
-	            _this.calculateValues();
 	        };
 	        this.onModeChange = function (mode) {
 	            _this.props.state.editingLayer.colorOptions.mode = mode;
-	            _this.calculateValues();
-	        };
-	        this.onRevertChange = function (e) {
-	            _this.props.state.editingLayer.colorOptions.revert = e.target.checked;
 	            _this.calculateValues();
 	        };
 	        this.onCustomSchemeChange = function (e) {
@@ -46445,7 +46620,7 @@
 	        this.onCustomLimitChange = function (step, e) {
 	            var layer = _this.props.state.editingLayer;
 	            var val = e.currentTarget.valueAsNumber;
-	            if (step === 0 && val > layer.values[layer.colorOptions.colorField][0])
+	            if (step === 0 && val > layer.values[layer.colorOptions.colorField.value][0])
 	                return;
 	            else
 	                layer.colorOptions.limits[step] = val;
@@ -46480,7 +46655,7 @@
 	        };
 	        this.calculateValues = function () {
 	            var lyr = _this.props.state.editingLayer;
-	            var field = lyr.colorOptions.colorField;
+	            var field = lyr.colorOptions.colorField.value;
 	            var uniqueValues = lyr.values[field].filter(function (e, i, arr) {
 	                return arr.lastIndexOf(e) === i;
 	            });
@@ -46547,7 +46722,9 @@
 	        if (layer.layerType === common_1.LayerTypes.SymbolMap && layer.symbolOptions.symbolType === common_1.SymbolTypes.Chart) {
 	            for (var _i = 0, _a = layer.symbolOptions.chartFields; _i < _a.length; _i++) {
 	                var i = _a[_i];
-	                rows.push(React.createElement("li", {key: i.label, style: { background: layer.colorOptions.chartColors[i.value] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer' }, onClick: this.toggleColorPick.bind(this, 'chartfield' + i.value)}, React.createElement("i", {style: { background: 'white', borderRadius: 5 }}, i.label)));
+	                rows.push(React.createElement("li", {key: i.label, style: { background: layer.colorOptions.chartColors[i.value] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer' }, onClick: this.toggleColorPick.bind(this, 'chartfield' + i.value)}, 
+	                    React.createElement("i", {style: { background: 'white', borderRadius: 5 }}, i.label)
+	                ));
 	                row++;
 	            }
 	        }
@@ -46561,13 +46738,17 @@
 	            }
 	            for (var _b = 0, steps_1 = steps; _b < steps_1.length; _b++) {
 	                var i = steps_1[_b];
-	                rows.push(React.createElement("li", {key: row, style: { background: layer.colorOptions.colors[row] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer' }, onClick: this.toggleColorPick.bind(this, 'step' + row)}, React.createElement("input", {id: row + 'min', type: 'number', value: limits[row], onChange: this.onCustomLimitChange.bind(this, row), onBlur: this.onCustomLimitBlur.bind(this, row), style: {
-	                    width: 100,
-	                }, onClick: function (e) { e.stopPropagation(); }, step: 'any'})));
+	                rows.push(React.createElement("li", {key: row, style: { background: layer.colorOptions.colors[row] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer' }, onClick: this.toggleColorPick.bind(this, 'step' + row)}, 
+	                    React.createElement("input", {id: row + 'min', type: 'number', value: limits[row], onChange: this.onCustomLimitChange.bind(this, row), onBlur: this.onCustomLimitBlur.bind(this, row), style: {
+	                        width: 100,
+	                    }, onClick: function (e) { e.stopPropagation(); }, step: 1 * Math.pow(10, (-layer.colorOptions.colorField.decimalAccuracy))})
+	                ));
 	                row++;
 	            }
 	        }
-	        return React.createElement("div", null, React.createElement("ul", {id: 'customSteps', style: { listStyle: 'none', padding: 0 }}, rows.map(function (r) { return r; })));
+	        return React.createElement("div", null, 
+	            React.createElement("ul", {id: 'customSteps', style: { listStyle: 'none', padding: 0 }}, rows.map(function (r) { return r; }))
+	        );
 	    };
 	    ColorMenu.prototype.render = function () {
 	        var _this = this;
@@ -46613,33 +46794,96 @@
 	            }
 	        };
 	        var isChart = layer.layerType === common_1.LayerTypes.SymbolMap && layer.symbolOptions.symbolType === common_1.SymbolTypes.Chart;
-	        return (React.createElement("div", {className: "makeMaps-options"}, layer.layerType === common_1.LayerTypes.ChoroplethMap || layer.layerType === common_1.LayerTypes.HeatMap || isChart ? null :
-	            React.createElement("label", {htmlFor: 'multipleSelect'}, "Use multiple fill colors", React.createElement("input", {id: 'multipleSelect', type: 'checkbox', onChange: function (e) {
-	                layer.colorOptions.useMultipleFillColors = e.target.checked;
-	                if (_this.props.state.autoRefresh)
-	                    layer.refresh();
-	            }, checked: col.useMultipleFillColors})), col.useMultipleFillColors || layer.layerType === common_1.LayerTypes.HeatMap || isChart ?
-	            null :
-	            React.createElement("div", {className: 'colorBlock', style: fillColorBlockStyle, onClick: this.toggleColorPick.bind(this, 'fillColor')}, "Fill"), layer.layerType === common_1.LayerTypes.HeatMap ? null :
-	            React.createElement("div", {className: 'colorBlock', style: borderColorBlockStyle, onClick: this.toggleColorPick.bind(this, 'borderColor')}, "Border"), layer.layerType === common_1.LayerTypes.SymbolMap && layer.symbolOptions.symbolType === common_1.SymbolTypes.Icon ?
-	            React.createElement("div", {className: 'colorBlock', style: iconTextColorBlockStyle, onClick: this.toggleColorPick.bind(this, 'iconTextColor')}, "Icon")
-	            : null, React.createElement("label", null, "Opacity", React.createElement("input", {type: 'number', max: 1, min: 0, step: 0.1, onChange: this.onOpacityChange, value: col.opacity})), React.createElement(Modal, {isOpen: state.colorSelectOpen, style: colorSelectStyle}, React.createElement(ColorPicker.SwatchesPicker, {width: 300, height: 600, overlowY: 'auto', color: state.startColor, onChange: this.onColorSelect}), React.createElement("button", {className: 'primaryButton', onClick: this.toggleColorPick.bind(this, state.editing), style: { position: 'absolute', left: 80 }}, "OK")), isChart ? React.createElement("div", null, this.renderSteps()) : null, col.useMultipleFillColors && !isChart ?
-	            React.createElement("div", null, layer.layerType === common_1.LayerTypes.HeatMap ? null :
-	                React.createElement("div", null, React.createElement("label", null, "Select the color variable"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onChoroVariableChange, value: col.colorField, clearable: false})), col.colorField ?
-	                React.createElement("div", null, React.createElement("label", {htmlFor: 'customScale'}, "Set custom scheme"), React.createElement("input", {id: 'customScale', type: 'checkbox', onChange: this.onCustomSchemeChange, checked: col.useCustomScheme}), React.createElement("br", null), col.useCustomScheme ?
-	                    null
-	                    :
-	                        React.createElement("div", null, "Or", React.createElement("br", null), React.createElement("label", null, "Select a color scheme"), React.createElement(Select, {clearable: false, searchable: false, options: _gradientOptions, optionRenderer: this.renderScheme, valueRenderer: this.renderScheme, onChange: this.onSchemeChange, value: col.colorScheme}), React.createElement("label", {htmlFor: 'revertSelect'}, "Revert"), React.createElement("input", {id: 'revertSelect', type: 'checkbox', onChange: this.onRevertChange, checked: col.revert})), React.createElement("label", null, "Steps"), React.createElement("input", {type: 'number', max: 100, min: 2, step: 1, onChange: this.onStepsChange, value: col.steps}), col.useCustomScheme ?
-	                    React.createElement("div", null, "Set the ", React.createElement("i", null, "lower limit"), " for each step and a color to match", this.renderSteps())
-	                    :
-	                        React.createElement("div", null, React.createElement("label", {forHTML: 'quantiles'}, "Quantiles", React.createElement("input", {type: 'radio', onChange: this.onModeChange.bind(this, 'q'), checked: col.mode === 'q', name: 'mode', id: 'quantiles'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'kmeans'}, "K-means", React.createElement("input", {type: 'radio', onChange: this.onModeChange.bind(this, 'k'), checked: col.mode === 'k', name: 'mode', id: 'kmeans'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'equidistant'}, "Equidistant", React.createElement("input", {type: 'radio', onChange: this.onModeChange.bind(this, 'e'), checked: col.mode === 'e', name: 'mode', id: 'equidistant'}), React.createElement("br", null))), layer.layerType === common_1.LayerTypes.HeatMap ?
-	                    React.createElement("div", null, "Set the heatmap radius", React.createElement("input", {type: 'number', max: 100, min: 10, step: 1, onChange: function (e) {
-	                        layer.colorOptions.heatMapRadius = e.currentTarget.valueAsNumber;
-	                    }, value: col.heatMapRadius}))
-	                    : null)
-	                : null)
-	            : null, this.props.state.autoRefresh ? null :
-	            React.createElement("button", {className: 'menuButton', onClick: this.saveOptions}, "Refresh map")));
+	        return (React.createElement("div", {className: "makeMaps-options"}, 
+	            layer.layerType === common_1.LayerTypes.ChoroplethMap || layer.layerType === common_1.LayerTypes.HeatMap || isChart ? null :
+	                React.createElement("label", {htmlFor: 'multipleSelect'}, 
+	                    "Use multiple fill colors", 
+	                    React.createElement("input", {id: 'multipleSelect', type: 'checkbox', onChange: function (e) {
+	                        layer.colorOptions.useMultipleFillColors = e.target.checked;
+	                        if (_this.props.state.autoRefresh)
+	                            layer.refresh();
+	                    }, checked: col.useMultipleFillColors})), 
+	            col.useMultipleFillColors || layer.layerType === common_1.LayerTypes.HeatMap || isChart ?
+	                null :
+	                React.createElement("div", {className: 'colorBlock', style: fillColorBlockStyle, onClick: this.toggleColorPick.bind(this, 'fillColor')}, "Fill"), 
+	            layer.layerType === common_1.LayerTypes.HeatMap ? null :
+	                React.createElement("div", {className: 'colorBlock', style: borderColorBlockStyle, onClick: this.toggleColorPick.bind(this, 'borderColor')}, "Border"), 
+	            layer.layerType === common_1.LayerTypes.SymbolMap && layer.symbolOptions.symbolType === common_1.SymbolTypes.Icon ?
+	                React.createElement("div", {className: 'colorBlock', style: iconTextColorBlockStyle, onClick: this.toggleColorPick.bind(this, 'iconTextColor')}, "Icon")
+	                : null, 
+	            React.createElement("label", null, 
+	                "Opacity", 
+	                React.createElement("input", {type: 'number', max: 1, min: 0, step: 0.1, onChange: this.onOpacityChange, value: col.opacity})), 
+	            React.createElement(Modal, {isOpen: state.colorSelectOpen, style: colorSelectStyle}, 
+	                React.createElement(ColorPicker.SwatchesPicker, {width: 300, height: 600, overlowY: 'auto', color: state.startColor, onChange: this.onColorSelect}), 
+	                React.createElement("button", {className: 'primaryButton', onClick: this.toggleColorPick.bind(this, state.editing), style: { position: 'absolute', left: 80 }}, "OK")), 
+	            isChart ? React.createElement("div", null, this.renderSteps()) : null, 
+	            col.useMultipleFillColors && !isChart ?
+	                React.createElement("div", null, 
+	                    layer.layerType === common_1.LayerTypes.HeatMap ? null :
+	                        React.createElement("div", null, 
+	                            React.createElement("label", null, "Select the color variable"), 
+	                            React.createElement(Select, {options: layer.numberHeaders, onChange: function (e) {
+	                                _this.props.state.editingLayer.colorOptions.colorField = e;
+	                                _this.calculateValues();
+	                            }, value: col.colorField, clearable: false})), 
+	                    col.colorField ?
+	                        React.createElement("div", null, 
+	                            React.createElement("label", {htmlFor: 'customScale'}, "Set custom scheme"), 
+	                            React.createElement("input", {id: 'customScale', type: 'checkbox', onChange: this.onCustomSchemeChange, checked: col.useCustomScheme}), 
+	                            React.createElement("br", null), 
+	                            col.useCustomScheme ?
+	                                null
+	                                :
+	                                    React.createElement("div", null, 
+	                                        "Or", 
+	                                        React.createElement("br", null), 
+	                                        React.createElement("label", null, "Select a color scheme"), 
+	                                        React.createElement(Select, {clearable: false, searchable: false, options: _gradientOptions, optionRenderer: this.renderScheme, valueRenderer: this.renderScheme, onChange: function (e) {
+	                                            _this.props.state.editingLayer.colorOptions.colorScheme = e.value;
+	                                            _this.calculateValues();
+	                                        }, value: col.colorScheme}), 
+	                                        React.createElement("label", {htmlFor: 'revertSelect'}, "Revert"), 
+	                                        React.createElement("input", {id: 'revertSelect', type: 'checkbox', onChange: function (e) {
+	                                            _this.props.state.editingLayer.colorOptions.revert = e.target.checked;
+	                                            _this.calculateValues();
+	                                        }, checked: col.revert})), 
+	                            React.createElement("label", null, "Steps"), 
+	                            React.createElement("input", {type: 'number', max: 100, min: 2, step: 1, onChange: function (e) {
+	                                _this.props.state.editingLayer.colorOptions.steps = e.target.valueAsNumber;
+	                                _this.calculateValues();
+	                            }, value: col.steps}), 
+	                            col.useCustomScheme ?
+	                                React.createElement("div", null, 
+	                                    "Set the ", 
+	                                    React.createElement("i", null, "lower limit"), 
+	                                    " for each step and a color to match", 
+	                                    this.renderSteps())
+	                                :
+	                                    React.createElement("div", null, 
+	                                        React.createElement("label", {forHTML: 'quantiles'}, 
+	                                            "Quantiles", 
+	                                            React.createElement("input", {type: 'radio', onChange: this.onModeChange.bind(this, 'q'), checked: col.mode === 'q', name: 'mode', id: 'quantiles'}), 
+	                                            React.createElement("br", null)), 
+	                                        React.createElement("label", {forHTML: 'kmeans'}, 
+	                                            "K-means", 
+	                                            React.createElement("input", {type: 'radio', onChange: this.onModeChange.bind(this, 'k'), checked: col.mode === 'k', name: 'mode', id: 'kmeans'}), 
+	                                            React.createElement("br", null)), 
+	                                        React.createElement("label", {forHTML: 'equidistant'}, 
+	                                            "Equidistant", 
+	                                            React.createElement("input", {type: 'radio', onChange: this.onModeChange.bind(this, 'e'), checked: col.mode === 'e', name: 'mode', id: 'equidistant'}), 
+	                                            React.createElement("br", null))), 
+	                            layer.layerType === common_1.LayerTypes.HeatMap ?
+	                                React.createElement("div", null, 
+	                                    "Set the heatmap radius", 
+	                                    React.createElement("input", {type: 'number', max: 100, min: 10, step: 1, onChange: function (e) {
+	                                        layer.colorOptions.heatMapRadius = e.currentTarget.valueAsNumber;
+	                                    }, value: col.heatMapRadius}))
+	                                : null)
+	                        : null)
+	                : null, 
+	            this.props.state.autoRefresh ? null :
+	                React.createElement("button", {className: 'menuButton', onClick: this.saveOptions}, "Refresh map")));
 	    };
 	    ColorMenu = __decorate([
 	        mobx_react_1.observer, 
@@ -59772,7 +60016,7 @@
 	            var sym = _this.props.state.editingLayer.symbolOptions;
 	            sym.symbolType = type;
 	            if (type === common_1.SymbolTypes.Blocks && !sym.blockSizeVar) {
-	                sym.blockSizeVar = layer.numberHeaders[0].label;
+	                sym.blockSizeVar = layer.numberHeaders[0].value;
 	                sym.blockValue = sym.blockValue == 0 ? Math.ceil(layer.values[sym.blockSizeVar][layer.values[sym.blockSizeVar].length - 1] / 5) : sym.blockValue;
 	            }
 	            if (type === common_1.SymbolTypes.Chart) {
@@ -59784,14 +60028,14 @@
 	        };
 	        this.onXVariableChange = function (val) {
 	            var sym = _this.props.state.editingLayer.symbolOptions;
-	            sym.sizeXVar = val ? val.value : '';
+	            sym.sizeXVar = val ? val : '';
 	            sym.sizeMultiplier = sym.sizeMultiplier ? sym.sizeMultiplier : 1;
 	            if (_this.props.state.autoRefresh)
 	                _this.props.state.editingLayer.refresh();
 	        };
 	        this.onYVariableChange = function (val) {
 	            var sym = _this.props.state.editingLayer.symbolOptions;
-	            sym.sizeYVar = val ? val.value : '';
+	            sym.sizeYVar = val ? val : '';
 	            sym.sizeMultiplier = sym.sizeMultiplier ? sym.sizeMultiplier : 1;
 	            if (_this.props.state.autoRefresh)
 	                _this.props.state.editingLayer.refresh();
@@ -59835,14 +60079,14 @@
 	            sym.icons = use ? sym.icons : [sym.icons.slice()[0]];
 	            sym.iconLimits = use ? sym.iconLimits : [];
 	            if (use) {
-	                _this.calculateIconValues(sym.iconField, sym.iconCount);
+	                _this.calculateIconValues(sym.iconField.value, sym.iconCount);
 	            }
 	            if (_this.props.state.autoRefresh)
 	                _this.props.state.editingLayer.refresh();
 	        };
 	        this.onIconFieldChange = function (val) {
 	            var layer = _this.props.state.editingLayer;
-	            layer.symbolOptions.iconField = val.value;
+	            layer.symbolOptions.iconField = val;
 	            _this.calculateIconValues(val.value, layer.symbolOptions.iconCount);
 	            if (_this.props.state.autoRefresh)
 	                layer.refresh();
@@ -59856,7 +60100,7 @@
 	                layer.symbolOptions.icons.pop();
 	            }
 	            if (layer.symbolOptions.iconCount > 0) {
-	                _this.calculateIconValues(layer.symbolOptions.iconField, layer.symbolOptions.iconCount);
+	                _this.calculateIconValues(layer.symbolOptions.iconField.value, layer.symbolOptions.iconCount);
 	            }
 	            if (_this.props.state.autoRefresh)
 	                layer.refresh();
@@ -59895,10 +60139,28 @@
 	        };
 	    }
 	    SymbolMenu.prototype.getIcon = function (shape, fa, stroke, fill, onClick) {
-	        var circleIcon = React.createElement("svg", {viewBox: "0 0 69.529271 95.44922", height: "40", width: "40"}, React.createElement("g", {transform: "translate(-139.52 -173.21)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z"})));
-	        var squareIcon = React.createElement("svg", {viewBox: "0 0 69.457038 96.523441", height: "40", width: "40"}, React.createElement("g", {transform: "translate(-545.27 -658.39)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m545.27 658.39v65.301h22.248l12.48 31.223 12.676-31.223h22.053v-65.301h-69.457z"})));
-	        var starIcon = React.createElement("svg", {height: "40", width: "40", viewBox: "0 0 77.690999 101.4702"}, React.createElement("g", {transform: "translate(-101.15 -162.97)"}, React.createElement("g", {transform: "matrix(1 0 0 1.0165 -65.712 -150.28)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m205.97 308.16-11.561 11.561h-16.346v16.346l-11.197 11.197 11.197 11.197v15.83h15.744l11.615 33.693 11.467-33.568 0.125-0.125h16.346v-16.346l11.197-11.197-11.197-11.197v-15.83h-15.83l-11.561-11.561z"}))));
-	        var pentaIcon = React.createElement("svg", {viewBox: "0 0 71.550368 96.362438", height: "40", width: "40"}, React.createElement("g", {fill: fill, transform: "translate(-367.08 -289.9)"}, React.createElement("path", {stroke: stroke, d: "m367.08 322.5 17.236-32.604h36.151l18.164 32.25-35.665 64.112z"})));
+	        var circleIcon = React.createElement("svg", {viewBox: "0 0 69.529271 95.44922", height: "40", width: "40"}, 
+	            React.createElement("g", {transform: "translate(-139.52 -173.21)"}, 
+	                React.createElement("path", {fill: fill, stroke: stroke, d: "m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z"})
+	            )
+	        );
+	        var squareIcon = React.createElement("svg", {viewBox: "0 0 69.457038 96.523441", height: "40", width: "40"}, 
+	            React.createElement("g", {transform: "translate(-545.27 -658.39)"}, 
+	                React.createElement("path", {fill: fill, stroke: stroke, d: "m545.27 658.39v65.301h22.248l12.48 31.223 12.676-31.223h22.053v-65.301h-69.457z"})
+	            )
+	        );
+	        var starIcon = React.createElement("svg", {height: "40", width: "40", viewBox: "0 0 77.690999 101.4702"}, 
+	            React.createElement("g", {transform: "translate(-101.15 -162.97)"}, 
+	                React.createElement("g", {transform: "matrix(1 0 0 1.0165 -65.712 -150.28)"}, 
+	                    React.createElement("path", {fill: fill, stroke: stroke, d: "m205.97 308.16-11.561 11.561h-16.346v16.346l-11.197 11.197 11.197 11.197v15.83h15.744l11.615 33.693 11.467-33.568 0.125-0.125h16.346v-16.346l11.197-11.197-11.197-11.197v-15.83h-15.83l-11.561-11.561z"})
+	                )
+	            )
+	        );
+	        var pentaIcon = React.createElement("svg", {viewBox: "0 0 71.550368 96.362438", height: "40", width: "40"}, 
+	            React.createElement("g", {fill: fill, transform: "translate(-367.08 -289.9)"}, 
+	                React.createElement("path", {stroke: stroke, d: "m367.08 322.5 17.236-32.604h36.151l18.164 32.25-35.665 64.112z"})
+	            )
+	        );
 	        var activeIcon;
 	        switch (shape) {
 	            case ('circle'):
@@ -59921,7 +60183,9 @@
 	            verticalAlign: 'middle',
 	            width: 42,
 	            height: 42,
-	        }}, activeIcon, React.createElement("i", {style: { position: 'relative', bottom: 33, width: 18, height: 18 }, className: 'fa ' + fa}));
+	        }}, 
+	            activeIcon, 
+	            React.createElement("i", {style: { position: 'relative', bottom: 33, width: 18, height: 18 }, className: 'fa ' + fa}));
 	    };
 	    SymbolMenu.prototype.calculateIconValues = function (fieldName, steps) {
 	        var values = this.props.state.editingLayer.values;
@@ -59957,43 +60221,144 @@
 	                lineHeight: 1.5
 	            }
 	        };
-	        return (React.createElement("div", {className: "makeMaps-options"}, React.createElement("label", null, "Select symbol type "), React.createElement("br", null), React.createElement("label", {forHTML: 'circle'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-circle-o'}), "Circle", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, common_1.SymbolTypes.Circle), checked: sym.symbolType === common_1.SymbolTypes.Circle, name: 'symboltype', id: 'circle'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'rect'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-signal'}), "Rectangle", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, common_1.SymbolTypes.Rectangle), checked: sym.symbolType === common_1.SymbolTypes.Rectangle, name: 'symboltype', id: 'rect'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'icon'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-map-marker'}), "Icon", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, common_1.SymbolTypes.Icon), checked: sym.symbolType === common_1.SymbolTypes.Icon, name: 'symboltype', id: 'icon'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'chart'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-pie-chart'}), "Chart", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, common_1.SymbolTypes.Chart), checked: sym.symbolType === common_1.SymbolTypes.Chart, name: 'symboltype', id: 'chart'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'blocks'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-th-large'}), "Blocks", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, common_1.SymbolTypes.Blocks), checked: sym.symbolType === common_1.SymbolTypes.Blocks, name: 'symboltype', id: 'blocks'}), React.createElement("br", null)), sym.symbolType !== common_1.SymbolTypes.Icon ?
-	            React.createElement("div", null, React.createElement("label", null, "Scale ", sym.symbolType === common_1.SymbolTypes.Rectangle ? 'width' : 'size', " by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onXVariableChange, value: sym.symbolType === common_1.SymbolTypes.Blocks ? sym.blockSizeVar : sym.sizeXVar, clearable: sym.symbolType !== common_1.SymbolTypes.Blocks}), sym.symbolType === common_1.SymbolTypes.Rectangle ? React.createElement("div", null, React.createElement("label", null, "Scale height by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onYVariableChange, value: sym.sizeYVar})) : null, sym.sizeXVar || sym.sizeYVar ?
-	                React.createElement("div", null, React.createElement("label", null, "Size multiplier"), React.createElement("input", {type: "number", value: sym.sizeMultiplier, onChange: function (e) {
-	                    layer.symbolOptions.sizeMultiplier = e.currentTarget.valueAsNumber;
-	                    if (_this.props.state.autoRefresh)
-	                        layer.refresh();
-	                }, min: 0.1, max: 10, step: 0.1}), React.createElement("br", null), React.createElement("label", null, "Size lower limit"), React.createElement("input", {type: "number", value: sym.sizeLowLimit, onChange: function (e) {
-	                    layer.symbolOptions.sizeLowLimit = e.currentTarget.valueAsNumber;
-	                    if (_this.props.state.autoRefresh)
-	                        layer.refresh();
-	                }, min: 0}), React.createElement("br", null), React.createElement("label", null, "Size upper limit"), React.createElement("input", {type: "number", value: sym.sizeUpLimit, onChange: function (e) {
-	                    layer.symbolOptions.sizeUpLimit = e.currentTarget.valueAsNumber;
-	                    if (_this.props.state.autoRefresh)
-	                        layer.refresh();
-	                }, min: 1}))
-	                : null)
-	            : null, sym.symbolType === common_1.SymbolTypes.Icon ?
-	            React.createElement("div", null, React.createElement("label", {htmlFor: 'iconSteps'}, "Use multiple icons"), React.createElement("input", {id: 'iconSteps', type: 'checkbox', onChange: this.onUseIconStepsChange, checked: sym.useMultipleIcons}), sym.useMultipleIcons ?
-	                React.createElement("div", null, React.createElement("label", null, "Field to change icon by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onIconFieldChange, value: sym.iconField, clearable: false}), sym.iconField ?
-	                    React.createElement("div", null, "Set the ", React.createElement("i", null, "lower limit"), " and icon", React.createElement("br", null), React.createElement("button", {onClick: this.onIconStepCountChange.bind(this, -1)}, "-"), React.createElement("button", {onClick: this.onIconStepCountChange.bind(this, 1)}, "+"), this.renderSteps.call(this)) : null)
-	                :
-	                    React.createElement("div", null, "Set icon", this.getIcon(sym.icons[0].shape, sym.icons[0].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, 0))), React.createElement("br", null), "Change icon colors in the color menu")
-	            : null, sym.symbolType === common_1.SymbolTypes.Chart ?
-	            React.createElement("div", null, React.createElement("label", null, "Select the variables to show"), React.createElement(Select, {options: layer.numberHeaders, multi: true, onChange: this.onChartFieldsChange, value: sym.chartFields.slice(), backspaceRemoves: false}), "Chart type", React.createElement("br", null), React.createElement("label", {forHTML: 'pie'}, "Pie", React.createElement("input", {type: 'radio', onChange: function () {
-	                layer.symbolOptions.chartType = 'pie';
-	            }, checked: sym.chartType === 'pie', name: 'charttype', id: 'rect'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'donut'}, "Donut", React.createElement("input", {type: 'radio', onChange: function () {
-	                layer.symbolOptions.chartType = 'donut';
-	            }, checked: sym.chartType === 'donut', name: 'charttype', id: 'donut'}), React.createElement("br", null)), React.createElement("i", null, "TIP: hover over symbol segments to see corresponding value"))
-	            : null, sym.symbolType === common_1.SymbolTypes.Blocks ?
-	            React.createElement("div", null, React.createElement("label", null, "Single block value"), React.createElement("input", {type: "number", value: sym.blockValue, onChange: function (e) {
-	                layer.symbolOptions.blockValue = e.currentTarget.valueAsNumber;
-	                if (_this.props.state.autoRefresh)
-	                    layer.refresh();
-	            }, min: 1}))
-	            : null, this.props.state.autoRefresh ? null :
-	            React.createElement("button", {className: 'menuButton', onClick: this.saveOptions}, "Refresh map"), React.createElement(Modal, {isOpen: state.iconSelectOpen, style: iconSelectStyle}, state.iconSelectOpen ? React.createElement("div", null, "Icon", this.renderIcons.call(this), "Or", React.createElement("br", null), React.createElement("label", null, "Use another ", React.createElement("a", {href: 'http://fontawesome.io/icons/'}, "Font Awesome"), " icon"), React.createElement("input", {type: "text", onChange: this.onFAIconChange, value: sym.icons[state.currentIconIndex].fa}), React.createElement("br", null), "Icon shape", React.createElement("br", null), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'circle')}, this.getIcon('circle', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'square')}, this.getIcon('square', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'star')}, this.getIcon('star', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'penta')}, this.getIcon('penta', '', '#999999', 'transparent', null)), React.createElement("br", null), React.createElement("button", {className: 'primaryButton', onClick: this.toggleIconSelect.bind(this, state.currentIconIndex), style: { position: 'absolute', left: 80 }}, "OK"))
-	            : null)));
+	        return (React.createElement("div", {className: "makeMaps-options"}, 
+	            React.createElement("label", null, "Select symbol type "), 
+	            React.createElement("br", null), 
+	            React.createElement("label", {forHTML: 'circle'}, 
+	                React.createElement("i", {style: { margin: 4 }, className: 'fa fa-circle-o'}), 
+	                "Circle", 
+	                React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, common_1.SymbolTypes.Circle), checked: sym.symbolType === common_1.SymbolTypes.Circle, name: 'symboltype', id: 'circle'}), 
+	                React.createElement("br", null)), 
+	            React.createElement("label", {forHTML: 'rect'}, 
+	                React.createElement("i", {style: { margin: 4 }, className: 'fa fa-signal'}), 
+	                "Rectangle", 
+	                React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, common_1.SymbolTypes.Rectangle), checked: sym.symbolType === common_1.SymbolTypes.Rectangle, name: 'symboltype', id: 'rect'}), 
+	                React.createElement("br", null)), 
+	            React.createElement("label", {forHTML: 'icon'}, 
+	                React.createElement("i", {style: { margin: 4 }, className: 'fa fa-map-marker'}), 
+	                "Icon", 
+	                React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, common_1.SymbolTypes.Icon), checked: sym.symbolType === common_1.SymbolTypes.Icon, name: 'symboltype', id: 'icon'}), 
+	                React.createElement("br", null)), 
+	            React.createElement("label", {forHTML: 'chart'}, 
+	                React.createElement("i", {style: { margin: 4 }, className: 'fa fa-pie-chart'}), 
+	                "Chart", 
+	                React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, common_1.SymbolTypes.Chart), checked: sym.symbolType === common_1.SymbolTypes.Chart, name: 'symboltype', id: 'chart'}), 
+	                React.createElement("br", null)), 
+	            React.createElement("label", {forHTML: 'blocks'}, 
+	                React.createElement("i", {style: { margin: 4 }, className: 'fa fa-th-large'}), 
+	                "Blocks", 
+	                React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, common_1.SymbolTypes.Blocks), checked: sym.symbolType === common_1.SymbolTypes.Blocks, name: 'symboltype', id: 'blocks'}), 
+	                React.createElement("br", null)), 
+	            sym.symbolType !== common_1.SymbolTypes.Icon ?
+	                React.createElement("div", null, 
+	                    React.createElement("label", null, 
+	                        "Scale ", 
+	                        sym.symbolType === common_1.SymbolTypes.Rectangle ? 'width' : 'size', 
+	                        " by"), 
+	                    React.createElement(Select, {options: layer.numberHeaders, onChange: this.onXVariableChange, value: sym.symbolType === common_1.SymbolTypes.Blocks ? sym.blockSizeVar : sym.sizeXVar, clearable: sym.symbolType !== common_1.SymbolTypes.Blocks}), 
+	                    sym.symbolType === common_1.SymbolTypes.Rectangle ? React.createElement("div", null, 
+	                        React.createElement("label", null, "Scale height by"), 
+	                        React.createElement(Select, {options: layer.numberHeaders, onChange: this.onYVariableChange, value: sym.sizeYVar})) : null, 
+	                    sym.sizeXVar || sym.sizeYVar ?
+	                        React.createElement("div", null, 
+	                            React.createElement("label", null, "Size multiplier"), 
+	                            React.createElement("input", {type: "number", value: sym.sizeMultiplier, onChange: function (e) {
+	                                layer.symbolOptions.sizeMultiplier = e.currentTarget.valueAsNumber;
+	                                if (_this.props.state.autoRefresh)
+	                                    layer.refresh();
+	                            }, min: 0.1, max: 10, step: 0.1}), 
+	                            React.createElement("br", null), 
+	                            React.createElement("label", null, "Size lower limit"), 
+	                            React.createElement("input", {type: "number", value: sym.sizeLowLimit, onChange: function (e) {
+	                                layer.symbolOptions.sizeLowLimit = e.currentTarget.valueAsNumber;
+	                                if (_this.props.state.autoRefresh)
+	                                    layer.refresh();
+	                            }, min: 0}), 
+	                            React.createElement("br", null), 
+	                            React.createElement("label", null, "Size upper limit"), 
+	                            React.createElement("input", {type: "number", value: sym.sizeUpLimit, onChange: function (e) {
+	                                layer.symbolOptions.sizeUpLimit = e.currentTarget.valueAsNumber;
+	                                if (_this.props.state.autoRefresh)
+	                                    layer.refresh();
+	                            }, min: 1}))
+	                        : null)
+	                : null, 
+	            sym.symbolType === common_1.SymbolTypes.Icon ?
+	                React.createElement("div", null, 
+	                    React.createElement("label", {htmlFor: 'iconSteps'}, "Use multiple icons"), 
+	                    React.createElement("input", {id: 'iconSteps', type: 'checkbox', onChange: this.onUseIconStepsChange, checked: sym.useMultipleIcons}), 
+	                    sym.useMultipleIcons ?
+	                        React.createElement("div", null, 
+	                            React.createElement("label", null, "Field to change icon by"), 
+	                            React.createElement(Select, {options: layer.numberHeaders, onChange: this.onIconFieldChange, value: sym.iconField, clearable: false}), 
+	                            sym.iconField ?
+	                                React.createElement("div", null, 
+	                                    "Set the ", 
+	                                    React.createElement("i", null, "lower limit"), 
+	                                    " and icon", 
+	                                    React.createElement("br", null), 
+	                                    React.createElement("button", {onClick: this.onIconStepCountChange.bind(this, -1)}, "-"), 
+	                                    React.createElement("button", {onClick: this.onIconStepCountChange.bind(this, 1)}, "+"), 
+	                                    this.renderSteps.call(this)) : null)
+	                        :
+	                            React.createElement("div", null, 
+	                                "Set icon", 
+	                                this.getIcon(sym.icons[0].shape, sym.icons[0].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, 0))), 
+	                    React.createElement("br", null), 
+	                    "Change icon colors in the color menu")
+	                : null, 
+	            sym.symbolType === common_1.SymbolTypes.Chart ?
+	                React.createElement("div", null, 
+	                    React.createElement("label", null, "Select the variables to show"), 
+	                    React.createElement(Select, {options: layer.numberHeaders, multi: true, onChange: this.onChartFieldsChange, value: sym.chartFields.slice(), backspaceRemoves: false}), 
+	                    "Chart type", 
+	                    React.createElement("br", null), 
+	                    React.createElement("label", {forHTML: 'pie'}, 
+	                        "Pie", 
+	                        React.createElement("input", {type: 'radio', onChange: function () {
+	                            layer.symbolOptions.chartType = 'pie';
+	                        }, checked: sym.chartType === 'pie', name: 'charttype', id: 'rect'}), 
+	                        React.createElement("br", null)), 
+	                    React.createElement("label", {forHTML: 'donut'}, 
+	                        "Donut", 
+	                        React.createElement("input", {type: 'radio', onChange: function () {
+	                            layer.symbolOptions.chartType = 'donut';
+	                        }, checked: sym.chartType === 'donut', name: 'charttype', id: 'donut'}), 
+	                        React.createElement("br", null)), 
+	                    React.createElement("br", null), 
+	                    React.createElement("i", null, "TIP: hover over symbol segments to see corresponding value"))
+	                : null, 
+	            sym.symbolType === common_1.SymbolTypes.Blocks ?
+	                React.createElement("div", null, 
+	                    React.createElement("label", null, "Single block value"), 
+	                    React.createElement("input", {type: "number", value: sym.blockValue, onChange: function (e) {
+	                        layer.symbolOptions.blockValue = e.currentTarget.valueAsNumber;
+	                        if (_this.props.state.autoRefresh)
+	                            layer.refresh();
+	                    }, min: 1}))
+	                : null, 
+	            this.props.state.autoRefresh ? null :
+	                React.createElement("button", {className: 'menuButton', onClick: this.saveOptions}, "Refresh map"), 
+	            React.createElement(Modal, {isOpen: state.iconSelectOpen, style: iconSelectStyle}, state.iconSelectOpen ? React.createElement("div", null, 
+	                "Icon", 
+	                this.renderIcons.call(this), 
+	                "Or", 
+	                React.createElement("br", null), 
+	                React.createElement("label", null, 
+	                    "Use another ", 
+	                    React.createElement("a", {href: 'http://fontawesome.io/icons/'}, "Font Awesome"), 
+	                    " icon"), 
+	                React.createElement("input", {type: "text", onChange: this.onFAIconChange, value: sym.icons[state.currentIconIndex].fa}), 
+	                React.createElement("br", null), 
+	                "Icon shape", 
+	                React.createElement("br", null), 
+	                React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'circle')}, this.getIcon('circle', '', '#999999', 'transparent', null)), 
+	                React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'square')}, this.getIcon('square', '', '#999999', 'transparent', null)), 
+	                React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'star')}, this.getIcon('star', '', '#999999', 'transparent', null)), 
+	                React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'penta')}, this.getIcon('penta', '', '#999999', 'transparent', null)), 
+	                React.createElement("br", null), 
+	                React.createElement("button", {className: 'primaryButton', onClick: this.toggleIconSelect.bind(this, state.currentIconIndex), style: { position: 'absolute', left: 80 }}, "OK"))
+	                : null)));
 	    };
 	    SymbolMenu.prototype.renderIcons = function () {
 	        var arr = [];
@@ -60018,25 +60383,30 @@
 	            }
 	            return columns;
 	        }
-	        return (React.createElement("table", {style: { width: '100%', cursor: 'pointer' }}, React.createElement("tbody", null, arr.map(function (td) {
-	            return td;
-	        }))));
+	        return (React.createElement("table", {style: { width: '100%', cursor: 'pointer' }}, 
+	            React.createElement("tbody", null, arr.map(function (td) {
+	                return td;
+	            }))
+	        ));
 	    };
 	    SymbolMenu.prototype.renderSteps = function () {
+	        var layer = this.props.state.editingLayer;
 	        var rows = [];
 	        var steps = [];
-	        for (var i in this.props.state.editingLayer.symbolOptions.iconLimits.slice()) {
-	            if (+i !== this.props.state.editingLayer.symbolOptions.iconLimits.slice().length - 1) {
-	                var step = this.props.state.editingLayer.symbolOptions.iconLimits[i];
+	        for (var i in layer.symbolOptions.iconLimits.slice()) {
+	            if (+i !== layer.symbolOptions.iconLimits.slice().length - 1) {
+	                var step = layer.symbolOptions.iconLimits[i];
 	                steps.push(step);
 	            }
 	        }
 	        var row = 0;
 	        for (var _i = 0, steps_1 = steps; _i < steps_1.length; _i++) {
 	            var i = steps_1[_i];
-	            rows.push(React.createElement("li", {key: i, style: { lineHeight: 0 }}, React.createElement("input", {id: row + 'min', type: 'number', defaultValue: i.toFixed(2), style: {
-	                width: 100,
-	            }, onChange: this.onStepLimitChange.bind(this, row), step: 'any'}), this.getIcon(this.props.state.editingLayer.symbolOptions.icons[row].shape, this.props.state.editingLayer.symbolOptions.icons[row].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, row))));
+	            rows.push(React.createElement("li", {key: i, style: { lineHeight: 0 }}, 
+	                React.createElement("input", {id: row + 'min', type: 'number', defaultValue: i.toFixed(2), style: {
+	                    width: 100,
+	                }, onChange: this.onStepLimitChange.bind(this, row), step: 1 * Math.pow(10, (-layer.symbolOptions.iconField.decimalAccuracy))}), 
+	                this.getIcon(layer.symbolOptions.icons[row].shape, layer.symbolOptions.icons[row].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, row))));
 	            row++;
 	        }
 	        return React.createElement("ul", {id: 'customSteps', style: { listStyle: 'none', padding: 0 }}, rows.map(function (r) { return r; }));
@@ -60155,7 +60525,7 @@
 	            var filter = new Filter_1.Filter();
 	            filter.id = _this.props.state.nextFilterId;
 	            filter.layer = _this.props.state.editingLayer;
-	            filter.fieldToFilter = _this.props.state.editingLayer.numberHeaders[0].label;
+	            filter.fieldToFilter = _this.props.state.editingLayer.numberHeaders[0].value;
 	            filter.title = filter.fieldToFilter;
 	            filter.appState = _this.props.state;
 	            _this.props.state.filters.push(filter);
@@ -60224,24 +60594,61 @@
 	        }
 	        return (!layer ? null :
 	            React.createElement("div", {className: "makeMaps-options"}, filter ?
-	                React.createElement("div", null, React.createElement("label", null, "Select the filter to update"), React.createElement(Select, {options: filters, onChange: function (id) {
-	                    _this.props.state.filterMenuState.selectedFilterId = id.value;
-	                }, value: state.selectedFilterId}), "Or", React.createElement("button", {className: 'menuButton', onClick: this.createNewFilter}, "Create new filter"), React.createElement("br", null), React.createElement("label", null, "Give a name to the filter", React.createElement("input", {type: "text", onChange: function (e) {
-	                    _this.props.state.editingFilter.title = e.target.value;
-	                }, value: filter ? filter.title : ''})), filter.show ? React.createElement("br", null)
-	                    :
-	                        React.createElement("div", null, React.createElement("label", null, "Select the filter variable", React.createElement(Select, {options: layer.numberHeaders, onChange: this.onFilterVariableChange, value: filter ? filter.fieldToFilter : ''}))), React.createElement("label", {forHTML: 'steps'}, "Use predefined steps", React.createElement("input", {type: 'checkbox', onChange: function (e) {
-	                    _this.props.state.filterMenuState.useCustomSteps = e.target.checked;
-	                }, checked: state.useCustomSteps, id: 'steps'}), React.createElement("br", null)), state.useCustomSteps && filter.totalMin !== undefined && filter.totalMax !== undefined ?
-	                    React.createElement("div", null, React.createElement("label", {forHTML: 'dist'}, "Use distinct values", React.createElement("input", {type: 'checkbox', onChange: this.onUseDistinctValuesChange, checked: state.useDistinctValues, id: 'dist'}), React.createElement("br", null)), renderSteps.call(this))
-	                    : null, layer.layerType === common_1.LayerTypes.HeatMap ? null :
-	                    React.createElement("div", null, React.createElement("label", {forHTML: 'remove'}, "Remove filtered items", React.createElement("input", {type: 'radio', onChange: function () {
-	                        _this.props.state.editingFilter.remove = true;
-	                    }, checked: filter.remove, name: 'filterMethod', id: 'remove'})), React.createElement("br", null), "Or", React.createElement("br", null), React.createElement("label", {forHTML: 'opacity', style: { marginTop: 0 }}, "Change opacity", React.createElement("input", {type: 'radio', onChange: function () {
-	                        _this.props.state.editingFilter.remove = false;
-	                    }, checked: !filter.remove, name: 'filterMethod', id: 'opacity'}))), React.createElement("button", {className: 'menuButton', onClick: this.saveFilter}, "Save filter"), filters.length > 0 && state.selectedFilterId !== -1 ?
-	                    React.createElement("button", {className: 'menuButton', onClick: this.deleteFilter}, "Delete filter")
-	                    : null, React.createElement("br", null), React.createElement("i", null, "TIP: drag the filter on screen by the header to place it where you wish"))
+	                React.createElement("div", null, 
+	                    React.createElement("label", null, "Select the filter to update"), 
+	                    React.createElement(Select, {options: filters, onChange: function (id) {
+	                        _this.props.state.filterMenuState.selectedFilterId = id.value;
+	                    }, value: state.selectedFilterId}), 
+	                    "Or", 
+	                    React.createElement("button", {className: 'menuButton', onClick: this.createNewFilter}, "Create new filter"), 
+	                    React.createElement("br", null), 
+	                    React.createElement("label", null, 
+	                        "Give a name to the filter", 
+	                        React.createElement("input", {type: "text", onChange: function (e) {
+	                            _this.props.state.editingFilter.title = e.target.value;
+	                        }, value: filter ? filter.title : ''})), 
+	                    filter.show ? React.createElement("br", null)
+	                        :
+	                            React.createElement("div", null, 
+	                                React.createElement("label", null, 
+	                                    "Select the filter variable", 
+	                                    React.createElement(Select, {options: layer.numberHeaders, onChange: this.onFilterVariableChange, value: filter ? filter.fieldToFilter : ''}))
+	                            ), 
+	                    React.createElement("label", {forHTML: 'steps'}, 
+	                        "Use predefined steps", 
+	                        React.createElement("input", {type: 'checkbox', onChange: function (e) {
+	                            _this.props.state.filterMenuState.useCustomSteps = e.target.checked;
+	                        }, checked: state.useCustomSteps, id: 'steps'}), 
+	                        React.createElement("br", null)), 
+	                    state.useCustomSteps && filter.totalMin !== undefined && filter.totalMax !== undefined ?
+	                        React.createElement("div", null, 
+	                            React.createElement("label", {forHTML: 'dist'}, 
+	                                "Use distinct values", 
+	                                React.createElement("input", {type: 'checkbox', onChange: this.onUseDistinctValuesChange, checked: state.useDistinctValues, id: 'dist'}), 
+	                                React.createElement("br", null)), 
+	                            renderSteps.call(this))
+	                        : null, 
+	                    layer.layerType === common_1.LayerTypes.HeatMap ? null :
+	                        React.createElement("div", null, 
+	                            React.createElement("label", {forHTML: 'remove'}, 
+	                                "Remove filtered items", 
+	                                React.createElement("input", {type: 'radio', onChange: function () {
+	                                    _this.props.state.editingFilter.remove = true;
+	                                }, checked: filter.remove, name: 'filterMethod', id: 'remove'})), 
+	                            React.createElement("br", null), 
+	                            "Or", 
+	                            React.createElement("br", null), 
+	                            React.createElement("label", {forHTML: 'opacity', style: { marginTop: 0 }}, 
+	                                "Change opacity", 
+	                                React.createElement("input", {type: 'radio', onChange: function () {
+	                                    _this.props.state.editingFilter.remove = false;
+	                                }, checked: !filter.remove, name: 'filterMethod', id: 'opacity'}))), 
+	                    React.createElement("button", {className: 'menuButton', onClick: this.saveFilter}, "Save filter"), 
+	                    filters.length > 0 && state.selectedFilterId !== -1 ?
+	                        React.createElement("button", {className: 'menuButton', onClick: this.deleteFilter}, "Delete filter")
+	                        : null, 
+	                    React.createElement("br", null), 
+	                    React.createElement("i", null, "TIP: drag the filter on screen by the header to place it where you wish"))
 	                :
 	                    React.createElement("button", {className: 'menuButton', onClick: this.createNewFilter}, "Create new filter")));
 	        function renderSteps() {
@@ -60267,10 +60674,16 @@
 	            var row = 0;
 	            for (var _i = 0, steps_1 = steps; _i < steps_1.length; _i++) {
 	                var i = steps_1[_i];
-	                rows.push(React.createElement("li", {key: i}, React.createElement("input", {id: row + 'min', type: 'number', defaultValue: i[0].toFixed(2), style: inputStyle, step: 'any'}), "-", React.createElement("input", {id: row + 'max', type: 'number', defaultValue: i[1].toFixed(2), style: inputStyle, step: 'any'})));
+	                rows.push(React.createElement("li", {key: i}, 
+	                    React.createElement("input", {id: row + 'min', type: 'number', defaultValue: i[0].toFixed(2), style: inputStyle, step: 'any'}), 
+	                    "-", 
+	                    React.createElement("input", {id: row + 'max', type: 'number', defaultValue: i[1].toFixed(2), style: inputStyle, step: 'any'})));
 	                row++;
 	            }
-	            return React.createElement("div", null, React.createElement("button", {onClick: this.changeStepsCount.bind(this, -1)}, "-"), React.createElement("button", {onClick: this.changeStepsCount.bind(this, 1)}, "+"), React.createElement("ul", {id: 'customSteps', style: { listStyle: 'none', padding: 0 }}, rows.map(function (r) { return r; })));
+	            return React.createElement("div", null, 
+	                React.createElement("button", {onClick: this.changeStepsCount.bind(this, -1)}, "-"), 
+	                React.createElement("button", {onClick: this.changeStepsCount.bind(this, 1)}, "+"), 
+	                React.createElement("ul", {id: 'customSteps', style: { listStyle: 'none', padding: 0 }}, rows.map(function (r) { return r; })));
 	        }
 	    };
 	    FilterMenu = __decorate([
@@ -60528,29 +60941,58 @@
 	    LegendMenu.prototype.render = function () {
 	        var _this = this;
 	        var legend = this.props.state.legend;
-	        return (React.createElement("div", {className: "makeMaps-options"}, React.createElement("label", {htmlFor: 'showLegend'}, "Show legend", React.createElement("input", {id: 'showLegend', type: 'checkbox', checked: legend.visible, onChange: function (e) {
-	            _this.props.state.legend.visible = e.currentTarget.checked;
-	        }})), React.createElement("br", null), React.createElement("label", null, "Title"), React.createElement("input", {type: 'text', style: { width: '100%' }, value: legend.title, onChange: function (e) {
-	            _this.props.state.legend.title = e.target.value;
-	        }}), React.createElement("br", null), React.createElement("label", {htmlFor: 'showEdit'}, "Show legend edit options", React.createElement("input", {id: 'showEdit', type: 'checkbox', checked: legend.edit, onChange: function (e) {
-	            legend.edit = e.currentTarget.checked;
-	        }})), React.createElement("br", null), React.createElement("label", {htmlFor: 'showPercentages'}, "Show distribution", React.createElement("input", {id: 'showPercentages', type: 'checkbox', checked: legend.showPercentages, onChange: function (e) {
-	            _this.props.state.legend.showPercentages = e.currentTarget.checked;
-	        }})), React.createElement("br", null), React.createElement("label", {htmlFor: 'makeHorizontal'}, "Align horizontally", React.createElement("input", {id: 'makeHorizontal', type: 'checkbox', checked: legend.horizontal, onChange: function (e) {
-	            _this.props.state.legend.horizontal = e.currentTarget.checked;
-	        }})), React.createElement("hr", null), React.createElement("label", null, "Legend position"), React.createElement("table", {style: { cursor: 'pointer', border: "1px solid #999999", width: 50, height: 50, margin: '0 auto' }}, React.createElement("tbody", null, React.createElement("tr", null, React.createElement("td", {style: {
-	            border: "1px solid #999999", borderRadius: 5,
-	            background: legend.top && legend.left ? "#FFF" : ""
-	        }, onClick: function () { legend.top = true; legend.left = true; legend.bottom = false; legend.right = false; }}), React.createElement("td", {style: {
-	            border: "1px solid #999999", borderRadius: 5,
-	            background: legend.top && legend.right ? "#FFF" : ""
-	        }, onClick: function () { legend.top = true; legend.right = true; legend.bottom = false; legend.left = false; }})), React.createElement("tr", null, React.createElement("td", {style: {
-	            border: "1px solid #999999", borderRadius: 5,
-	            background: legend.bottom && legend.left ? "#FFF" : ""
-	        }, onClick: function () { legend.bottom = true; legend.left = true; legend.top = false; legend.right = false; }}), React.createElement("td", {style: {
-	            border: "1px solid #999999", borderRadius: 5,
-	            background: legend.bottom && legend.right ? "#FFF" : ""
-	        }, onClick: function () { legend.bottom = true; legend.right = true; legend.top = false; legend.left = false; }}))))));
+	        return (React.createElement("div", {className: "makeMaps-options"}, 
+	            React.createElement("label", {htmlFor: 'showLegend'}, 
+	                "Show legend", 
+	                React.createElement("input", {id: 'showLegend', type: 'checkbox', checked: legend.visible, onChange: function (e) {
+	                    _this.props.state.legend.visible = e.currentTarget.checked;
+	                }})), 
+	            React.createElement("br", null), 
+	            React.createElement("label", null, "Title"), 
+	            React.createElement("input", {type: 'text', style: { width: '100%' }, value: legend.title, onChange: function (e) {
+	                _this.props.state.legend.title = e.target.value;
+	            }}), 
+	            React.createElement("br", null), 
+	            React.createElement("label", {htmlFor: 'showEdit'}, 
+	                "Show legend edit options", 
+	                React.createElement("input", {id: 'showEdit', type: 'checkbox', checked: legend.edit, onChange: function (e) {
+	                    legend.edit = e.currentTarget.checked;
+	                }})), 
+	            React.createElement("br", null), 
+	            React.createElement("label", {htmlFor: 'showPercentages'}, 
+	                "Show distribution", 
+	                React.createElement("input", {id: 'showPercentages', type: 'checkbox', checked: legend.showPercentages, onChange: function (e) {
+	                    _this.props.state.legend.showPercentages = e.currentTarget.checked;
+	                }})), 
+	            React.createElement("br", null), 
+	            React.createElement("label", {htmlFor: 'makeHorizontal'}, 
+	                "Align horizontally", 
+	                React.createElement("input", {id: 'makeHorizontal', type: 'checkbox', checked: legend.horizontal, onChange: function (e) {
+	                    _this.props.state.legend.horizontal = e.currentTarget.checked;
+	                }})), 
+	            React.createElement("hr", null), 
+	            React.createElement("label", null, "Legend position"), 
+	            React.createElement("table", {style: { cursor: 'pointer', border: "1px solid #999999", width: 50, height: 50, margin: '0 auto' }}, 
+	                React.createElement("tbody", null, 
+	                    React.createElement("tr", null, 
+	                        React.createElement("td", {style: {
+	                            border: "1px solid #999999", borderRadius: 5,
+	                            background: legend.top && legend.left ? "#FFF" : ""
+	                        }, onClick: function () { legend.top = true; legend.left = true; legend.bottom = false; legend.right = false; }}), 
+	                        React.createElement("td", {style: {
+	                            border: "1px solid #999999", borderRadius: 5,
+	                            background: legend.top && legend.right ? "#FFF" : ""
+	                        }, onClick: function () { legend.top = true; legend.right = true; legend.bottom = false; legend.left = false; }})), 
+	                    React.createElement("tr", null, 
+	                        React.createElement("td", {style: {
+	                            border: "1px solid #999999", borderRadius: 5,
+	                            background: legend.bottom && legend.left ? "#FFF" : ""
+	                        }, onClick: function () { legend.bottom = true; legend.left = true; legend.top = false; legend.right = false; }}), 
+	                        React.createElement("td", {style: {
+	                            border: "1px solid #999999", borderRadius: 5,
+	                            background: legend.bottom && legend.right ? "#FFF" : ""
+	                        }, onClick: function () { legend.bottom = true; legend.right = true; legend.top = false; legend.left = false; }})))
+	            )));
 	    };
 	    LegendMenu = __decorate([
 	        mobx_react_1.observer, 
@@ -60591,35 +61033,56 @@
 	    ClusterMenu.prototype.render = function () {
 	        var layer = this.props.state.editingLayer;
 	        var options = layer.clusterOptions;
-	        return (React.createElement("div", {className: 'makeMaps-options'}, React.createElement("label", {htmlFor: 'useClustering'}, "Use clustering", React.createElement("input", {id: 'useClustering', type: 'checkbox', checked: options.useClustering, onChange: function (e) {
-	            options.useClustering = e.currentTarget.checked;
-	            layer.toggleCluster = true;
-	            layer.refresh();
-	        }})), React.createElement("label", {htmlFor: 'showCount'}, "Show point count on hover", React.createElement("input", {id: 'showCount', type: 'checkbox', checked: options.showCount, onChange: function (e) {
-	            options.showCount = e.currentTarget.checked;
-	            layer.refreshCluster();
-	        }})), options.showCount ?
-	            React.createElement("div", null, React.createElement("span", null, "Text"), React.createElement("input", {type: 'text', style: { width: '100%' }, value: options.countText, onChange: function (e) {
-	                options.countText = e.target.value;
-	                layer.refreshCluster();
-	            }}))
-	            : null, React.createElement("label", {htmlFor: 'showAvg'}, "Show average on hover", React.createElement("input", {id: 'showAvg', type: 'checkbox', checked: options.showAvg, onChange: function (e) {
-	            options.showAvg = e.currentTarget.checked;
-	            layer.refreshCluster();
-	        }})), options.showAvg ?
-	            React.createElement("div", null, React.createElement("span", null, "Text"), React.createElement("input", {type: 'text', style: { width: '100%' }, value: options.avgText, onChange: function (e) {
-	                options.avgText = e.target.value;
-	                layer.refreshCluster();
-	            }}))
-	            : null, React.createElement("label", {htmlFor: 'showSum'}, "Show sum on hover", React.createElement("input", {id: 'showSum', type: 'checkbox', checked: options.showSum, onChange: function (e) {
-	            options.showSum = e.currentTarget.checked;
-	            layer.refreshCluster();
-	        }})), options.showSum ?
-	            React.createElement("div", null, React.createElement("span", null, "Text"), React.createElement("input", {type: 'text', style: { width: '100%' }, value: options.sumText, onChange: function (e) {
-	                options.sumText = e.target.value;
-	                layer.refreshCluster();
-	            }}))
-	            : null));
+	        return (React.createElement("div", {className: 'makeMaps-options'}, 
+	            React.createElement("label", {htmlFor: 'useClustering'}, 
+	                "Use clustering", 
+	                React.createElement("input", {id: 'useClustering', type: 'checkbox', checked: options.useClustering, onChange: function (e) {
+	                    options.useClustering = e.currentTarget.checked;
+	                    layer.toggleCluster = true;
+	                    layer.refresh();
+	                }})), 
+	            React.createElement("label", {htmlFor: 'showCount'}, 
+	                "Show point count on hover", 
+	                React.createElement("input", {id: 'showCount', type: 'checkbox', checked: options.showCount, onChange: function (e) {
+	                    options.showCount = e.currentTarget.checked;
+	                    layer.refreshCluster();
+	                }})), 
+	            options.showCount ?
+	                React.createElement("div", null, 
+	                    React.createElement("span", null, "Text"), 
+	                    React.createElement("input", {type: 'text', style: { width: '100%' }, value: options.countText, onChange: function (e) {
+	                        options.countText = e.target.value;
+	                        layer.refreshCluster();
+	                    }}))
+	                : null, 
+	            React.createElement("label", {htmlFor: 'showAvg'}, 
+	                "Show average on hover", 
+	                React.createElement("input", {id: 'showAvg', type: 'checkbox', checked: options.showAvg, onChange: function (e) {
+	                    options.showAvg = e.currentTarget.checked;
+	                    layer.refreshCluster();
+	                }})), 
+	            options.showAvg ?
+	                React.createElement("div", null, 
+	                    React.createElement("span", null, "Text"), 
+	                    React.createElement("input", {type: 'text', style: { width: '100%' }, value: options.avgText, onChange: function (e) {
+	                        options.avgText = e.target.value;
+	                        layer.refreshCluster();
+	                    }}))
+	                : null, 
+	            React.createElement("label", {htmlFor: 'showSum'}, 
+	                "Show sum on hover", 
+	                React.createElement("input", {id: 'showSum', type: 'checkbox', checked: options.showSum, onChange: function (e) {
+	                    options.showSum = e.currentTarget.checked;
+	                    layer.refreshCluster();
+	                }})), 
+	            options.showSum ?
+	                React.createElement("div", null, 
+	                    React.createElement("span", null, "Text"), 
+	                    React.createElement("input", {type: 'text', style: { width: '100%' }, value: options.sumText, onChange: function (e) {
+	                        options.sumText = e.target.value;
+	                        layer.refreshCluster();
+	                    }}))
+	                : null));
 	    };
 	    ClusterMenu = __decorate([
 	        mobx_react_1.observer, 
@@ -60676,18 +61139,31 @@
 	    PopUpMenu.prototype.render = function () {
 	        var _this = this;
 	        var layer = this.props.state.editingLayer;
-	        return (React.createElement("div", {className: "makeMaps-options"}, React.createElement("label", null, "Select the variables to show"), React.createElement(Select, {options: layer.headers.slice(), multi: true, onChange: this.onSelectionChange, value: layer.popupHeaders.slice(), backspaceRemoves: false}), React.createElement("div", null, React.createElement("label", {forHTML: 'click'}, "Open on click", React.createElement("input", {type: 'radio', onChange: function () {
-	            layer.showPopUpOnHover = false;
-	            if (_this.props.state.autoRefresh)
-	                layer.refreshPopUps();
-	        }, checked: !layer.showPopUpOnHover, name: 'openMethod', id: 'click'})), React.createElement("br", null), "Or", React.createElement("br", null), React.createElement("label", {forHTML: 'hover', style: { marginTop: 0 }}, "Open on mouse over", React.createElement("input", {type: 'radio', onChange: function () {
-	            layer.showPopUpOnHover = true;
-	            if (_this.props.state.autoRefresh)
-	                layer.refreshPopUps();
-	        }, checked: layer.showPopUpOnHover, name: 'openMethod', id: 'hover'}))), this.props.state.autoRefresh ? null :
-	            React.createElement("button", {className: 'menuButton', onClick: function () {
-	                _this.saveValues();
-	            }}, "Refresh map")));
+	        return (React.createElement("div", {className: "makeMaps-options"}, 
+	            React.createElement("label", null, "Select the variables to show"), 
+	            React.createElement(Select, {options: layer.headers.slice(), multi: true, onChange: this.onSelectionChange, value: layer.popupHeaders.slice(), backspaceRemoves: false}), 
+	            React.createElement("div", null, 
+	                React.createElement("label", {forHTML: 'click'}, 
+	                    "Open on click", 
+	                    React.createElement("input", {type: 'radio', onChange: function () {
+	                        layer.showPopUpOnHover = false;
+	                        if (_this.props.state.autoRefresh)
+	                            layer.refreshPopUps();
+	                    }, checked: !layer.showPopUpOnHover, name: 'openMethod', id: 'click'})), 
+	                React.createElement("br", null), 
+	                "Or", 
+	                React.createElement("br", null), 
+	                React.createElement("label", {forHTML: 'hover', style: { marginTop: 0 }}, 
+	                    "Open on mouse over", 
+	                    React.createElement("input", {type: 'radio', onChange: function () {
+	                        layer.showPopUpOnHover = true;
+	                        if (_this.props.state.autoRefresh)
+	                            layer.refreshPopUps();
+	                    }, checked: layer.showPopUpOnHover, name: 'openMethod', id: 'hover'}))), 
+	            this.props.state.autoRefresh ? null :
+	                React.createElement("button", {className: 'menuButton', onClick: function () {
+	                    _this.saveValues();
+	                }}, "Refresh map")));
 	    };
 	    PopUpMenu = __decorate([
 	        mobx_react_1.observer, 
@@ -60726,15 +61202,27 @@
 	    }
 	    ExportMenu.prototype.render = function () {
 	        var _this = this;
-	        return (React.createElement("div", null, React.createElement("label", {htmlFor: 'showLegend'}, "Show legend on the image"), React.createElement("input", {id: 'showLegend', type: 'checkbox', checked: this.props.state.exportMenuState.showLegend, onChange: function (e) {
-	            _this.props.state.exportMenuState.showLegend = e.currentTarget.checked;
-	        }}), React.createElement("br", null), React.createElement("label", {htmlFor: 'showFilters'}, "Show filters on the image"), React.createElement("input", {id: 'showFilters', type: 'checkbox', checked: this.props.state.exportMenuState.showFilters, onChange: function (e) {
-	            _this.props.state.exportMenuState.showFilters = e.currentTarget.checked;
-	        }}), React.createElement("br", null), React.createElement("button", {className: 'menuButton', onClick: function () {
-	            _this.props.saveImage();
-	        }}, "Download map as image"), React.createElement("br", null), "Or", React.createElement("br", null), React.createElement("button", {className: 'menuButton', onClick: function () {
-	            _this.props.saveFile();
-	        }}, "Download map as a file"), React.createElement("br", null)));
+	        return (React.createElement("div", null, 
+	            React.createElement("label", {htmlFor: 'showLegend'}, "Show legend on the image"), 
+	            React.createElement("input", {id: 'showLegend', type: 'checkbox', checked: this.props.state.exportMenuState.showLegend, onChange: function (e) {
+	                _this.props.state.exportMenuState.showLegend = e.currentTarget.checked;
+	            }}), 
+	            React.createElement("br", null), 
+	            React.createElement("label", {htmlFor: 'showFilters'}, "Show filters on the image"), 
+	            React.createElement("input", {id: 'showFilters', type: 'checkbox', checked: this.props.state.exportMenuState.showFilters, onChange: function (e) {
+	                _this.props.state.exportMenuState.showFilters = e.currentTarget.checked;
+	            }}), 
+	            React.createElement("br", null), 
+	            React.createElement("button", {className: 'menuButton', onClick: function () {
+	                _this.props.saveImage();
+	            }}, "Download map as image"), 
+	            React.createElement("br", null), 
+	            "Or", 
+	            React.createElement("br", null), 
+	            React.createElement("button", {className: 'menuButton', onClick: function () {
+	                _this.props.saveFile();
+	            }}, "Download map as a file"), 
+	            React.createElement("br", null)));
 	    };
 	    ExportMenu = __decorate([
 	        mobx_react_1.observer, 
@@ -60766,7 +61254,9 @@
 	        if (this.props.hide)
 	            return null;
 	        else
-	            return React.createElement("div", {className: 'menuHeaderDiv', style: { backgroundColor: this.props.active ? '#ededed' : '#fefefe' }, onClick: function () { return _this.props.onClick(_this.props.id); }}, React.createElement("i", {className: "menuHeader fa fa-" + this.props.fa}), React.createElement("span", {className: 'menuHover'}, this.props.text));
+	            return React.createElement("div", {className: 'menuHeaderDiv', style: { backgroundColor: this.props.active ? '#ededed' : '#fefefe' }, onClick: function () { return _this.props.onClick(_this.props.id); }}, 
+	                React.createElement("i", {className: "menuHeader fa fa-" + this.props.fa}), 
+	                React.createElement("span", {className: 'menuHover'}, this.props.text));
 	    };
 	    return MenuEntry;
 	}(React.Component));
@@ -73937,13 +74427,29 @@
 	                index_1++;
 	            }, this);
 	        }
-	        return React.createElement("div", null, " ", rows.map(function (e) { return e; }), " ");
+	        return React.createElement("div", null, 
+	            " ", 
+	            rows.map(function (e) { return e; }), 
+	            " ");
 	    };
 	    OnScreenFilter.prototype.render = function () {
 	        var _this = this;
-	        return React.createElement(Draggable, {handle: '.filterhead'}, React.createElement("div", {className: 'filter'}, React.createElement("h3", {className: 'filterhead'}, this.props.state.title), this.renderSteps.call(this), React.createElement("div", {style: { display: 'inline-flex' }}, React.createElement("input", {type: 'number', style: { width: '70px' }, value: this.props.state.currentMin.toFixed(0), onChange: this.onCurrentMinChange}), React.createElement(Slider, {className: 'horizontal-slider', onAfterChange: this.onFilterScaleChange, value: [this.props.state.currentMin, this.props.state.currentMax], min: this.props.state.totalMin - 1, max: this.props.state.totalMax + 1, withBars: true}, React.createElement("div", {className: 'minHandle'}), React.createElement("div", {className: 'maxHandle'})), React.createElement("input", {type: 'number', style: { width: '70px' }, value: this.props.state.currentMax.toFixed(0), onChange: this.onCurrentMaxChange}), React.createElement("div", {style: { display: 'inline-block', cursor: 'pointer' }, onClick: function () {
-	            _this.props.state.lockDistance = !_this.props.state.lockDistance;
-	        }}, React.createElement("i", {style: { color: 'cecece', fontSize: 20, padding: 4 }, className: !this.props.state.lockDistance ? 'fa fa-unlock-alt' : 'fa fa-lock'})))));
+	        return React.createElement(Draggable, {handle: '.filterhead'}, 
+	            React.createElement("div", {className: 'filter'}, 
+	                React.createElement("h3", {className: 'filterhead'}, this.props.state.title), 
+	                this.renderSteps.call(this), 
+	                React.createElement("div", {style: { display: 'inline-flex' }}, 
+	                    React.createElement("input", {type: 'number', style: { width: '70px' }, value: this.props.state.currentMin.toFixed(0), onChange: this.onCurrentMinChange}), 
+	                    React.createElement(Slider, {className: 'horizontal-slider', onAfterChange: this.onFilterScaleChange, value: [this.props.state.currentMin, this.props.state.currentMax], min: this.props.state.totalMin - 1, max: this.props.state.totalMax + 1, withBars: true}, 
+	                        React.createElement("div", {className: 'minHandle'}), 
+	                        React.createElement("div", {className: 'maxHandle'})), 
+	                    React.createElement("input", {type: 'number', style: { width: '70px' }, value: this.props.state.currentMax.toFixed(0), onChange: this.onCurrentMaxChange}), 
+	                    React.createElement("div", {style: { display: 'inline-block', cursor: 'pointer' }, onClick: function () {
+	                        _this.props.state.lockDistance = !_this.props.state.lockDistance;
+	                    }}, 
+	                        React.createElement("i", {style: { color: 'cecece', fontSize: 20, padding: 4 }, className: !this.props.state.lockDistance ? 'fa fa-unlock-alt' : 'fa fa-lock'})
+	                    )))
+	        );
 	    };
 	    OnScreenFilter = __decorate([
 	        mobx_react_1.observer, 
@@ -76344,7 +76850,7 @@
 	        var col = options.colorOptions;
 	        var sym = options.symbolOptions;
 	        if (col.colors && col.colors.length !== 0 && col.useMultipleFillColors && sym.symbolType !== common_1.SymbolTypes.Chart && (sym.symbolType !== common_1.SymbolTypes.Icon || sym.iconField !== col.colorField)) {
-	            var percentages = this.props.state.legend.showPercentages ? this.getStepPercentages(layer.values[col.colorField], col.limits) : {};
+	            var percentages = this.props.state.legend.showPercentages ? this.getStepPercentages(layer.values[col.colorField.value], col.limits) : {};
 	            choroLegend = this.createMultiColorLegend(options, percentages);
 	        }
 	        if (sym.symbolType === common_1.SymbolTypes.Chart && col.chartColors) {
@@ -76354,31 +76860,18 @@
 	            scaledLegend = this.createScaledSizeLegend(options);
 	        }
 	        if (sym.symbolType === common_1.SymbolTypes.Icon) {
-	            var percentages = this.props.state.legend.showPercentages && sym.iconLimits.length > 1 ? this.getStepPercentages(layer.values[sym.iconField], sym.iconLimits) : {};
+	            var percentages = this.props.state.legend.showPercentages && sym.iconLimits.length > 1 ? this.getStepPercentages(layer.values[sym.iconField.value], sym.iconLimits) : {};
 	            iconLegend = this.createIconLegend(options, percentages, layer.name);
 	        }
 	        if (sym.symbolType === common_1.SymbolTypes.Blocks) {
 	            blockLegend = this.createBlockLegend(options);
 	        }
-	        return React.createElement("div", {key: layer.id}, choroLegend, scaledLegend, chartLegend, iconLegend, blockLegend);
-	    };
-	    OnScreenLegend.prototype.render = function () {
-	        var layers = this.props.state.layers;
-	        var legend = this.props.state.legend;
-	        return (React.createElement("div", {className: 'legend', style: {
-	            width: 'auto',
-	            textAlign: 'center',
-	            position: 'absolute',
-	            left: legend.left ? 0 : '',
-	            right: legend.right ? 0 : '',
-	            bottom: legend.bottom ? 15 : '',
-	            top: legend.top ? 0 : '',
-	            background: "#FFF",
-	            borderRadius: 15,
-	            zIndex: 600
-	        }}, React.createElement("h2", {className: 'legendHeader'}, legend.title), React.createElement("div", null, layers.map(function (m) {
-	            return this.createLegend(m);
-	        }, this)), React.createElement("div", {style: { clear: 'both', }}, React.createElement(TextEditor_1.TextEditor, {style: { width: '100%', minHeight: legend.edit ? '40px' : '' }, content: legend.meta, onChange: this.onMetaChange, edit: legend.edit}))));
+	        return React.createElement("div", {key: layer.id}, 
+	            choroLegend, 
+	            scaledLegend, 
+	            chartLegend, 
+	            iconLegend, 
+	            blockLegend);
 	    };
 	    OnScreenLegend.prototype.createMultiColorLegend = function (layer, percentages) {
 	        var divs = [];
@@ -76391,9 +76884,20 @@
 	                minWidth: '20px',
 	                minHeight: '20px',
 	            };
-	            divs.push(React.createElement("div", {key: i, style: { display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}, React.createElement("div", {style: colorStyle}), React.createElement("span", {style: { marginLeft: '3px', marginRight: '3px' }}, limits[i].toFixed(0) + (i < (limits.length - 2) ? '-' : '+'), " ", this.props.state.legend.horizontal ? React.createElement("br", null) : '', " ", i < (limits.length - 2) ? limits[i + 1].toFixed(0) : '', this.props.state.legend.showPercentages ? React.createElement("br", null) : null, this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null)));
+	            divs.push(React.createElement("div", {key: i, style: { display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}, 
+	                React.createElement("div", {style: colorStyle}), 
+	                React.createElement("span", {style: { marginLeft: '3px', marginRight: '3px' }}, 
+	                    limits[i].toFixed(layer.colorOptions.colorField.decimalAccuracy) + (i < (limits.length - 2) ? '-' : '+'), 
+	                    " ", 
+	                    this.props.state.legend.horizontal ? React.createElement("br", null) : '', 
+	                    " ", 
+	                    i < (limits.length - 2) ? limits[i + 1].toFixed(layer.colorOptions.colorField.decimalAccuracy) : '', 
+	                    this.props.state.legend.showPercentages ? React.createElement("br", null) : null, 
+	                    this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null)));
 	        }
-	        return React.createElement("div", {style: { margin: '5px', float: 'left', textAlign: 'center' }}, layer.colorOptions.colorField, React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, divs.map(function (d) { return d; })));
+	        return React.createElement("div", {style: { margin: '5px', float: 'left', textAlign: 'center' }}, 
+	            layer.colorOptions.colorField.label, 
+	            React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, divs.map(function (d) { return d; })));
 	    };
 	    OnScreenLegend.prototype.createScaledSizeLegend = function (layer) {
 	        var symbolType = layer.symbolOptions.symbolType;
@@ -76413,7 +76917,9 @@
 	            if (square)
 	                return (React.createElement("div", {style: style}, rectangleLegend.call(this, false)));
 	            else {
-	                return (React.createElement("div", {style: style}, xVar ? rectangleLegend.call(this, false) : null, yVar ? rectangleLegend.call(this, true) : null));
+	                return (React.createElement("div", {style: style}, 
+	                    xVar ? rectangleLegend.call(this, false) : null, 
+	                    yVar ? rectangleLegend.call(this, true) : null));
 	            }
 	        }
 	        function rectangleLegend(y) {
@@ -76421,10 +76927,10 @@
 	            var classes = 5;
 	            for (var i = 0; i < classes - 1; i++) {
 	                sides[i] = y ? Math.round(opt.actualMinYRadius + i * ((opt.actualMaxYRadius - opt.actualMinYRadius) / classes)) : Math.round(opt.actualMinXRadius + i * ((opt.actualMaxXRadius - opt.actualMinXRadius) / classes));
-	                values[i] = y ? (opt.actualMinYValue + i * ((opt.actualMaxYValue - opt.actualMinYValue) / classes)).toFixed(0) : (opt.actualMinXValue + i * ((opt.actualMaxXValue - opt.actualMinXValue) / classes)).toFixed(0);
+	                values[i] = y ? (opt.actualMinYValue + i * ((opt.actualMaxYValue - opt.actualMinYValue) / classes)).toFixed(yVar.decimalAccuracy) : (opt.actualMinXValue + i * ((opt.actualMaxXValue - opt.actualMinXValue) / classes)).toFixed(xVar.decimalAccuracy);
 	            }
 	            sides.push(y ? opt.actualMaxYRadius : opt.actualMaxXRadius);
-	            values.push(y ? opt.actualMaxYValue.toFixed(0) : opt.actualMaxXValue.toFixed(0));
+	            values.push(y ? opt.actualMaxYValue.toFixed(yVar.decimalAccuracy) : opt.actualMaxXValue.toFixed(xVar.decimalAccuracy));
 	            var textWidth = values[values.length - 1].length;
 	            for (var i = 0; i < classes; i++) {
 	                var margin = (sides[sides.length - 1] - sides[i]) / 2;
@@ -76444,19 +76950,23 @@
 	                    float: this.props.state.legend.horizontal ? 'left' : '',
 	                    marginRight: this.props.state.legend.horizontal ? 5 : 0,
 	                };
-	                divs.push(React.createElement("div", {key: i, style: parentDivStyle}, React.createElement("div", {style: style_1}), React.createElement("span", {style: { display: 'inline-block', width: this.props.state.legend.horizontal ? '' : textWidth * 10 }}, values[i])));
+	                divs.push(React.createElement("div", {key: i, style: parentDivStyle}, 
+	                    React.createElement("div", {style: style_1}), 
+	                    React.createElement("span", {style: { display: 'inline-block', width: this.props.state.legend.horizontal ? '' : textWidth * 10 }}, values[i])));
 	            }
-	            return React.createElement("div", {style: { float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}, y ? layer.symbolOptions.sizeYVar : layer.symbolOptions.sizeXVar, React.createElement("div", null, divs.map(function (d) { return d; })));
+	            return React.createElement("div", {style: { float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}, 
+	                y ? layer.symbolOptions.sizeYVar.label : layer.symbolOptions.sizeXVar.label, 
+	                React.createElement("div", null, divs.map(function (d) { return d; })));
 	        }
 	        function circleLegend() {
 	            var divs = [], radii = [], values = [];
 	            var classes = 5;
 	            for (var i = 0; i < classes - 1; i++) {
 	                radii[i] = Math.round(opt.actualMinXRadius + i * ((opt.actualMaxXRadius - opt.actualMinXRadius) / classes));
-	                values[i] = (opt.actualMinXValue + i * ((opt.actualMaxXValue - opt.actualMinXValue) / classes)).toFixed(0);
+	                values[i] = (opt.actualMinXValue + i * ((opt.actualMaxXValue - opt.actualMinXValue) / classes)).toFixed(xVar.decimalAccuracy);
 	            }
 	            radii.push(opt.actualMaxXRadius);
-	            values.push(opt.actualMaxXValue.toFixed(0));
+	            values.push(opt.actualMaxXValue.toFixed(xVar.decimalAccuracy));
 	            for (var i = 0; i < classes; i++) {
 	                var margin = radii[radii.length - 1] - radii[i] + 2;
 	                var l = 2 * radii[i];
@@ -76478,9 +76988,13 @@
 	                    overflow: this.props.state.legend.horizontal ? 'none' : 'auto',
 	                    lineHeight: this.props.state.legend.horizontal ? '' : Math.max(2 * radii[i] + 4, 15) + 'px',
 	                };
-	                divs.push(React.createElement("div", {key: i, style: parentDivStyle}, React.createElement("div", {style: style_2}), React.createElement("span", {style: { marginRight: this.props.state.legend.horizontal ? 15 : '' }}, values[i])));
+	                divs.push(React.createElement("div", {key: i, style: parentDivStyle}, 
+	                    React.createElement("div", {style: style_2}), 
+	                    React.createElement("span", {style: { marginRight: this.props.state.legend.horizontal ? 15 : '' }}, values[i])));
 	            }
-	            return React.createElement("div", {style: { float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}, layer.symbolOptions.sizeXVar, React.createElement("div", null, divs.map(function (d) { return d; })));
+	            return React.createElement("div", {style: { float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}, 
+	                layer.symbolOptions.sizeXVar.label, 
+	                React.createElement("div", null, divs.map(function (d) { return d; })));
 	        }
 	    };
 	    OnScreenLegend.prototype.createChartSymbolLegend = function (col, sym) {
@@ -76492,9 +77006,13 @@
 	                minWidth: '20px',
 	                minHeight: '20px',
 	            };
-	            divs.push(React.createElement("div", {key: i, style: { display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}, React.createElement("div", {style: colorStyle}), React.createElement("span", {style: { marginLeft: '3px', marginRight: '3px' }}, headers[i].label)));
+	            divs.push(React.createElement("div", {key: i, style: { display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}, 
+	                React.createElement("div", {style: colorStyle}), 
+	                React.createElement("span", {style: { marginLeft: '3px', marginRight: '3px' }}, headers[i].label)));
 	        }
-	        return React.createElement("div", {style: { margin: '5px', float: 'left' }}, React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, divs.map(function (d) { return d; })));
+	        return React.createElement("div", {style: { margin: '5px', float: 'left' }}, 
+	            React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, divs.map(function (d) { return d; }))
+	        );
 	    };
 	    OnScreenLegend.prototype.createIconLegend = function (layer, percentages, layerName) {
 	        var divs = [];
@@ -76508,18 +77026,49 @@
 	                    common_1.GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), (limits[i] + limits[i + 1]) / 2)
 	                    : '000';
 	                var icon = common_1.GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), (limits[i] + limits[i + 1]) / 2);
-	                divs.push(React.createElement("div", {key: i, style: { display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}, !icon ? '' : getIcon(icon.shape, icon.fa, col.color, fillColor, fillColor != '000' ? layer.colorOptions.iconTextColor : 'FFF'), React.createElement("span", {style: { marginLeft: '3px', marginRight: '3px' }}, limits[i].toFixed(0) + (i < (limits.length - 2) ? '-' : '+'), " ", this.props.state.legend.horizontal ? React.createElement("br", null) : '', " ", i < (limits.length - 2) ? limits[i + 1].toFixed(0) : '', this.props.state.legend.showPercentages ? React.createElement("br", null) : null, this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null)));
+	                divs.push(React.createElement("div", {key: i, style: { display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}, 
+	                    !icon ? '' : getIcon(icon.shape, icon.fa, col.color, fillColor, fillColor != '000' ? layer.colorOptions.iconTextColor : 'FFF'), 
+	                    React.createElement("span", {style: { marginLeft: '3px', marginRight: '3px' }}, 
+	                        limits[i].toFixed(sym.iconField.decimalAccuracy) + (i < (limits.length - 2) ? '-' : '+'), 
+	                        " ", 
+	                        this.props.state.legend.horizontal ? React.createElement("br", null) : '', 
+	                        " ", 
+	                        i < (limits.length - 2) ? limits[i + 1].toFixed(sym.iconField.decimalAccuracy) : '', 
+	                        this.props.state.legend.showPercentages ? React.createElement("br", null) : null, 
+	                        this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null)));
 	            }
-	            return React.createElement("div", {style: { margin: '5px', float: 'left', textAlign: 'center' }}, layer.symbolOptions.iconField, React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, divs.map(function (d) { return d; })));
+	            return React.createElement("div", {style: { margin: '5px', float: 'left', textAlign: 'center' }}, 
+	                layer.symbolOptions.iconField.label, 
+	                React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, divs.map(function (d) { return d; })));
 	        }
 	        else {
-	            return React.createElement("div", {style: { margin: '5px', float: 'left', textAlign: 'center' }}, layerName, React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, getIcon(icons[0].shape, icons[0].fa, layer.colorOptions.color, layer.colorOptions.fillColor, layer.colorOptions.iconTextColor)));
+	            return React.createElement("div", {style: { margin: '5px', float: 'left', textAlign: 'center' }}, 
+	                layerName, 
+	                React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, getIcon(icons[0].shape, icons[0].fa, layer.colorOptions.color, layer.colorOptions.fillColor, layer.colorOptions.iconTextColor)));
 	        }
 	        function getIcon(shape, fa, stroke, fill, iconColor) {
-	            var circleIcon = React.createElement("svg", {viewBox: "0 0 69.529271 95.44922", height: "40", width: "40"}, React.createElement("g", {transform: "translate(-139.52 -173.21)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z"})));
-	            var squareIcon = React.createElement("svg", {viewBox: "0 0 69.457038 96.523441", height: "40", width: "40"}, React.createElement("g", {transform: "translate(-545.27 -658.39)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m545.27 658.39v65.301h22.248l12.48 31.223 12.676-31.223h22.053v-65.301h-69.457z"})));
-	            var starIcon = React.createElement("svg", {height: "40", width: "40", viewBox: "0 0 77.690999 101.4702"}, React.createElement("g", {transform: "translate(-101.15 -162.97)"}, React.createElement("g", {transform: "matrix(1 0 0 1.0165 -65.712 -150.28)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m205.97 308.16-11.561 11.561h-16.346v16.346l-11.197 11.197 11.197 11.197v15.83h15.744l11.615 33.693 11.467-33.568 0.125-0.125h16.346v-16.346l11.197-11.197-11.197-11.197v-15.83h-15.83l-11.561-11.561z"}))));
-	            var pentaIcon = React.createElement("svg", {viewBox: "0 0 71.550368 96.362438", height: "40", width: "40"}, React.createElement("g", {fill: fill, transform: "translate(-367.08 -289.9)"}, React.createElement("path", {stroke: stroke, d: "m367.08 322.5 17.236-32.604h36.151l18.164 32.25-35.665 64.112z"})));
+	            var circleIcon = React.createElement("svg", {viewBox: "0 0 69.529271 95.44922", height: "40", width: "40"}, 
+	                React.createElement("g", {transform: "translate(-139.52 -173.21)"}, 
+	                    React.createElement("path", {fill: fill, stroke: stroke, d: "m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z"})
+	                )
+	            );
+	            var squareIcon = React.createElement("svg", {viewBox: "0 0 69.457038 96.523441", height: "40", width: "40"}, 
+	                React.createElement("g", {transform: "translate(-545.27 -658.39)"}, 
+	                    React.createElement("path", {fill: fill, stroke: stroke, d: "m545.27 658.39v65.301h22.248l12.48 31.223 12.676-31.223h22.053v-65.301h-69.457z"})
+	                )
+	            );
+	            var starIcon = React.createElement("svg", {height: "40", width: "40", viewBox: "0 0 77.690999 101.4702"}, 
+	                React.createElement("g", {transform: "translate(-101.15 -162.97)"}, 
+	                    React.createElement("g", {transform: "matrix(1 0 0 1.0165 -65.712 -150.28)"}, 
+	                        React.createElement("path", {fill: fill, stroke: stroke, d: "m205.97 308.16-11.561 11.561h-16.346v16.346l-11.197 11.197 11.197 11.197v15.83h15.744l11.615 33.693 11.467-33.568 0.125-0.125h16.346v-16.346l11.197-11.197-11.197-11.197v-15.83h-15.83l-11.561-11.561z"})
+	                    )
+	                )
+	            );
+	            var pentaIcon = React.createElement("svg", {viewBox: "0 0 71.550368 96.362438", height: "40", width: "40"}, 
+	                React.createElement("g", {fill: fill, transform: "translate(-367.08 -289.9)"}, 
+	                    React.createElement("path", {stroke: stroke, d: "m367.08 322.5 17.236-32.604h36.151l18.164 32.25-35.665 64.112z"})
+	                )
+	            );
 	            var activeIcon;
 	            switch (shape) {
 	                case ('circle'):
@@ -76540,7 +77089,9 @@
 	                color: iconColor,
 	                width: 42,
 	                height: 42,
-	            }}, activeIcon, React.createElement("i", {style: { position: 'relative', bottom: 33, width: 18, height: 18 }, className: 'fa ' + fa}));
+	            }}, 
+	                activeIcon, 
+	                React.createElement("i", {style: { position: 'relative', bottom: 33, width: 18, height: 18 }, className: 'fa ' + fa}));
 	        }
 	    };
 	    OnScreenLegend.prototype.createBlockLegend = function (layer) {
@@ -76558,7 +77109,12 @@
 	            overflow: this.props.state.legend.horizontal ? 'none' : 'auto',
 	            lineHeight: this.props.state.legend.horizontal ? '' : 24 + 'px',
 	        };
-	        return (React.createElement("div", {style: { margin: '5px', float: 'left' }}, layer.symbolOptions.sizeXVar, React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, React.createElement("div", {style: style}), "=", React.createElement("span", {style: { display: 'inline-block' }}, layer.symbolOptions.blockValue))));
+	        return (React.createElement("div", {style: { margin: '5px', float: 'left' }}, 
+	            layer.symbolOptions.sizeXVar.label, 
+	            React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, 
+	                React.createElement("div", {style: style}), 
+	                "=", 
+	                React.createElement("span", {style: { display: 'inline-block' }}, layer.symbolOptions.blockValue))));
 	    };
 	    OnScreenLegend.prototype.getStepPercentages = function (values, limits) {
 	        var counts = [];
@@ -76583,6 +77139,29 @@
 	        return layer.symbolOptions.iconLimits.concat(layer.colorOptions.limits.filter(function (item) {
 	            return layer.symbolOptions.iconLimits.indexOf(item) < 0;
 	        })).sort(function (a, b) { return a - b; });
+	    };
+	    OnScreenLegend.prototype.render = function () {
+	        var layers = this.props.state.layers;
+	        var legend = this.props.state.legend;
+	        return (React.createElement("div", {className: 'legend', style: {
+	            width: 'auto',
+	            textAlign: 'center',
+	            position: 'absolute',
+	            left: legend.left ? 0 : '',
+	            right: legend.right ? 0 : '',
+	            bottom: legend.bottom ? 15 : '',
+	            top: legend.top ? 0 : '',
+	            background: "#FFF",
+	            borderRadius: 15,
+	            zIndex: 600
+	        }}, 
+	            React.createElement("h2", {className: 'legendHeader'}, legend.title), 
+	            React.createElement("div", null, layers.map(function (m) {
+	                return this.createLegend(m);
+	            }, this)), 
+	            React.createElement("div", {style: { clear: 'both', }}, 
+	                React.createElement(TextEditor_1.TextEditor, {style: { width: '100%', minHeight: legend.edit ? '40px' : '' }, content: legend.meta, onChange: this.onMetaChange, edit: legend.edit})
+	            )));
 	    };
 	    OnScreenLegend = __decorate([
 	        mobx_react_1.observer, 
@@ -76650,9 +77229,34 @@
 	    };
 	    TextEditor.prototype.render = function () {
 	        var buttonSpacing = { marginRight: 2 }, toolbarStyle = { marginBottom: 3 };
-	        return (React.createElement("div", null, this.props.edit ?
-	            React.createElement("div", {style: toolbarStyle}, React.createElement("div", {style: buttonSpacing}, React.createElement("button", {type: "button", className: "btn btn-default", onClick: this.execCommand.bind(this, 'bold')}, React.createElement("i", {className: "fa fa-bold"})), React.createElement("button", {type: "button", className: "btn btn-default", onClick: this.execCommand.bind(this, 'italic')}, React.createElement("i", {className: "fa fa-italic"})), React.createElement("button", {type: "button", className: "btn btn-default", onClick: this.execCommand.bind(this, 'underline')}, React.createElement("i", {className: "fa fa-underline"})), React.createElement("button", {type: "button", className: "btn btn-default", onClick: this.execCommand.bind(this, 'insertOrderedList')}, React.createElement("i", {className: "fa fa-list-ol"})), React.createElement("button", {type: "button", className: "btn btn-default", onClick: this.execCommand.bind(this, 'insertUnorderedList')}, React.createElement("i", {className: "fa fa-list-ul"})), React.createElement("button", {type: "button", className: "btn btn-default btn-xs", onClick: this.addLink.bind(this)}, React.createElement("i", {className: "fa fa-link"})), React.createElement("button", {type: "button", className: "btn btn-default btn-xs", onClick: this.execCommand.bind(this, 'removeFormat')}, React.createElement("i", {className: "fa fa-eraser"}))))
-	            : null, React.createElement("div", __assign({ref: "editor", className: "form-control"}, this.props, {contentEditable: this.props.edit ? "true" : "false", dangerouslySetInnerHTML: { __html: this.props.content }, onInput: this.emitChange.bind(this)}))));
+	        return (React.createElement("div", null, 
+	            this.props.edit ?
+	                React.createElement("div", {style: toolbarStyle}, 
+	                    React.createElement("div", {style: buttonSpacing}, 
+	                        React.createElement("button", {type: "button", className: "btn btn-default", onClick: this.execCommand.bind(this, 'bold')}, 
+	                            React.createElement("i", {className: "fa fa-bold"})
+	                        ), 
+	                        React.createElement("button", {type: "button", className: "btn btn-default", onClick: this.execCommand.bind(this, 'italic')}, 
+	                            React.createElement("i", {className: "fa fa-italic"})
+	                        ), 
+	                        React.createElement("button", {type: "button", className: "btn btn-default", onClick: this.execCommand.bind(this, 'underline')}, 
+	                            React.createElement("i", {className: "fa fa-underline"})
+	                        ), 
+	                        React.createElement("button", {type: "button", className: "btn btn-default", onClick: this.execCommand.bind(this, 'insertOrderedList')}, 
+	                            React.createElement("i", {className: "fa fa-list-ol"})
+	                        ), 
+	                        React.createElement("button", {type: "button", className: "btn btn-default", onClick: this.execCommand.bind(this, 'insertUnorderedList')}, 
+	                            React.createElement("i", {className: "fa fa-list-ul"})
+	                        ), 
+	                        React.createElement("button", {type: "button", className: "btn btn-default btn-xs", onClick: this.addLink.bind(this)}, 
+	                            React.createElement("i", {className: "fa fa-link"})
+	                        ), 
+	                        React.createElement("button", {type: "button", className: "btn btn-default btn-xs", onClick: this.execCommand.bind(this, 'removeFormat')}, 
+	                            React.createElement("i", {className: "fa fa-eraser"})
+	                        ))
+	                )
+	                : null, 
+	            React.createElement("div", __assign({ref: "editor", className: "form-control"}, this.props, {contentEditable: this.props.edit ? "true" : "false", dangerouslySetInnerHTML: { __html: this.props.content }, onInput: this.emitChange.bind(this)}))));
 	    };
 	    return TextEditor;
 	}(React.Component));
@@ -76723,10 +77327,45 @@
 	            color: 'grey',
 	            fontWeight: 'bold'
 	        };
-	        return (React.createElement("div", {style: { textAlign: 'center' }}, React.createElement("a", {href: "https://github.com/simopaasisalo/MakeMaps"}, React.createElement("i", {className: 'fa fa-github', style: { position: 'absolute', right: 5, fontSize: '40px' }})), React.createElement("img", {src: 'app/images/logo_pre.png', style: { display: 'block', margin: '0 auto', padding: 5 }}), "MakeMaps is an open source map creation tool that lets you make powerful visualizations from your spatial data", React.createElement("br", null), "Guides and feedback channels can be found in the ", React.createElement("a", {href: "https://github.com/simopaasisalo/MakeMaps"}, "GitHub page"), ". Contributions and feature requests welcome!", React.createElement("hr", null), React.createElement("h3", null, "Here's a few demos: "), React.createElement("div", {style: { overflowX: 'visible', overflowY: 'hidden', height: 440, whiteSpace: 'nowrap' }}, React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/chorodemo.png', description: 'This demo shows the choropleth map type by mapping the United States by population density.', loadDemo: this.loadDemo.bind(this, 'chorodemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/symboldemo.png', description: 'This demo demonstrates the different symbol options of MakeMaps. Data random generated for demo purposes.', loadDemo: this.loadDemo.bind(this, 'symboldemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_chartdemo.png', description: 'This demo shows the chart-as-a-symbol map by visualizing distribution between different traffic types in Helsinki using a pie chart. Data acquired from hri.fi', loadDemo: this.loadDemo.bind(this, 'hki_chartdemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_heatdemo.png', description: 'This demo showcases the heat map by visualizing the daily public transportation boardings by HSL', loadDemo: this.loadDemo.bind(this, 'hki_heatdemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/clusterdemo.png', description: 'This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently', loadDemo: this.loadDemo.bind(this, 'clusterdemo')})), React.createElement("hr", {style: { color: '#cecece', width: '75%' }}), React.createElement("div", {style: { display: 'inline' }}, React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, React.createElement("h3", null, "Load a previously made map"), React.createElement(Dropzone, {style: dropStyle, onDrop: this.onDrop.bind(this), accept: '.mmap'}, this.state.fileName ?
-	            React.createElement("span", null, React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), this.state.fileName, React.createElement("div", {style: { margin: '0 auto' }}, React.createElement("button", {className: 'primaryButton', onClick: this.loadMap.bind(this)}, "Show me")))
-	            :
-	                React.createElement("div", {style: { margin: '0 auto' }}, "Have a map you worked on previously? Someone sent you a cool map to see for yourself? Upload it here!", React.createElement("br", null), "Drop a map here or click to upload"))), React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, React.createElement("h3", null, "Create a new map"), "Start creating your own map from here. Select a layer type, upload your file and get visualizin'!", React.createElement("br", null), React.createElement("button", {className: 'primaryButton', onClick: this.createNewMap.bind(this)}, "Create a map")))));
+	        return (React.createElement("div", {style: { textAlign: 'center' }}, 
+	            React.createElement("a", {href: "https://github.com/simopaasisalo/MakeMaps"}, 
+	                React.createElement("i", {className: 'fa fa-github', style: { position: 'absolute', right: 5, fontSize: '40px' }})
+	            ), 
+	            React.createElement("img", {src: 'app/images/logo_pre.png', style: { display: 'block', margin: '0 auto', padding: 5 }}), 
+	            "MakeMaps is an open source map creation tool that lets you make powerful visualizations from your spatial data", 
+	            React.createElement("br", null), 
+	            "Guides and feedback channels can be found in the ", 
+	            React.createElement("a", {href: "https://github.com/simopaasisalo/MakeMaps"}, "GitHub page"), 
+	            ". Contributions and feature requests welcome!", 
+	            React.createElement("hr", null), 
+	            React.createElement("h3", null, "Here's a few demos: "), 
+	            React.createElement("div", {style: { overflowX: 'visible', overflowY: 'hidden', height: 440, whiteSpace: 'nowrap' }}, 
+	                React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/chorodemo.png', description: 'This demo shows the choropleth map type by mapping the United States by population density.', loadDemo: this.loadDemo.bind(this, 'chorodemo')}), 
+	                React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/symboldemo.png', description: 'This demo demonstrates the different symbol options of MakeMaps. Data random generated for demo purposes.', loadDemo: this.loadDemo.bind(this, 'symboldemo')}), 
+	                React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_chartdemo.png', description: 'This demo shows the chart-as-a-symbol map by visualizing distribution between different traffic types in Helsinki using a pie chart. Data acquired from hri.fi', loadDemo: this.loadDemo.bind(this, 'hki_chartdemo')}), 
+	                React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_heatdemo.png', description: 'This demo showcases the heat map by visualizing the daily public transportation boardings by HSL', loadDemo: this.loadDemo.bind(this, 'hki_heatdemo')}), 
+	                React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/clusterdemo.png', description: 'This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently', loadDemo: this.loadDemo.bind(this, 'clusterdemo')})), 
+	            React.createElement("hr", {style: { color: '#cecece', width: '75%' }}), 
+	            React.createElement("div", {style: { display: 'inline' }}, 
+	                React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, 
+	                    React.createElement("h3", null, "Load a previously made map"), 
+	                    React.createElement(Dropzone, {style: dropStyle, onDrop: this.onDrop.bind(this), accept: '.mmap'}, this.state.fileName ?
+	                        React.createElement("span", null, 
+	                            React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), 
+	                            this.state.fileName, 
+	                            React.createElement("div", {style: { margin: '0 auto' }}, 
+	                                React.createElement("button", {className: 'primaryButton', onClick: this.loadMap.bind(this)}, "Show me")
+	                            ))
+	                        :
+	                            React.createElement("div", {style: { margin: '0 auto' }}, 
+	                                "Have a map you worked on previously? Someone sent you a cool map to see for yourself? Upload it here!", 
+	                                React.createElement("br", null), 
+	                                "Drop a map here or click to upload"))), 
+	                React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, 
+	                    React.createElement("h3", null, "Create a new map"), 
+	                    "Start creating your own map from here. Select a layer type, upload your file and get visualizin'!", 
+	                    React.createElement("br", null), 
+	                    React.createElement("button", {className: 'primaryButton', onClick: this.createNewMap.bind(this)}, "Create a map")))));
 	    };
 	    return WelcomeScreen;
 	}(React.Component));
@@ -76779,7 +77418,9 @@
 	            bottom: 0.
 	        };
 	        return (React.createElement("div", {style: style, onMouseOver: this.setOverlayState.bind(this, true), onMouseLeave: this.setOverlayState.bind(this, false)}, this.state.overlayOpen ?
-	            React.createElement("div", {style: overlayStyle}, this.props.description, React.createElement("button", {className: 'primaryButton', style: { display: 'block', margin: '0 auto' }, onClick: this.loadClicked.bind(this)}, "Check it out"))
+	            React.createElement("div", {style: overlayStyle}, 
+	                this.props.description, 
+	                React.createElement("button", {className: 'primaryButton', style: { display: 'block', margin: '0 auto' }, onClick: this.loadClicked.bind(this)}, "Check it out"))
 	            : null));
 	    };
 	    return DemoPreview;
