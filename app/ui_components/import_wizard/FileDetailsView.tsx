@@ -39,10 +39,6 @@ export class FileDetailsView extends React.Component<
     onCoordinateSystemChange = (val) => {
         this.props.state.coordinateSystem = val ? val.value : '';
     }
-    onHeatValueChange = (val) => {
-        this.activeLayer.heatMapVariable = val ? val.value : '';
-        this.activeLayer.colorOptions.colorField = val ? val.value : '';
-    }
     goBack = () => {
         this.props.goBack();
     }
@@ -88,18 +84,10 @@ export class FileDetailsView extends React.Component<
                     <a href='http://spatialreference.org/ref/'> Spatial Reference</a>
                 </p>
                 <input id='customProj' defaultValue='Insert custom Proj4-string here' style={{ width: 400 }}/>
-                {this.props.state.isHeatMap ?
-                    <div>
-                        <label>Select heat map variable</label>
-                        <Select
-                            options={this.activeLayer.numberHeaders}
-                            onChange={this.onHeatValueChange}
-                            value={this.activeLayer.heatMapVariable}/>
-                    </div>
-                    : null}
+
             </div>
             <button className='secondaryButton' style={{ position: 'absolute', left: 15, bottom: 15 }} onClick={this.goBack}>Go back</button>
-            <button className='primaryButton' disabled={!this.props.state.coordinateSystem || (this.props.state.isHeatMap && !this.activeLayer.heatMapVariable) || (!this.props.state.isGeoJSON && (!this.props.state.latitudeField || !this.props.state.longitudeField))} style={{ position: 'absolute', right: 15, bottom: 15 }} onClick={this.proceed}>Make a map!</button>
+            <button className='primaryButton' disabled={!this.props.state.coordinateSystem || (!this.props.state.isGeoJSON && (!this.props.state.latitudeField || !this.props.state.longitudeField))} style={{ position: 'absolute', right: 15, bottom: 15 }} onClick={this.proceed}>Make a map!</button>
         </div>
     }
 

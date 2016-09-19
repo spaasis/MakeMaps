@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { LayerTypes, SymbolTypes } from '../../common_items/common';
 let Select = require('react-select');
 import { AppState } from '../../stores/States';
 import { Filter } from '../../stores/Filter';
 import { observer } from 'mobx-react';
+import { LayerTypes } from '../../stores/Layer';
 
 @observer
 export class FilterMenu extends React.Component<{
@@ -19,30 +19,28 @@ export class FilterMenu extends React.Component<{
         }
     }
 
-    onUseDistinctValuesChange = (e) => {
-        this.props.state.filterMenuState.useDistinctValues = e.target.checked;
-        this.props.state.filterMenuState.customStepCount = e.target.checked ? this.getDistinctValues(this.props.state.editingFilter.fieldToFilter).length - 1 : 5;
-    }
     getMinMax() {
-        let vals = this.props.state.editingLayer.values;
-        let field = this.props.state.editingFilter.fieldToFilter;
-        let minVal = vals[field][0];
-        let maxVal = vals[field][vals[field].length - 1];
-        this.props.state.editingFilter.totalMin = minVal;
-        this.props.state.editingFilter.currentMin = minVal;
-        this.props.state.editingFilter.totalMax = maxVal;
-        this.props.state.editingFilter.currentMax = maxVal;
+        let filter = this.props.state.editingFilter;
+        if (filter) {
+            let vals = this.props.state.editingLayer.values;
+            let field = filter.fieldToFilter;
+            let minVal = vals[field][0];
+            let maxVal = vals[field][vals[field].length - 1];
+            filter.totalMin = minVal;
+            filter.currentMin = minVal;
+            filter.totalMax = maxVal;
+            filter.currentMax = maxVal;
+        }
     }
 
     getDistinctValues(field: string) {
         let values: number[] = [];
-        this.props.state.editingLayer.geoJSON.features.map(function(feat) {
-            let val = feat.properties[field];
-            if (values.indexOf(val) === -1)
-                values.push(val)
+        let layer = this.props.state.layers.filter(function(f) { return f.id == this.props.state.editingFilter.layerId }, this)[0];
+        values = layer.values[field].filter(function(e, i, arr) {
+            return arr.lastIndexOf(e) === i;
         });
 
-        return values.sort(function(a, b) { return a - b });
+        return values;
     }
     changeStepsCount(amount: number) {
         let newVal = this.props.state.filterMenuState.customStepCount + amount;
@@ -50,25 +48,44 @@ export class FilterMenu extends React.Component<{
             this.props.state.filterMenuState.customStepCount = newVal;
         }
     }
+    calculateSteps() {
+        let state = this.props.state.filterMenuState;
+        let filter = this.props.state.editingFilter;
+        let steps: [number, number][] = [];
+        if (state.useCustomSteps) {
+            if (state.useDistinctValues) {
+                let values = this.getDistinctValues(filter.fieldToFilter);
+                for (let i = 0; i < values.length - 1; i++) {
+                    let step: [number, number] = [values[i], values[i + 1] - 1];
+                    steps.push(step);
+                }
+            }
+            else if (this.props.state.editingFilter.steps && this.props.state.editingFilter.steps.length > 0) {
+                steps = this.props.state.editingFilter.steps;
+            }
+            else {
+                for (let i = filter.totalMin; i < filter.totalMax; i += (filter.totalMax - filter.totalMin) / state.customStepCount) {
+                    let step: [number, number] = [i, i + (filter.totalMax - filter.totalMin) / state.customStepCount - 1];
+                    steps.push(step);
+                }
+            }
+        }
+
+        filter.steps = steps;
+    }
 
     createNewFilter = () => {
-        let filter = new Filter();
+        let filter = new Filter(this.props.state);
         filter.id = this.props.state.nextFilterId;
-        filter.layer = this.props.state.editingLayer;
+        filter.layerId = this.props.state.editingLayer.id;
         filter.fieldToFilter = this.props.state.editingLayer.numberHeaders[0].value;
         filter.title = filter.fieldToFilter;
 
-        filter.appState = this.props.state;
         this.props.state.filters.push(filter);
         this.props.state.filterMenuState.selectedFilterId = filter.id;
         this.getMinMax()
-
     }
     saveFilter = () => {
-        //let steps;
-        // if (this.props.state.filterMenuState.useCustomSteps) {
-        //     steps = this.getStepValues();
-        // }
         let filter = this.props.state.editingFilter;
         if (!filter.show)
             filter.init();
@@ -100,23 +117,28 @@ export class FilterMenu extends React.Component<{
         let state = this.props.state.filterMenuState;
         let filters = [];
         for (let i in this.props.state.filters.slice()) {
-            filters.push({ value: this.props.state.filters.slice()[i].id, label: this.props.state.filters.slice()[i].title });
+            filters.push({ value: this.props.state.filters[i].id, label: this.props.state.filters[i].title });
         }
         return (!layer ? null :
             <div className="makeMaps-options">
-                {filter ?
+                {filters ?
                     <div>
                         <label>Select the filter to update</label>
                         <Select
                             options={filters}
                             onChange={(id: ISelectData) => {
-                                this.props.state.filterMenuState.selectedFilterId = id.value;
+                                state.selectedFilterId = id != null ? id.value : -1;
+                                state.useCustomSteps = this.props.state.editingFilter.steps.slice().length > 0;
                             } }
-                            value={state.selectedFilterId}
+                            value={filter}
+                            valueRenderer={(v) => { return v.title } }
                             />
-                        Or
-                        <button className='menuButton' onClick={this.createNewFilter}>Create new filter</button>
-                        <br/>
+                        Or</div> : null}
+                <button className='menuButton' onClick={this.createNewFilter}>Create new filter</button>
+                <br/>
+
+                {filter ?
+                    <div>
                         <label>Give a name to the filter
                             <input type="text" onChange={(e) => {
                                 this.props.state.editingFilter.title = (e.target as any).value;
@@ -139,7 +161,8 @@ export class FilterMenu extends React.Component<{
                             <input
                                 type='checkbox'
                                 onChange={(e) => {
-                                    this.props.state.filterMenuState.useCustomSteps = (e.target as any).checked;
+                                    state.useCustomSteps = (e.target as any).checked;
+                                    this.calculateSteps();
                                 } }
                                 checked={state.useCustomSteps}
                                 id='steps'
@@ -152,7 +175,12 @@ export class FilterMenu extends React.Component<{
                                     Use distinct values
                                     <input
                                         type='checkbox'
-                                        onChange={this.onUseDistinctValuesChange}
+                                        onChange={(e) => {
+                                            filter.steps = [];
+                                            state.useDistinctValues = (e.target as any).checked;
+                                            state.customStepCount = (e.target as any).checked ? this.getDistinctValues(this.props.state.editingFilter.fieldToFilter).length - 1 : 5;
+                                            this.calculateSteps();
+                                        } }
                                         checked={state.useDistinctValues}
                                         id='dist'
                                         />
@@ -160,15 +188,17 @@ export class FilterMenu extends React.Component<{
                                 </label>
                                 {renderSteps.call(this)}
                             </div>
-                            : null}
+                            : null
+                        }
                         {layer.layerType === LayerTypes.HeatMap ? null :
-                            < div >
+                            <div>
                                 <label forHTML='remove'>
                                     Remove filtered items
                                     <input
                                         type='radio'
                                         onChange={() => {
                                             this.props.state.editingFilter.remove = true;
+                                            layer.refreshFilters();
                                         } }
                                         checked={filter.remove}
                                         name='filterMethod'
@@ -184,6 +214,7 @@ export class FilterMenu extends React.Component<{
                                         type='radio'
                                         onChange={() => {
                                             this.props.state.editingFilter.remove = false;
+                                            layer.refreshFilters();
                                         } }
                                         checked={!filter.remove}
                                         name='filterMethod'
@@ -193,16 +224,17 @@ export class FilterMenu extends React.Component<{
                                 </label>
                             </div>
                         }
-                        <button className='menuButton' onClick={this.saveFilter}>Save filter</button>
-                        {filters.length > 0 && state.selectedFilterId !== -1 ?
+                        {filter.show ?
                             <button className='menuButton' onClick={this.deleteFilter}>Delete filter</button>
-                            : null}
+                            :
+                            <button className='menuButton' onClick={this.saveFilter}>Save filter</button>}
+
                         <br/>
                         <i>TIP: drag the filter on screen by the header to place it where you wish</i>
                     </div>
 
                     :
-                    <button className='menuButton' onClick={this.createNewFilter}>Create new filter</button>
+                    null
                 }
             </div >
         );
@@ -214,41 +246,28 @@ export class FilterMenu extends React.Component<{
                 display: 'inline',
                 width: 100
             }
-            let steps: [number, number][] = [];
-
-            if (!state.useDistinctValues) {
-                for (let i = filter.totalMin; i < filter.totalMax; i += (filter.totalMax - filter.totalMin) / state.customStepCount) {
-                    let step: [number, number] = [i, i + (filter.totalMax - filter.totalMin) / state.customStepCount - 1];
-                    steps.push(step);
-                }
-            }
-            else {
-                let values = this.getDistinctValues(filter.fieldToFilter);
-                for (let i = 0; i < values.length - 1; i++) {
-                    let step: [number, number] = [values[i], values[i + 1] - 1];
-                    steps.push(step);
-                }
-            }
             let row = 0;
-            for (let i of steps) {
+            filter.steps.map(function(s) {
                 rows.push(
-                    <li key={i}>
+                    <li key={row}>
                         <input
                             id={row + 'min'}
                             type='number'
-                            defaultValue={i[0].toFixed(2)}
+                            value={s[0]}
+                            onChange={(e) => { s[0] = (e.currentTarget as any).valueAsNumber } }
                             style={inputStyle}
                             step='any'/>
                         -
                         <input
                             id={row + 'max'}
                             type='number'
-                            defaultValue={i[1].toFixed(2)}
+                            value={s[1]}
+                            onChange={(e) => { s[1] = (e.currentTarget as any).valueAsNumber } }
                             style={inputStyle}
                             step='any'/>
                     </li>);
                 row++;
-            }
+            });
             return <div>
                 <button onClick={this.changeStepsCount.bind(this, -1)}>-</button>
                 <button onClick={this.changeStepsCount.bind(this, 1)}>+</button>

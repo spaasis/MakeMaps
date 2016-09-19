@@ -1,7 +1,7 @@
 import * as React from 'react';
 let Sortable = require('react-sortablejs')
 import { AppState } from '../../stores/States';
-import { Layer } from '../../stores/Layer';
+import { Layer, LayerTypes } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 let Select = require('react-select');
 
@@ -70,6 +70,7 @@ export class LayerMenu extends React.Component<{
     }
     render() {
         let menuState = this.props.state.layerMenuState;
+        let layer = menuState.editingLayer;
         let layers = [];
         if (this.props.state.layers) {
             for (let layer of this.props.state.layers) {
@@ -132,8 +133,58 @@ export class LayerMenu extends React.Component<{
                     } }
                     clearable={false}
                     />
-                {menuState.editingLayer ?
-                    this.renderHeaders.call(this)
+
+                {layer ?
+                    <div>
+                        Layer type
+                        <br/>
+                        <label forHTML='standard'>
+                            Standard
+                            <input
+                                type='radio'
+                                onChange={() => {
+                                    if (layer.layerType !== LayerTypes.Standard) {
+                                        layer.layerType = LayerTypes.Standard;
+                                        if (this.props.state.autoRefresh) {
+                                            layer.toggleRedraw = true;
+                                            layer.refresh();
+                                        }
+                                    }
+                                } }
+                                checked={layer.layerType === LayerTypes.Standard}
+                                name='layertype'
+                                id='standard'
+                                />
+                            <br/>
+
+                        </label>
+                        <label forHTML='heat'>
+                            HeatMap
+                            <input
+                                type='radio'
+                                onChange={() => {
+                                    if (layer.layerType !== LayerTypes.HeatMap) {
+                                        layer.layerType = LayerTypes.HeatMap;
+                                        layer.colorOptions.colorField = layer.colorOptions.colorField || layer.numberHeaders[0];
+                                        layer.colorOptions.opacity = 0.3;
+                                        layer.colorOptions.fillOpacity = 0.3;
+                                        if (this.props.state.autoRefresh) {
+                                            layer.toggleRedraw = true;
+                                            layer.refresh();
+                                        }
+                                    }
+                                } }
+                                checked={layer.layerType === LayerTypes.HeatMap}
+                                name='layertype'
+                                id='heat'
+                                />
+                            <br/>
+
+                        </label>
+                        {this.renderHeaders.call(this)}
+
+                    </div>
+
                     : null}
 
 

@@ -14,7 +14,7 @@ export class ClusterMenu extends React.Component<{
                 <label htmlFor='useClustering'>Use clustering
                     <input id='useClustering' type='checkbox' checked={options.useClustering} onChange={(e) => {
                         options.useClustering = (e.currentTarget as any).checked;
-                        layer.toggleCluster = true;
+                        layer.toggleRedraw = true;
                         layer.refresh();
                     } }/>
                 </label>

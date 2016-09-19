@@ -3,12 +3,13 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { observer } from 'mobx-react';
 import { AppState, ImportWizardState, SaveState } from '../stores/States';
-import { Layer, ColorOptions, SymbolOptions, ClusterOptions, IHeader } from '../stores/Layer';
+import { Filter } from '../stores/Filter';
+import { Layer, ColorOptions, SymbolOptions, ClusterOptions, IHeader, LayerTypes } from '../stores/Layer';
 import { Legend } from '../stores/Legend';
 import { LayerImportWizard } from './import_wizard/LayerImportWizard';
 import { MakeMapsMenu } from './menu/Menu';
 import { MapInitModel } from '../models/MapInitModel';
-import { LayerTypes, SymbolTypes, GetSymbolSize, LoadExternalMap } from '../common_items/common';
+import { GetSymbolSize, LoadExternalMap } from '../common_items/common';
 import { OnScreenFilter } from './misc/OnScreenFilter';
 import { OnScreenLegend } from './misc/OnScreenLegend';
 import { WelcomeScreen } from './misc/WelcomeScreen';
@@ -106,9 +107,11 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
 
     startLayerImport() {
-        this.props.state.importWizardShown = true;
-        this.props.state.welcomeShown = false;
-        this.props.state.menuShown = false;
+        let state = this.props.state;
+        state.importWizardState = new ImportWizardState(new Layer(state))
+        state.importWizardShown = true;
+        state.welcomeShown = false;
+        state.menuShown = false;
     }
 
     cancelLayerImport() {
@@ -128,6 +131,9 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
         l.appState = this.props.state;
         l.id = _currentLayerId++;
+        l.colorOptions.colorField = l.numberHeaders[0];
+        l.colorOptions.useMultipleFillColors = true;
+        l.getColors();
         l.refresh();
         this.props.state.layers.push(l);
         this.props.state.layerMenuState.order.push({ name: l.name, id: l.id });
@@ -137,79 +143,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         this.props.state.map.fitBounds(l.layerType === LayerTypes.HeatMap ? (l.displayLayer as any)._latlngs : l.displayLayer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
 
     }
-
-    loadSavedMap(saved: SaveState) {
-        console.time("LoadSavedMap")
-        let headers: IHeader[];
-        if (saved.baseLayerId) {
-            let oldBase = this.props.state.activeBaseLayer;
-            let newBase: L.TileLayer;
-
-            if (saved.baseLayerId !== oldBase.options.id) {
-                newBase = this.props.state.baseLayers.filter(l => (l as any).options.id === saved.baseLayerId)[0];
-                if (newBase) {
-                    this.props.state.map.removeLayer(oldBase);
-                    this.props.state.map.addLayer(newBase);
-                    this.props.state.activeBaseLayer = newBase;
-                }
-            }
-        }
-        this.props.state.legend = new Legend(saved.legend);
-        this.props.state.filters = saved.filters ? saved.filters : [];
-
-        for (let i in saved.layers) {
-
-            let lyr = saved.layers[i];
-            let newLayer = new Layer(this.props.state);
-            headers = [];
-            for (let j in lyr.headers) {
-                headers.push(new IHeader(lyr.headers[j]))
-            }
-            let popupHeaders: IHeader[] = [];
-            for (let k in lyr.popupHeaders) {
-                popupHeaders.push(getHeaderByValue(lyr.popupHeaders[k].value))
-            }
-            let chartFields: IHeader[] = [];
-            for (let k in lyr.symbolOptions.chartFields) {
-                chartFields.push(getHeaderByValue(lyr.popupHeaders[k].value))
-            }
-            newLayer.id = _currentLayerId++;
-            newLayer.name = lyr.name
-            newLayer.headers = headers;
-            newLayer.popupHeaders = popupHeaders;
-            newLayer.layerType = lyr.layerType;
-            newLayer.heatMapVariable = lyr.heatMapVariable;
-            newLayer.geoJSON = lyr.geoJSON;
-            newLayer.colorOptions = new ColorOptions(lyr.colorOptions);
-            newLayer.colorOptions.colorField = lyr.colorOptions.colorField ? getHeaderByValue(lyr.colorOptions.colorField.value) : undefined;
-            newLayer.symbolOptions = new SymbolOptions(lyr.symbolOptions);
-            newLayer.symbolOptions.iconField = lyr.symbolOptions.iconField ? getHeaderByValue(lyr.symbolOptions.iconField.value) : undefined;
-            newLayer.symbolOptions.sizeXVar = lyr.symbolOptions.sizeXVar ? getHeaderByValue(lyr.symbolOptions.sizeXVar.value) : undefined;
-            newLayer.symbolOptions.sizeYVar = lyr.symbolOptions.sizeYVar ? getHeaderByValue(lyr.symbolOptions.sizeYVar.value) : undefined;
-            newLayer.symbolOptions.chartFields = chartFields;
-            newLayer.clusterOptions = new ClusterOptions(lyr.clusterOptions);
-            newLayer.refresh();
-            this.props.state.layers.push(newLayer);
-
-            this.props.state.layerMenuState.order.push({ name: newLayer.name, id: newLayer.id });
-            this.props.state.map.fitBounds(newLayer.layerType === LayerTypes.HeatMap ? (newLayer.displayLayer as any)._latlngs : newLayer.displayLayer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
-        }
-
-        this.props.state.welcomeShown = false;
-        this.props.state.editingLayer = this.props.state.layers[0];
-        this.props.state.menuShown = !this.props.state.embed;
-        console.timeEnd("LoadSavedMap")
-
-        function getHeaderByValue(value: string) {
-            return headers.filter(function(h) { return h.value == value })[0]
-        }
-    }
-
-    /**
-     * changeLayerOrder - Redraws the layers in the order given
-     *
-     * @param   order   the array of layer ids
-     */
+    /** changeLayerOrder - Redraws the layers in the order given */
     changeLayerOrder() {
         for (let i of this.props.state.layerMenuState.order) {
             let layer = this.props.state.layers.filter(lyr => lyr.id == i.id)[0];
@@ -229,7 +163,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
     /**
      * getFilters - Gets the currently active filters for rendering
-     *
      * @return  Filters in an array
      */
     getFilters() {
@@ -282,10 +215,82 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         saveData.layers = saveData.layers.slice();
 
         saveData.layers.forEach(function(e) { delete e.appState; delete e.displayLayer; delete e.values; });
-        saveData.filters.forEach(function(e) { delete e.appState });
+        saveData.filters.forEach(function(e) { delete e.filterValues; delete e.filteredIndices; delete e.appState; });
+
         let blob = new Blob([JSON.stringify(saveData)], { type: "text/plain;charset=utf-8" });
         (window as any).saveAs(blob, 'map.mmap');
     }
+
+    loadSavedMap(saved: SaveState) {
+        console.time("LoadSavedMap")
+        let headers: IHeader[];
+        if (saved.baseLayerId) {
+            let oldBase = this.props.state.activeBaseLayer;
+            let newBase: L.TileLayer;
+
+            if (saved.baseLayerId !== oldBase.options.id) {
+                newBase = this.props.state.baseLayers.filter(l => (l as any).options.id === saved.baseLayerId)[0];
+                if (newBase) {
+                    this.props.state.map.removeLayer(oldBase);
+                    this.props.state.map.addLayer(newBase);
+                    this.props.state.activeBaseLayer = newBase;
+                }
+            }
+        }
+        this.props.state.legend = new Legend(saved.legend);
+
+
+        for (let i in saved.layers) {
+
+            let lyr = saved.layers[i];
+            let newLayer = new Layer(this.props.state);
+            headers = [];
+            for (let j in lyr.headers) {
+                headers.push(new IHeader(lyr.headers[j]))
+            }
+            let popupHeaders: IHeader[] = [];
+            for (let k in lyr.popupHeaders) {
+                popupHeaders.push(getHeaderByValue(lyr.popupHeaders[k].value))
+            }
+            let chartFields: IHeader[] = [];
+            for (let k in lyr.symbolOptions.chartFields) {
+                chartFields.push(getHeaderByValue(lyr.popupHeaders[k].value))
+            }
+            newLayer.id = _currentLayerId++;
+            newLayer.name = lyr.name
+            newLayer.headers = headers;
+            newLayer.popupHeaders = popupHeaders;
+            newLayer.layerType = lyr.layerType;
+            newLayer.geoJSON = lyr.geoJSON;
+            newLayer.colorOptions = new ColorOptions(lyr.colorOptions);
+            newLayer.colorOptions.colorField = lyr.colorOptions.colorField ? getHeaderByValue(lyr.colorOptions.colorField.value) : undefined;
+            newLayer.symbolOptions = new SymbolOptions(lyr.symbolOptions);
+            newLayer.symbolOptions.iconField = lyr.symbolOptions.iconField ? getHeaderByValue(lyr.symbolOptions.iconField.value) : undefined;
+            newLayer.symbolOptions.sizeXVar = lyr.symbolOptions.sizeXVar ? getHeaderByValue(lyr.symbolOptions.sizeXVar.value) : undefined;
+            newLayer.symbolOptions.sizeYVar = lyr.symbolOptions.sizeYVar ? getHeaderByValue(lyr.symbolOptions.sizeYVar.value) : undefined;
+            newLayer.symbolOptions.chartFields = chartFields;
+            newLayer.clusterOptions = new ClusterOptions(lyr.clusterOptions);
+            this.props.state.layers.push(newLayer);
+
+            this.props.state.layerMenuState.order.push({ name: newLayer.name, id: newLayer.id });
+        }
+        saved.filters.map(function(f) { this.props.state.filters.push(new Filter(this.props.state, f)) }, this)
+        for (let i in this.props.state.layers.slice()) {
+            let lyr = this.props.state.layers[i];
+            lyr.refresh();
+            this.props.state.map.fitBounds(lyr.layerType === LayerTypes.HeatMap ? (lyr.displayLayer as any)._latlngs : lyr.displayLayer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
+        }
+
+        this.props.state.welcomeShown = false;
+        this.props.state.editingLayer = this.props.state.layers[0];
+        this.props.state.menuShown = !this.props.state.embed;
+        console.timeEnd("LoadSavedMap")
+
+        function getHeaderByValue(value: string) {
+            return headers.filter(function(h) { return h.value == value })[0]
+        }
+    }
+
 
 
     render() {
@@ -309,24 +314,26 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                                 openLayerImport={this.startLayerImport.bind(this)}
                                 />
                         </Modal>
-
-                        <Modal
-                            isOpen={this.props.state.importWizardShown}
-                            style = {modalStyle}>
-                            <LayerImportWizard
-                                state={new ImportWizardState()}
-                                appState={this.props.state}
-                                submit={this.layerImportSubmit.bind(this)}
-                                cancel={this.cancelLayerImport.bind(this)}
+                        {this.props.state.importWizardShown ?
+                            <Modal
+                                isOpen={this.props.state.importWizardShown}
+                                style = {modalStyle}>
+                                <LayerImportWizard
+                                    state={this.props.state}
+                                    submit={this.layerImportSubmit.bind(this)}
+                                    cancel={this.cancelLayerImport.bind(this)}
+                                    />
+                            </Modal>
+                            : null}
+                        {this.props.state.menuShown ?
+                            <MakeMapsMenu
+                                state = {this.props.state}
+                                addLayer = {this.startLayerImport.bind(this)}
+                                changeLayerOrder ={this.changeLayerOrder.bind(this)}
+                                saveImage ={this.saveImage}
+                                saveFile = {this.saveFile.bind(this)}
                                 />
-                        </Modal>
-                        <MakeMapsMenu
-                            state = {this.props.state}
-                            addLayer = {this.startLayerImport.bind(this)}
-                            changeLayerOrder ={this.changeLayerOrder.bind(this)}
-                            saveImage ={this.saveImage}
-                            saveFile = {this.saveFile.bind(this)}
-                            />
+                            : null}
                     </div>
                 }
                 {this.getFilters()}
@@ -337,18 +344,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
 
 };
-// import DevTools from 'mobx-react-devtools';
-//
-// class MyApp extends React.Component<{}, {}> {
-//     render() {
-//         return (
-//             <div>
-//                 ...
-//                 <DevTools />
-//             </div>
-//         );
-//     }
-// }
 
 var Map = MapMain;
 const state = new AppState();

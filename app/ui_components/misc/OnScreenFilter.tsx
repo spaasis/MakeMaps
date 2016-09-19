@@ -62,12 +62,20 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
 
     }
     onCustomStepClick = (i: number) => {
-        let minVal = this.props.state.steps[i][0];
-        let maxVal = this.props.state.steps[i][1];
-        this.props.state.currentMin = minVal;
-        this.props.state.currentMax = maxVal;
-        this.props.state.step = i;
-        this.props.state.filterLayer();
+        let state = this.props.state;
+        if (state.step == i) {
+            state.step = -1;
+            state.currentMin = state.totalMin;
+            state.currentMax = state.totalMax;
+        }
+        else {
+            let minVal = state.steps[i][0];
+            let maxVal = state.steps[i][1];
+            state.currentMin = minVal;
+            state.currentMax = maxVal;
+            state.step = i;
+        }
+        state.filterLayer();
 
     }
     renderSteps() {

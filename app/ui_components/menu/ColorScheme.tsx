@@ -5,6 +5,8 @@ export class ColorScheme extends React.Component<{
     gradientName: string,
     /** Should the scheme be reversed*/
     revert: boolean,
+    /** For items in dropdown, 100%, else 110%*/
+    width: string
 }, {}>{
     private brewerColors =
     {
@@ -51,7 +53,8 @@ export class ColorScheme extends React.Component<{
         let style = {
             height: 40,
             background: 'linear-gradient(' + direction + ',' + this.brewerColors[this.props.gradientName].join(',') + ')',
-            margin: 0
+            marginLeft: -10,
+            width: this.props.width
         }
         return <div style={style}/>
     }

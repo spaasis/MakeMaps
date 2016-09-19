@@ -51,11 +51,10 @@ export class FilePreProcessModel {
      * @param  latField  latitude field name
      * @param  lonField  longitude field name
      * @param  delim     delimiter
-     * @param  coordSystem coordinate system
      * @param  headers  layer headers
      * @return           GeoJSON object
      */
-    public ParseCSVToGeoJSON(input: string, latField: string, lonField: string, delim: string, coordSystem: string, headers: IHeader[]) {
+    public ParseCSVToGeoJSON(input: string, latField: string, lonField: string, delim: string, headers: IHeader[]) {
         let geoJSON: { features: any[], type: string } = null;
         csv2geojson.csv2geojson(input, {
             latfield: latField,
@@ -73,8 +72,6 @@ export class FilePreProcessModel {
                 }
             });
 
-        if (coordSystem !== 'WGS84')
-            geoJSON = this.ProjectCoords(geoJSON, coordSystem)
         geoJSON = this.setGeoJSONTypes(geoJSON, headers);
 
         return geoJSON;

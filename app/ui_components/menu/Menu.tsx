@@ -7,9 +7,8 @@ import { LegendMenu } from './LegendMenu';
 import { ClusterMenu } from './ClusterMenu';
 import { PopUpMenu } from './PopUpMenu';
 import { ExportMenu } from './ExportMenu';
-import { LayerTypes, SymbolTypes } from '../../common_items/common';
 import { AppState } from '../../stores/States';
-import { Layer, ColorOptions, SymbolOptions } from '../../stores/Layer';
+import { Layer, ColorOptions, SymbolOptions, LayerTypes } from '../../stores/Layer';
 import { Legend } from '../../stores/Legend';
 import { observer } from 'mobx-react';
 import { MenuEntry } from './MenuEntry';
@@ -108,10 +107,10 @@ export class MakeMapsMenu extends React.Component<{
                     <div style={{ float: 'left', display: 'flex', flexFlow: 'column', height: '100%' }}>
                         <MenuEntry text="Layers" id={1} active={this.props.state.visibleMenu === 1} fa='bars' onClick = {this.onActiveMenuChange}/>
                         <MenuEntry text="Colors" id={2} active={this.props.state.visibleMenu == 2} fa='paint-brush' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer}/>
-                        <MenuEntry text="Symbols" id={3} active={this.props.state.visibleMenu == 3} fa='map-marker' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.layerType === LayerTypes.ChoroplethMap || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
+                        <MenuEntry text="Symbols" id={3} active={this.props.state.visibleMenu == 3} fa='map-marker' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.pointFeatureCount == 0 || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
                         <MenuEntry text="Filters" id={4} active={this.props.state.visibleMenu == 4} fa='sliders' onClick = {this.onActiveMenuChange} />
                         <MenuEntry text="Legend" id={5} active={this.props.state.visibleMenu == 5} fa='map-o' onClick = {this.onActiveMenuChange}/>
-                        <MenuEntry text="Cluster" id={6} active={this.props.state.visibleMenu == 6} fa='asterisk' onClick = {this.onActiveMenuChange}/>
+                        <MenuEntry text="Cluster" id={6} active={this.props.state.visibleMenu == 6} fa='asterisk' onClick = {this.onActiveMenuChange} hide = {this.props.state.editingLayer.pointFeatureCount == 0 || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
                         <MenuEntry text="Pop-ups" id={7} active={this.props.state.visibleMenu == 7} fa='newspaper-o' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
                         <MenuEntry text="Download" id={8} active={this.props.state.visibleMenu == 8} fa='download' onClick = {this.onActiveMenuChange}/>
                     </div >

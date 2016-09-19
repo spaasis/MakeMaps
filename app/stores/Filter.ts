@@ -1,6 +1,5 @@
 import { observable, computed } from 'mobx';
-import { LayerTypes, SymbolTypes } from '../common_items/common';
-import { Layer } from './Layer';
+import { Layer, LayerTypes } from './Layer';
 import { AppState } from './States';
 let mobx = require('mobx');
 
@@ -11,11 +10,11 @@ export class Filter {
     /** The name of the this. Will be shown on the map*/
     @observable title: string;
     /** Layer Id to filter*/
-    @observable layer: Layer;
+    @observable layerId: number;
     /** The name of the field to filter*/
     @observable fieldToFilter: string;
     /** Dictionary containing lists of layer ids by the value being filtered*/
-    @observable filterValues: { [value: number]: number[] } = {};
+    @observable filterValues: { [value: number]: number[] };
     /** Current maximum value */
     @observable currentMax: number;
     /** Current min value */
@@ -25,14 +24,14 @@ export class Filter {
     /** Original min value */
     @observable totalMin: number;
     /** User defined steps*/
-    @observable steps: [number, number][] = [];
+    @observable steps: [number, number][];
     /** Filter categories for string values*/
-    @observable categories: string[] = [];
+    @observable categories: string[];
     /** Whether to remove the filtered layer completely or change opacity*/
     @observable remove: boolean;
     /** The storage of already filtered indices */
-    @observable filteredIndices: number[] = [];
-    @observable step: number = -1;
+    @observable filteredIndices: number[];
+    @observable step: number;
     /** Keep the distance between the min and max the same when the slider is being moved.
      * Useful for keeping a locked range to filter
      */
@@ -45,20 +44,43 @@ export class Filter {
     previousLower: number;
     previousUpper: number;
 
+    constructor(appState: AppState, prev?: Filter) {
+        this.id = prev && prev.id !== undefined ? prev.id : undefined;;
+        this.title = prev && prev.title || '';
+        this.layerId = prev && prev.layerId !== undefined ? prev.layerId : undefined;
+        this.fieldToFilter = prev && prev.fieldToFilter || undefined;
+        this.filterValues = prev && prev.filterValues || {};
+        this.currentMax = prev && prev.currentMax !== undefined ? prev.currentMax : undefined;
+        this.currentMin = prev && prev.currentMin !== undefined ? prev.currentMin : undefined;
+        this.totalMax = prev && prev.totalMax !== undefined ? prev.totalMax : undefined;
+        this.totalMin = prev && prev.totalMin !== undefined ? prev.totalMin : undefined;
+        this.steps = prev && prev.steps || [];
+        this.categories = prev && prev.categories || [];
+        this.remove = prev && prev.remove || false;
+        this.filteredIndices = prev && prev.filteredIndices || [];
+        this.step = prev && prev.step || -1;
+        this.lockDistance = prev && prev.lockDistance || false;
+        this.show = prev && prev.show || false;
+        this.appState = prev && prev.appState || appState;
+
+    }
+
     /**
      * Initializes a filter to be shown in the UI by calculating the layers
      */
     init(layerUpdate: boolean = false) {
         this.filterValues = {};
         this.filteredIndices = [];
-        if (this.layer.layerType !== LayerTypes.HeatMap) {
-            this.layer.displayLayer.eachLayer(function(layer: any) {
-                let val = layer.feature.properties[this.fieldToFilter];
+        let id = this.layerId;
+        let layer = this.appState.layers.filter(function(l) { return l.id == id })[0];
+        if (layer.layerType !== LayerTypes.HeatMap) {
+            layer.displayLayer.eachLayer(function(lyr: any) {
+                let val = lyr.feature.properties[this.fieldToFilter];
                 if (this.filterValues[val]) {
-                    this.filterValues[val].push(layer);
+                    this.filterValues[val].push(lyr);
                 }
                 else
-                    this.filterValues[val] = [layer];
+                    this.filterValues[val] = [lyr];
             }, this);
         }
         this.previousLower = this.totalMin;
@@ -76,67 +98,64 @@ export class Filter {
     */
     filterLayer() {
         if (this.show) {
-            if (this.layer.layerType !== LayerTypes.HeatMap) {
+            let id = this.layerId;
+            let layer = this.appState.layers.filter(function(l) { return l.id == id })[0];
+
+            if (layer.layerType !== LayerTypes.HeatMap) {
                 for (let val in this.filterValues) {
                     if ((this.previousLower <= +val && +val < this.currentMin) || (this.currentMin <= +val && +val < this.previousLower) ||
                         (this.previousUpper < +val && +val <= this.currentMax) || (this.currentMax < +val && +val <= this.previousUpper)) {
                         let filteredIndex = this.filteredIndices.indexOf(+val); //is filtered?
                         if (filteredIndex === -1 && (+val < this.currentMin || +val > this.currentMax)) { //If not yet filtered and values over thresholds
-                            this.filterValues[val].map(function(layer: any) {
-                                if (this.remove) {
-                                    if (layer._icon) {
-                                        layer._icon.style.display = 'none';
-                                        if (layer._shadow) {
-                                            layer._shadow.style.display = 'none';
-                                        }
-                                    }
-                                    else if (layer.setStyle) {
-                                        layer._path.style.display = 'none';
-                                    }
-                                    else //clustered markers don't have _icon
-                                        if (layer.options.icon) {
-                                            layer.options.icon.options.className += ' marker-hidden';
-                                            layer.setIcon(layer.options.icon);
-                                        }
+                            this.filterValues[val].map(function(lyr: any) {
+                                if (lyr.setOpacity)
+                                    lyr.setOpacity(0.2);
+                                else
+                                    lyr.setStyle({ fillOpacity: 0.2, opacity: 0.2 })
 
+                                if (lyr._icon) {
+                                    lyr._icon.style.display = this.remove ? 'none' : '';
+                                    if (lyr._shadow) {
+                                        lyr._shadow.style.display = this.remove ? 'none' : '';
+                                    }
                                 }
-                                else {
-                                    if (layer.setOpacity)
-                                        layer.setOpacity(0.2);
-                                    else
-                                        layer.setStyle({ fillOpacity: 0.2, opacity: 0.2 })
+                                else if (lyr.setStyle) {
+                                    lyr._path.style.display = this.remove ? 'none' : '';
+                                }
+                                else //clustered markers don't have _icon
+                                    if (lyr.options.icon) {
+                                        lyr.options.icon.options.className += ' marker-hidden';
+                                        lyr.setIcon(lyr.options.icon);
+                                    }
 
-                                }
+
 
                             }, this);
                             this.filteredIndices.push(+val); //mark as filtered
                         }
                         else if (filteredIndex > -1 && (+val >= this.currentMin && +val <= this.currentMax)) { //If filtered and within thresholds
-                            this.filterValues[val].map(function(layer: any) {
-                                if (shouldLayerBeAdded.call(this, layer)) {
-                                    if (this.remove) {
-                                        if (layer._icon) {
-                                            layer._icon.style.display = 'block';
-                                            if (layer._shadow) {
-                                                layer._shadow.style.display = 'block';
-                                            }
-                                        }
-                                        else if (layer._path) {
-                                            layer._path.style.display = 'block';
-                                        }
-                                        else
-                                            if (layer.options.icon) {
-                                                layer.options.icon.options.className = layer.options.icon.options.className.replace(' marker-hidden', '');
-                                                layer.setIcon(layer.options.icon);
-                                            }
+                            this.filterValues[val].map(function(lyr: any) {
+                                if (shouldLayerBeAdded.call(this, lyr)) {
+                                    if (lyr.setOpacity)
+                                        lyr.setOpacity(layer.colorOptions.fillOpacity);
+                                    else
+                                        lyr.setStyle({ fillOpacity: layer.colorOptions.fillOpacity, opacity: layer.colorOptions.opacity })
 
+                                    if (lyr._icon) {
+                                        lyr._icon.style.display = '';
+                                        if (lyr._shadow) {
+                                            lyr._shadow.style.display = '';
+                                        }
                                     }
-                                    else {
-                                        if (layer.setOpacity)
-                                            layer.setOpacity(this.layer.colorOptions.fillOpacity);
-                                        else
-                                            layer.setStyle({ fillOpacity: this.layer.colorOptions.fillOpacity, opacity: this.layer.colorOptions.opacity })
+
+                                    else if (lyr._path) {
+                                        lyr._path.style.display = '';
                                     }
+                                    else
+                                        if (lyr.options.icon) {
+                                            lyr.options.icon.options.className = lyr.options.icon.options.className.replace(' marker-hidden', '');
+                                            lyr.setIcon(lyr.options.icon);
+                                        }
                                 }
                             }, this);
                             this.filteredIndices.splice(filteredIndex, 1);
@@ -144,16 +163,16 @@ export class Filter {
                     }
                 }
 
-                this.layer.refreshCluster();
+                layer.refreshCluster();
 
             }
             else {
                 let arr: number[][] = [];
                 let max = 0;
-                this.layer.geoJSON.features.map(function(feat) {
+                layer.geoJSON.features.map(function(feat) {
                     if (feat.properties[this.fieldToFilter] >= this.currentMin && feat.properties[this.fieldToFilter] <= this.currentMax) {
                         let pos = [];
-                        let heatVal = feat.properties[this.layer.heatMapVariable];
+                        let heatVal = feat.properties[layer.colorOptions.colorField.value];
                         if (heatVal > max)
                             max = heatVal;
                         pos.push(feat.geometry.coordinates[1]);
@@ -165,7 +184,7 @@ export class Filter {
                 for (let i in arr) {
                     arr[i][2] = arr[i][2] / max;
                 }
-                (this.layer.displayLayer as any).setLatLngs(arr);
+                (layer.displayLayer as any).setLatLngs(arr);
             }
 
             this.previousLower = this.currentMin;

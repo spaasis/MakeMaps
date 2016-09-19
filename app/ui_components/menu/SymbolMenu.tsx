@@ -1,9 +1,9 @@
 import * as React from 'react';
 let Modal = require('react-modal');
 let Select = require('react-select');
-import { SymbolTypes, CalculateLimits } from '../../common_items/common';
+import { CalculateLimits } from '../../common_items/common';
 import { AppState, SymbolMenuState } from '../../stores/States';
-import { Layer, SymbolOptions, IHeader } from '../../stores/Layer';
+import { Layer, SymbolOptions, IHeader, SymbolTypes } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 
 @observer
@@ -411,11 +411,11 @@ export class SymbolMenu extends React.Component<{
                             <input
                                 type='radio'
                                 onChange={() => {
-                                    layer.symbolOptions.chartType = 'pie';
+                                    sym.chartType = 'pie';
                                 } }
                                 checked={sym.chartType === 'pie'}
                                 name='charttype'
-                                id='rect'
+                                id='pie'
                                 />
                             <br/>
 
@@ -425,7 +425,7 @@ export class SymbolMenu extends React.Component<{
                             <input
                                 type='radio'
                                 onChange={() => {
-                                    layer.symbolOptions.chartType = 'donut';
+                                    sym.chartType = 'donut';
                                 } }
                                 checked={sym.chartType === 'donut'}
                                 name='charttype'

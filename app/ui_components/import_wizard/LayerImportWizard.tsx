@@ -1,36 +1,33 @@
 import * as React from 'react';
 
-import { LayerTypeSelectView } from './LayerTypeSelectView';
 import { FileUploadView } from './FileUploadView';
 import { FileDetailsView } from './FileDetailsView';
 import { FilePreProcessModel } from '../../models/FilePreProcessModel';
-import { LayerTypes } from "../../common_items/common";
 
 let _fileModel = new FilePreProcessModel();
 
 import { ImportWizardState, AppState } from '../../stores/States';
-import { Layer, IHeader } from '../../stores/Layer';
+import { Layer, IHeader, LayerTypes } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 
 @observer
 export class LayerImportWizard extends React.Component<{
-    state: ImportWizardState,
-    appState: AppState,
+    state: AppState,
     /** Function to upload the data to the map */
     submit: (Layer) => void,
     /** Function to signal the cancellation of the import.  */
     cancel: () => void,
 }, {}>{
     nextStep() {
-        this.props.state.step++;
+        this.props.state.importWizardState.step++;
     }
 
     previousStep() {
-        this.props.state.step--;
+        this.props.state.importWizardState.step--;
     }
 
     setFileInfo() {
-        let state = this.props.state;
+        let state = this.props.state.importWizardState;
         let ext = state.fileExtension;
         if (ext === 'csv') {
             this.nextStep();
@@ -63,7 +60,7 @@ export class LayerImportWizard extends React.Component<{
     }
 
     setFileDetails(fileDetails) {
-        let details = this.props.state;
+        let details = this.props.state.importWizardState;
 
         details.latitudeField = fileDetails.latitudeField;
         details.longitudeField = fileDetails.longitudeField;
@@ -77,21 +74,17 @@ export class LayerImportWizard extends React.Component<{
      * @return {void}
      */
     submit() {
-        let state = this.props.state;
-        let layer = this.props.state.layer;
+        let state = this.props.state.importWizardState;
+        let layer = state.layer;
         if (!layer.geoJSON && state.fileExtension === 'csv') {
             layer.geoJSON = _fileModel.ParseCSVToGeoJSON(state.content,
                 state.latitudeField,
                 state.longitudeField,
                 state.delimiter,
-                state.coordinateSystem,
                 state.layer.headers);
-
-            layer.headers = layer.headers.filter(function(val) { return val.label !== state.longitudeField && val.label !== state.latitudeField });
-
         }
 
-        else if (state.coordinateSystem && state.coordinateSystem !== 'WGS84') {
+        if (state.coordinateSystem && state.coordinateSystem !== 'WGS84') {
             layer.geoJSON = _fileModel.ProjectCoords(layer.geoJSON, state.coordinateSystem);
         }
         layer.getValues()
@@ -104,26 +97,18 @@ export class LayerImportWizard extends React.Component<{
     }
 
     getCurrentView() {
-        switch (this.props.state.step) {
+        switch (this.props.state.importWizardState.step) {
             case 0:
-                return <div style={{ minWidth: 1000 }}>
-                    <LayerTypeSelectView
-                        state = {this.props.state}
-                        appState= {this.props.appState}
-                        cancel = {() => {
-                            this.props.cancel();
-                        } }
-                        />
-                </div>
-            case 1:
                 return <FileUploadView
-                    state={this.props.state}
+                    state={this.props.state.importWizardState}
                     saveValues={this.setFileInfo.bind(this)}
-                    goBack={this.previousStep.bind(this)}
+                    cancel = {() => {
+                        this.props.cancel();
+                    } }
                     />
-            case 2:
+            case 1:
                 return <FileDetailsView
-                    state={this.props.state}
+                    state={this.props.state.importWizardState}
                     saveValues={this.setFileDetails.bind(this)}
                     goBack = {this.previousStep.bind(this)}
                     />

@@ -1,8 +1,8 @@
 import * as React from 'react';
 let Draggable = require('react-draggable');
-import { LayerTypes, SymbolTypes, GetItemBetweenLimits } from '../../common_items/common';
+import { GetItemBetweenLimits } from '../../common_items/common';
 import { AppState } from '../../stores/States';
-import { Layer, SymbolOptions, ColorOptions } from '../../stores/Layer';
+import { Layer, SymbolOptions, ColorOptions, LayerTypes, SymbolTypes } from '../../stores/Layer';
 import { TextEditor } from './TextEditor';
 import { IHeader } from '../../stores/Layer';
 

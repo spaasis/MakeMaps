@@ -12,13 +12,10 @@ export class FileUploadView extends React.Component<{
     state: ImportWizardState,
     /** Saves the filename, string content, delimiter and the headers/column names to the import wizard */
     saveValues: () => void,
-    /** Go back to the previous step of the wizard */
-    goBack: () => void
+    /** Cancel import */
+    cancel: () => void
 }, {}>{
 
-    // shouldComponentUpdate(nextProps: IFileUploadProps, nextState: IFileUploadStates) {
-    //     return this.state.layerName !== nextState.layerName;
-    // }
     onDrop = (files) => {
         let reader = new FileReader();
         let fileName, content;
@@ -98,8 +95,8 @@ export class FileUploadView extends React.Component<{
 
                 </div>
                 <button className='secondaryButton' style={{ position: 'absolute', left: 15, bottom: 15 }} onClick={() => {
-                    this.props.goBack();
-                } }>Previous</button>
+                    this.props.cancel();
+                } }>Cancel</button>
                 <button className='primaryButton' disabled={this.props.state.content === undefined || layer.name === ''}  style={{ position: 'absolute', right: 15, bottom: 15 }} onClick={this.proceed.bind(this)}>Continue</button>
             </div>
         );

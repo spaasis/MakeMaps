@@ -1,5 +1,5 @@
 import { observable, computed } from 'mobx';
-import { LayerTypes, SymbolTypes, GetSymbolSize, GetItemBetweenLimits } from '../common_items/common';
+import { GetSymbolSize, GetItemBetweenLimits } from '../common_items/common';
 import { AppState } from './States';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -27,8 +27,6 @@ export class Layer {
 
     @observable popupHeaders: IHeader[] = [];
     @observable showPopUpOnHover: boolean;
-    /** The variable by which to create the heat map*/
-    @observable heatMapVariable: string;
     /** The Leaflet layer. Will be modified by changing options*/
     displayLayer: L.GeoJSON;
     /** The function to run on every feature of the layer. Is used to place pop-ups to map features */
@@ -40,13 +38,14 @@ export class Layer {
     @observable clusterOptions: ClusterOptions = new ClusterOptions();
     appState: AppState;
     /** Is clustering being toggled on/off? If so, redraw by removing and adding the layer once*/
-    toggleCluster: boolean = true;
+    toggleRedraw: boolean = true;
     pointFeatureCount: number = 0;
     values: { [field: string]: any[]; } = undefined;
 
 
     constructor(state: AppState) {
         this.appState = state;
+        this.layerType = LayerTypes.Standard;
     }
 
     /** Update layer based on changed options and properties. */
@@ -64,7 +63,7 @@ export class Layer {
                 weight: opts.weight,
             }
         }
-        if (layer && this.layerType !== LayerTypes.HeatMap && !this.toggleCluster) {
+        if (layer && this.layerType !== LayerTypes.HeatMap && !this.toggleRedraw) {
             let that = this;
             let path = false;
             layer.eachLayer(function(l: any) {
@@ -79,13 +78,13 @@ export class Layer {
                     l.setIcon(icon);
                 }
             });
-            this.refreshFilter();
+            this.refreshFilters();
             this.refreshCluster();
             console.timeEnd("LayerCreate")
         }
         else if (this.geoJSON) {
             if (this.layerType === LayerTypes.HeatMap) {
-                if (this.heatMapVariable)
+                if (this.colorOptions.colorField)
                     layer = (createHeatLayer(this) as any);
             }
             else {
@@ -99,7 +98,7 @@ export class Layer {
             }
             if (layer) {
                 console.time("LayerRender")
-                if (this.clusterOptions.useClustering) {
+                if (this.layerType !== LayerTypes.HeatMap && this.clusterOptions.useClustering) {
                     let markers = L.markerClusterGroup({
                         iconCreateFunction: this.createClusteredIcon.bind(this),
                     });
@@ -123,12 +122,12 @@ export class Layer {
                 if (this.displayLayer)
                     this.appState.map.removeLayer(this.displayLayer)
                 this.displayLayer = layer;
-                this.refreshFilter();
+                this.refreshFilters();
                 if (!this.values) {
                     this.values = {};
                     this.getValues();
                 }
-                this.toggleCluster = false;
+                this.toggleRedraw = false;
             }
 
         }
@@ -137,7 +136,7 @@ export class Layer {
 
 
 
-        if (this.layerType === LayerTypes.SymbolMap) {
+        if (this.layerType !== LayerTypes.HeatMap) {
             if (this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar &&
                 (this.symbolOptions.symbolType === SymbolTypes.Circle ||
                     this.symbolOptions.symbolType === SymbolTypes.Rectangle
@@ -148,8 +147,8 @@ export class Layer {
         }
 
     }
-    refreshFilter() {
-        let filters = this.appState.filters.filter((f) => { return f.layer.id === this.id });
+    refreshFilters() {
+        let filters = this.appState.filters.filter((f) => { return f.layerId === this.id });
         for (let i in filters) {
             filters[i].init(true);
         }
@@ -181,9 +180,7 @@ export class Layer {
             return;
         }
 
-        let values = (this.geoJSON as any).features.map(function(item) {
-            return item.properties[opts.colorField.value];
-        });
+        let values = this.values[opts.colorField.value]
         let colors = [];
         opts.limits = chroma.limits(values, opts.mode, opts.steps);
         colors = chroma.scale(opts.colorScheme).colors(opts.limits.length - 1);
@@ -536,7 +533,7 @@ function createHeatLayer(l: Layer) {
     let max = customScheme ? l.colorOptions.limits[l.colorOptions.limits.length - 2] : 0;
     l.geoJSON.features.map(function(feat) {
         let pos = [];
-        let heatVal = feat.properties[l.heatMapVariable];
+        let heatVal = feat.properties[l.colorOptions.colorField.value];
         if (!customScheme && heatVal > max)
             max = heatVal;
         pos.push(feat.geometry.coordinates[1]);
@@ -583,7 +580,6 @@ function addPopups(feature, layer: L.GeoJSON) {
     }
 
 }
-
 
 export class ColorOptions implements L.PathOptions {
     /** Field to color layers by*/
@@ -740,7 +736,7 @@ export class ClusterOptions {
         this.useClustering = prev && prev.useClustering || false;
         this.showCount = prev && prev.showCount || true;
         this.countText = prev && prev.countText || 'map points';
-        this.showAvg = prev && prev.showAvg || false;
+        this.showAvg = prev && prev.showAvg || true;
         this.avgText = prev && prev.avgText || 'avg:';
         this.showAvg = prev && prev.showAvg || false;
         this.sumText = prev && prev.sumText || 'sum:';
@@ -764,4 +760,26 @@ export class IHeader {
         this.type = prev && prev.type || 'string';
         this.decimalAccuracy = prev && prev.decimalAccuracy || 0;
     }
+}
+
+/** The different kinds of layers that can be created */
+export enum LayerTypes {
+    /** Show polygons and points  */
+    Standard,
+    /** Show intensity of a phenomenon by color scaling. */
+    HeatMap
+}
+
+/** Different supported symbol types */
+export enum SymbolTypes {
+    /** Basic circular symbol. Uses L.CircleMarker. Can be resized and colored. */
+    Circle,
+    /** Basic rectancular symbol. Uses L.DivIcon. Width and height can both be resized, and color can be changed. */
+    Rectangle,
+    /** Pie- or donut chart based on multiple icons. Can be resized, but color scheme is static. */
+    Chart,
+    /** leaflet.Awesome-Markers- type marker. Uses Font Awesome-css to show a specific icon. */
+    Icon,
+    /** Create a stack of squares. Uses L.DivIcon. Square amount adjustable */
+    Blocks,
 }

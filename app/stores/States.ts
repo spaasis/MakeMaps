@@ -1,8 +1,7 @@
 import { observable, computed, autorun } from 'mobx';
-import { Layer } from './Layer';
+import { Layer, LayerTypes } from './Layer';
 import { Filter } from './Filter';
 import { Legend } from './Legend';
-import { LayerTypes, SymbolTypes } from '../common_items/common';
 let mobx = require('mobx');
 
 
@@ -39,6 +38,9 @@ export class AppState {
     @observable editingLayer: Layer;
     /** Currently open submenu index. 0=none*/
     @observable visibleMenu: number = 0;
+
+    @observable importWizardState: ImportWizardState;
+
     /** UI state of the color menu*/
     @observable colorMenuState: ColorMenuState = new ColorMenuState();
 
@@ -101,6 +103,9 @@ export class ImportWizardState {
         return this.layer.layerType === LayerTypes.HeatMap;
     }
 
+    constructor(layer: Layer) {
+        this.layer = layer;
+    }
 }
 
 //TODO: filterstore, layerstore, legendstore(?)
