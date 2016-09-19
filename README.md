@@ -21,6 +21,8 @@ Hosting
 1. git clone
 2. npm install
 3. open index.html
+
+If you want the demos, fetch them from the gh-pages-branch
 ```
 
 Embedding
