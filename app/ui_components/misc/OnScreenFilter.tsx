@@ -108,6 +108,7 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
     render() {
         return <Draggable
             handle={'.filterhead'}
+            onDrag={(e) => { e.preventDefault(); e.stopPropagation(); return; } }
             >
             <div className='filter'>
                 <h3 className='filterhead'>{this.props.state.title}</h3>

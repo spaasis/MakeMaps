@@ -96,7 +96,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         let props = {
             layers: this.props.state.activeBaseLayer,
             fullscreenControl: true,
-            worldCopyJump: true,
         };
         this.props.state.map = L.map('map', props).setView([0, 0], 2);
 
@@ -303,7 +302,10 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         }
         return (
             <div>
-                <div id='map'/>
+                <div id='map'>
+                    {this.getFilters()}
+                    {this.showLegend()}
+                </div>
                 {this.props.state.embed ? null :
                     <div>
                         <Modal
@@ -336,8 +338,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                             : null}
                     </div>
                 }
-                {this.getFilters()}
-                {this.showLegend()}
+
             </div>
         );
     }
