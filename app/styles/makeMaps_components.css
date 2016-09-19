@@ -176,6 +176,8 @@ hr{
   cursor: pointer;
   border-radius: 5px;
   text-align: center;
+  height:32px;
+  line-height: 32px;
 }
 
 .ReactModal__Overlay--after-open{
@@ -191,7 +193,7 @@ hr{
 }
 
 .marker-hidden{
-  display: none !important; 
+  display: none !important;
 }
 
 /* The animation code */
