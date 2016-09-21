@@ -16,8 +16,8 @@ export class SymbolMenu extends React.Component<{
         let sym: SymbolOptions = this.props.state.editingLayer.symbolOptions;
         sym.symbolType = type;
         if (type === SymbolTypes.Blocks && !sym.blockSizeVar) {
-            sym.blockSizeVar = layer.numberHeaders[0].value;
-            sym.blockValue = sym.blockValue == 0 ? Math.ceil(layer.values[sym.blockSizeVar][layer.values[sym.blockSizeVar].length - 1] / 5) : sym.blockValue;
+            sym.blockSizeVar = layer.numberHeaders[0];
+            sym.blockValue = sym.blockValue == 0 ? Math.ceil(layer.values[sym.blockSizeVar.value][layer.values[sym.blockSizeVar.value].length - 1] / 5) : sym.blockValue;
         }
         if (type === SymbolTypes.Chart) {
             if (sym.chartFields.length == 0)
@@ -155,10 +155,6 @@ export class SymbolMenu extends React.Component<{
 
     }
 
-    saveOptions = () => {
-        if (this.props.state.autoRefresh)
-            this.props.state.editingLayer.refresh();
-    }
     getIcon(shape: string, fa: string, stroke: string, fill: string, onClick) {
         let circleIcon =
             <svg viewBox="0 0 69.529271 95.44922" height="40" width="40">
@@ -315,7 +311,7 @@ export class SymbolMenu extends React.Component<{
                         />
                     <br/>
                 </label>
-                {sym.symbolType !== SymbolTypes.Icon ?
+                {sym.symbolType !== SymbolTypes.Icon && sym.symbolType !== SymbolTypes.Blocks ?
                     <div>
                         <label>Scale {sym.symbolType === SymbolTypes.Rectangle ? 'width' : 'size'} by</label>
                         <Select
@@ -453,7 +449,7 @@ export class SymbolMenu extends React.Component<{
 
                 }
                 {this.props.state.autoRefresh ? null :
-                    <button className='menuButton' onClick={this.saveOptions}>Refresh map</button>
+                    <button className='menuButton' onClick={() => { layer.refresh() } }>Refresh map</button>
                 }
                 <Modal
                     isOpen={state.iconSelectOpen}

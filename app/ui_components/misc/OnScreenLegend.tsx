@@ -332,7 +332,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         }
         return (
             <div style={{ margin: '5px', float: 'left' }}>
-                {layer.symbolOptions.sizeXVar.label}
+                {layer.symbolOptions.blockSizeVar ? layer.symbolOptions.blockSizeVar.label : ''}
                 <div style= {{ display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}>
                     <div style={style} />
                     =

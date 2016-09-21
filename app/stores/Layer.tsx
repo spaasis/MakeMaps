@@ -1,5 +1,5 @@
 import { observable, computed } from 'mobx';
-import { GetSymbolSize, GetItemBetweenLimits } from '../common_items/common';
+import { GetSymbolSize, GetItemBetweenLimits, ShowNotification } from '../common_items/common';
 import { AppState } from './States';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -63,6 +63,7 @@ export class Layer {
             }
         }
         if (this.displayLayer && this.layerType !== LayerTypes.HeatMap && !this.toggleRedraw) {
+            let start = Date.now();
             let that = this;
             let path = false;
             this.displayLayer.eachLayer(function(l: any) {
@@ -79,6 +80,13 @@ export class Layer {
             });
             this.refreshFilters();
             this.refreshCluster();
+            let end = Date.now();
+            if (end - start > 500) {
+                if (this.appState.autoRefresh) {
+                    ShowNotification('An update operation seems to be taking too long. Automatic refreshing has been disabled.');
+                    this.appState.autoRefresh = false;
+                }
+            }
             console.timeEnd("LayerCreate")
         }
         else if (this.geoJSON) {
@@ -102,7 +110,7 @@ export class Layer {
             if (this.displayLayer) {
                 this.appState.map.removeLayer(this.displayLayer)
                 if (this.layerType !== LayerTypes.HeatMap && this.clusterOptions.useClustering) {
-                  console.time("LayerCluster")
+                    console.time("LayerCluster")
 
                     let markers = L.markerClusterGroup({
                         iconCreateFunction: this.createClusteredIcon.bind(this),
@@ -132,10 +140,11 @@ export class Layer {
                     this.getValues();
                 }
                 this.toggleRedraw = false;
+                console.timeEnd("LayerCreate");
+
             }
 
         }
-        console.timeEnd("LayerCreate");
 
         if (this.layerType !== LayerTypes.HeatMap) {
             if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
@@ -285,23 +294,23 @@ export class Layer {
     batchAdd(start: number, end: number, source, target) {
         let i;
         for (i = start; i < end; i++) {
-          if (source.features){
-            if (source.features[i])
-                target.addData(source.features[i]);
-            else
-                return;
-              }
-              else if (source){
+            if (source.features) {
+                if (source.features[i])
+                    target.addData(source.features[i]);
+                else
+                    return;
+            }
+            else if (source) {
                 if (source[i])
                     target.addLayer(source[i]);
                 else
                     return;
-              }
+            }
         }
-        if (source.features? i >= source.features.length: i>=source.length)
+        if (source.features ? i >= source.features.length : i >= source.length)
             return;
         else {
-            setTimeout(this.batchAdd(i, i + 500, source,target), 10);
+            setTimeout(this.batchAdd(i, i + 500, source, target), 10);
         }
     }
 }
@@ -352,8 +361,8 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
             let marker = L.divIcon({ iconAnchor: L.point(x, x), html: chartHtml, className: '' });
             return L.marker(latlng, { icon: marker });
         case SymbolTypes.Blocks:
-            let side = Math.ceil(Math.sqrt(feature.properties[sym.blockSizeVar] / sym.blockValue));
-            let blockCount = Math.ceil(feature.properties[sym.blockSizeVar] / sym.blockValue);
+            let side = Math.ceil(Math.sqrt(feature.properties[sym.blockSizeVar.value] / sym.blockValue));
+            let blockCount = Math.ceil(feature.properties[sym.blockSizeVar.value] / sym.blockValue);
             let blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, col.color, col.weight);
             let blockMarker = L.divIcon({ iconAnchor: L.point(5 * side, 5 * side), html: blockHtml, className: '' });
             return L.marker(latlng, { icon: blockMarker });
@@ -687,7 +696,7 @@ export class SymbolOptions {
     /** The field to scale size y-axis by*/
     @observable sizeYVar: IHeader;
     /** The name of the field to scale block size by*/
-    @observable blockSizeVar: string;
+    @observable blockSizeVar: IHeader;
     /** The minimum allowed size when scaling*/
     @observable sizeLowLimit: number;
     /** The maximum allowed size when scaling*/
