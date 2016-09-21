@@ -128,7 +128,7 @@
 	    ;
 	    MapMain.prototype.initMap = function () {
 	        this.props.state.baseLayers = _mapInitModel.InitBaseMaps();
-	        this.props.state.activeBaseLayer = this.props.state.baseLayers[0];
+	        this.props.state.activeBaseLayer = this.props.state.baseLayers[2];
 	        var props = {
 	            layers: this.props.state.activeBaseLayer,
 	            fullscreenControl: true,
@@ -156,18 +156,24 @@
 	        }
 	    };
 	    MapMain.prototype.layerImportSubmit = function (l) {
+	        l.getValues();
+	        if (l.pointFeatureCount > 500) {
+	            l.clusterOptions.useClustering = true;
+	            common_1.ShowNotification('The dataset contains a large number of map points. Point clustering has beeen enabled to boost performance. If you wish, you may turn this off in the clustering options');
+	        }
 	        l.appState = this.props.state;
 	        l.id = _currentLayerId++;
 	        l.colorOptions.colorField = l.numberHeaders[0];
 	        l.colorOptions.useMultipleFillColors = true;
 	        l.getColors();
-	        l.refresh();
+	        setTimeout(l.refresh(), 10);
+	        this.props.state.map.fitBounds(l.layerType === Layer_1.LayerTypes.HeatMap ? l.displayLayer._latlngs : l.displayLayer.getBounds());
 	        this.props.state.layers.push(l);
 	        this.props.state.layerMenuState.order.push({ name: l.name, id: l.id });
 	        this.props.state.importWizardShown = false;
 	        this.props.state.editingLayer = l;
 	        this.props.state.menuShown = true;
-	        this.props.state.map.fitBounds(l.layerType === Layer_1.LayerTypes.HeatMap ? l.displayLayer._latlngs : l.displayLayer.getBounds());
+	        common_1.HideLoading();
 	    };
 	    MapMain.prototype.changeLayerOrder = function () {
 	        var _loop_1 = function(i) {
@@ -257,11 +263,11 @@
 	            }
 	            var popupHeaders = [];
 	            for (var k in lyr.popupHeaders) {
-	                popupHeaders.push(getHeaderByValue(lyr.popupHeaders[k].value));
+	                popupHeaders.push(getHeaderByValue(lyr.popupHeaders[k]));
 	            }
 	            var chartFields = [];
 	            for (var k in lyr.symbolOptions.chartFields) {
-	                chartFields.push(getHeaderByValue(lyr.popupHeaders[k].value));
+	                chartFields.push(getHeaderByValue(lyr.popupHeaders[k]));
 	            }
 	            newLayer.id = _currentLayerId++;
 	            newLayer.name = lyr.name;
@@ -270,11 +276,11 @@
 	            newLayer.layerType = lyr.layerType;
 	            newLayer.geoJSON = lyr.geoJSON;
 	            newLayer.colorOptions = new Layer_1.ColorOptions(lyr.colorOptions);
-	            newLayer.colorOptions.colorField = lyr.colorOptions.colorField ? getHeaderByValue(lyr.colorOptions.colorField.value) : undefined;
+	            newLayer.colorOptions.colorField = lyr.colorOptions.colorField ? getHeaderByValue(lyr.colorOptions.colorField) : undefined;
 	            newLayer.symbolOptions = new Layer_1.SymbolOptions(lyr.symbolOptions);
-	            newLayer.symbolOptions.iconField = lyr.symbolOptions.iconField ? getHeaderByValue(lyr.symbolOptions.iconField.value) : undefined;
-	            newLayer.symbolOptions.sizeXVar = lyr.symbolOptions.sizeXVar ? getHeaderByValue(lyr.symbolOptions.sizeXVar.value) : undefined;
-	            newLayer.symbolOptions.sizeYVar = lyr.symbolOptions.sizeYVar ? getHeaderByValue(lyr.symbolOptions.sizeYVar.value) : undefined;
+	            newLayer.symbolOptions.iconField = lyr.symbolOptions.iconField ? getHeaderByValue(lyr.symbolOptions.iconField) : undefined;
+	            newLayer.symbolOptions.sizeXVar = lyr.symbolOptions.sizeXVar ? getHeaderByValue(lyr.symbolOptions.sizeXVar) : undefined;
+	            newLayer.symbolOptions.sizeYVar = lyr.symbolOptions.sizeYVar ? getHeaderByValue(lyr.symbolOptions.sizeYVar) : undefined;
 	            newLayer.symbolOptions.chartFields = chartFields;
 	            newLayer.clusterOptions = new Layer_1.ClusterOptions(lyr.clusterOptions);
 	            this.props.state.layers.push(newLayer);
@@ -289,9 +295,10 @@
 	        this.props.state.welcomeShown = false;
 	        this.props.state.editingLayer = this.props.state.layers[0];
 	        this.props.state.menuShown = !this.props.state.embed;
+	        common_1.HideLoading();
 	        console.timeEnd("LoadSavedMap");
-	        function getHeaderByValue(value) {
-	            return headers.filter(function (h) { return h.value == value; })[0];
+	        function getHeaderByValue(header) {
+	            return headers.filter(function (h) { return h.value == header.value; })[0];
 	        }
 	    };
 	    MapMain.prototype.render = function () {
@@ -307,7 +314,7 @@
 	                React.createElement(Modal, {isOpen: this.props.state.importWizardShown, style: modalStyle}, React.createElement(LayerImportWizard_1.LayerImportWizard, {state: this.props.state, submit: this.layerImportSubmit.bind(this), cancel: this.cancelLayerImport.bind(this)}))
 	                : null, this.props.state.menuShown ?
 	                React.createElement(Menu_1.MakeMapsMenu, {state: this.props.state, addLayer: this.startLayerImport.bind(this), changeLayerOrder: this.changeLayerOrder.bind(this), saveImage: this.saveImage, saveFile: this.saveFile.bind(this)})
-	                : null)));
+	                : null), React.createElement("div", {className: 'notification', id: 'loading'}, React.createElement("span", {style: { lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}, "Loading"), React.createElement("div", {className: "sk-double-bounce"}, React.createElement("div", {className: "sk-child sk-double-bounce1"}), React.createElement("div", {className: "sk-child sk-double-bounce2"}))), React.createElement("div", {className: 'notification', id: 'notification'}, React.createElement("span", {id: 'notificationText', style: { lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}, "Notification"), React.createElement("br", null), React.createElement("button", {className: 'menuButton', onClick: function () { common_1.HideNotification(); }}, "Ok"))));
 	    };
 	    MapMain = __decorate([
 	        mobx_react_1.observer, 
@@ -23115,10 +23122,9 @@
 	        configurable: true
 	    });
 	    Layer.prototype.refresh = function () {
-	        var layer = this.displayLayer;
 	        console.time("LayerCreate");
-	        var col = JSON.parse(JSON.stringify(this.colorOptions));
-	        var sym = JSON.parse(JSON.stringify(this.symbolOptions));
+	        var col = this.colorOptions;
+	        var sym = this.symbolOptions;
 	        var style = function (opts, feature) {
 	            return {
 	                fillOpacity: opts.fillOpacity,
@@ -23128,10 +23134,10 @@
 	                weight: opts.weight,
 	            };
 	        };
-	        if (layer && this.layerType !== LayerTypes.HeatMap && !this.toggleRedraw) {
+	        if (this.displayLayer && this.layerType !== LayerTypes.HeatMap && !this.toggleRedraw) {
 	            var that = this;
 	            var path_1 = false;
-	            layer.eachLayer(function (l) {
+	            this.displayLayer.eachLayer(function (l) {
 	                if (l.setStyle) {
 	                    l.setStyle(style(col, l.feature));
 	                    path_1 = true;
@@ -23149,20 +23155,23 @@
 	        else if (this.geoJSON) {
 	            if (this.layerType === LayerTypes.HeatMap) {
 	                if (this.colorOptions.colorField)
-	                    layer = createHeatLayer(this);
+	                    this.displayLayer = createHeatLayer(this);
 	            }
 	            else {
-	                var geoJSON = JSON.parse(JSON.stringify(this.geoJSON));
+	                console.time('geojsonlayer');
 	                var options = {};
-	                layer = L.geoJson(geoJSON, ({
+	                this.displayLayer = L.geoJson([], {
 	                    onEachFeature: this.onEachFeature,
 	                    pointToLayer: getMarker.bind(this, col, sym),
 	                    style: style.bind(this, col),
-	                }));
+	                });
+	                this.batchAdd(0, 500, this.geoJSON, this.displayLayer);
+	                console.timeEnd('geojsonlayer');
 	            }
-	            if (layer) {
-	                console.time("LayerRender");
+	            if (this.displayLayer) {
+	                this.appState.map.removeLayer(this.displayLayer);
 	                if (this.layerType !== LayerTypes.HeatMap && this.clusterOptions.useClustering) {
+	                    console.time("LayerCluster");
 	                    var markers = L.markerClusterGroup({
 	                        iconCreateFunction: this.createClusteredIcon.bind(this),
 	                    });
@@ -23172,17 +23181,13 @@
 	                    markers.on('clustermouseout', function (c) {
 	                        c.layer.closePopup();
 	                    });
-	                    markers.addLayer(layer);
-	                    layer = markers;
-	                    this.appState.map.addLayer(layer);
+	                    this.batchAdd(0, 500, this.displayLayer.getLayers(), markers);
+	                    this.displayLayer = markers;
+	                    console.timeEnd("LayerCluster");
 	                }
-	                else {
-	                    layer.addTo(this.appState.map);
-	                }
+	                console.time("LayerRender");
+	                this.appState.map.addLayer(this.displayLayer);
 	                console.timeEnd("LayerRender");
-	                if (this.displayLayer)
-	                    this.appState.map.removeLayer(this.displayLayer);
-	                this.displayLayer = layer;
 	                this.refreshFilters();
 	                if (!this.values) {
 	                    this.values = {};
@@ -23193,7 +23198,7 @@
 	        }
 	        console.timeEnd("LayerCreate");
 	        if (this.layerType !== LayerTypes.HeatMap) {
-	            if (this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar &&
+	            if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
 	                (this.symbolOptions.symbolType === SymbolTypes.Circle ||
 	                    this.symbolOptions.symbolType === SymbolTypes.Rectangle)) {
 	                getScaleSymbolMaxValues.call(this);
@@ -23209,11 +23214,9 @@
 	    };
 	    Layer.prototype.refreshPopUps = function () {
 	        if (this.displayLayer && this.popupHeaders.slice().length > 0) {
-	            console.time('refreshPopUps');
 	            this.displayLayer.eachLayer(function (l) {
 	                addPopups.call(this, l.feature, l);
 	            }, this);
-	            console.timeEnd('refreshPopUps');
 	        }
 	    };
 	    Layer.prototype.refreshCluster = function () {
@@ -23235,7 +23238,6 @@
 	    Layer.prototype.getValues = function () {
 	        if (!this.values)
 	            this.values = {};
-	        console.time("Layer.GetValues");
 	        var pointCount = 0;
 	        this.geoJSON.features.map(function (feat) {
 	            if (feat.geometry.type == 'Point') {
@@ -23254,7 +23256,6 @@
 	            }
 	        }
 	        this.pointFeatureCount = pointCount;
-	        console.timeEnd("Layer.GetValues");
 	    };
 	    Layer.prototype.createClusteredIcon = function (cluster) {
 	        var values = [];
@@ -23311,14 +23312,32 @@
 	            iconAnchor: L.point(25, 25),
 	        });
 	    };
+	    Layer.prototype.batchAdd = function (start, end, source, target) {
+	        var i;
+	        for (i = start; i < end; i++) {
+	            if (source.features) {
+	                if (source.features[i])
+	                    target.addData(source.features[i]);
+	                else
+	                    return;
+	            }
+	            else if (source) {
+	                if (source[i])
+	                    target.addLayer(source[i]);
+	                else
+	                    return;
+	            }
+	        }
+	        if (source.features ? i >= source.features.length : i >= source.length)
+	            return;
+	        else {
+	            setTimeout(this.batchAdd(i, i + 500, source, target), 10);
+	        }
+	    };
 	    __decorate([
 	        mobx_1.observable, 
 	        __metadata('design:type', String)
 	    ], Layer.prototype, "name", void 0);
-	    __decorate([
-	        mobx_1.observable, 
-	        __metadata('design:type', Object)
-	    ], Layer.prototype, "geoJSON", void 0);
 	    __decorate([
 	        mobx_1.observable, 
 	        __metadata('design:type', Number)
@@ -23355,11 +23374,9 @@
 	}());
 	exports.Layer = Layer;
 	function getMarker(col, sym, feature, latlng) {
-	    if (col.colors && col.limits)
-	        col.fillColor = col.colors.slice().length == 0 || !col.useMultipleFillColors ? col.fillColor : common_1.GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value]);
-	    var borderColor = col.color;
-	    var x = sym.sizeXVar ? common_1.GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-	    var y = sym.sizeYVar ? common_1.GetSymbolSize(feature.properties[sym.sizeYVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+	    if (col.colors.slice().length > 0 && col.limits.slice().length > 0 && col.useMultipleFillColors)
+	        col.fillColor = common_1.GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value]);
+	    var x, y;
 	    switch (sym.symbolType) {
 	        case SymbolTypes.Icon:
 	            var icon = common_1.GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), sym.iconField ? feature.properties[sym.iconField.value] : 0);
@@ -23368,7 +23385,7 @@
 	                prefix: 'fa',
 	                markerColor: col.fillColor,
 	                svg: true,
-	                svgBorderColor: borderColor,
+	                svgBorderColor: col.color,
 	                svgOpacity: col.fillOpacity,
 	                shape: icon ? icon.shape : sym.icons[0].shape,
 	                iconColor: col.iconTextColor,
@@ -23378,6 +23395,7 @@
 	        case SymbolTypes.Chart:
 	            var vals_1 = [];
 	            var i_1 = 0;
+	            x = sym.sizeXVar ? common_1.GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
 	            sym.chartFields.map(function (e) {
 	                if (feature.properties[e.value] > 0)
 	                    vals_1.push({ feat: e, val: feature.properties[e.value], color: col.chartColors[e.value] });
@@ -23400,15 +23418,18 @@
 	        case SymbolTypes.Blocks:
 	            var side = Math.ceil(Math.sqrt(feature.properties[sym.blockSizeVar] / sym.blockValue));
 	            var blockCount = Math.ceil(feature.properties[sym.blockSizeVar] / sym.blockValue);
-	            var blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, borderColor, col.weight);
+	            var blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, col.color, col.weight);
 	            var blockMarker = L.divIcon({ iconAnchor: L.point(5 * side, 5 * side), html: blockHtml, className: '' });
 	            return L.marker(latlng, { icon: blockMarker });
 	        case SymbolTypes.Rectangle:
-	            var rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + borderColor + '"/>';
+	            x = sym.sizeXVar ? common_1.GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+	            y = sym.sizeYVar ? common_1.GetSymbolSize(feature.properties[sym.sizeYVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+	            var rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + '"/>';
 	            var rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
 	            return L.marker(latlng, { icon: rectIcon });
 	        default:
-	            var circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + borderColor + ';border-radius: 30px;"/>';
+	            x = sym.sizeXVar ? common_1.GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+	            var circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + ';border-radius: 30px;"/>';
 	            var circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
 	            return L.marker(latlng, { icon: circleIcon });
 	    }
@@ -23920,6 +23941,23 @@
 	    return r;
 	}
 	exports.GetSymbolSize = GetSymbolSize;
+	function ShowLoading() {
+	    document.getElementById('loading').style.display = 'flex';
+	}
+	exports.ShowLoading = ShowLoading;
+	function HideLoading() {
+	    document.getElementById('loading').style.display = 'none';
+	}
+	exports.HideLoading = HideLoading;
+	function ShowNotification(text) {
+	    document.getElementById('notificationText').innerText = text;
+	    document.getElementById('notification').style.display = 'block';
+	}
+	exports.ShowNotification = ShowNotification;
+	function HideNotification() {
+	    document.getElementById('notification').style.display = 'none';
+	}
+	exports.HideNotification = HideNotification;
 	function CalculateLimits(min, max, count, accuracy) {
 	    var limits = [];
 	    for (var i = +min; i < max; i += (max - min) / count) {
@@ -36360,10 +36398,12 @@
 	var React = __webpack_require__(1);
 	var FileUploadView_1 = __webpack_require__(171);
 	var FileDetailsView_1 = __webpack_require__(189);
+	var common_1 = __webpack_require__(163);
 	var FilePreProcessModel_1 = __webpack_require__(173);
 	var _fileModel = new FilePreProcessModel_1.FilePreProcessModel();
 	var Layer_1 = __webpack_require__(162);
 	var mobx_react_1 = __webpack_require__(159);
+	var csv2geojson = __webpack_require__(175);
 	var LayerImportWizard = (function (_super) {
 	    __extends(LayerImportWizard, _super);
 	    function LayerImportWizard() {
@@ -36371,6 +36411,8 @@
 	    }
 	    LayerImportWizard.prototype.nextStep = function () {
 	        this.props.state.importWizardState.step++;
+	        if (this.props.state.importWizardState.step == 2)
+	            this.submit();
 	    };
 	    LayerImportWizard.prototype.previousStep = function () {
 	        this.props.state.importWizardState.step--;
@@ -36383,56 +36425,71 @@
 	        }
 	        else {
 	            if (ext === 'geojson')
-	                state.layer.geoJSON = JSON.parse(state.content);
+	                this.setGeoJSONTypes(JSON.parse(state.content));
 	            else
-	                state.layer.geoJSON = _fileModel.ParseToGeoJSON(state.content, ext);
-	            for (var _i = 0, _a = state.layer.geoJSON.features; _i < _a.length; _i++) {
-	                var i = _a[_i];
-	                var props = state.layer.geoJSON.features ? i.properties : {};
-	                var _loop_1 = function(h) {
-	                    var isnumber = !isNaN(parseFloat(props[h]));
-	                    if (isnumber)
-	                        props[h] = +props[h];
-	                    var header = state.layer.headers.slice().filter(function (e) { return e.value === h; })[0];
-	                    if (!header) {
-	                        state.layer.headers.push(new Layer_1.IHeader({ value: h, type: isnumber ? 'number' : 'string', label: undefined, decimalAccuracy: undefined }));
-	                    }
-	                    else {
-	                        if (header.type === 'number' && !isnumber) {
-	                            header.type = 'string';
-	                        }
-	                    }
-	                };
-	                for (var _b = 0, _c = Object.keys(props); _b < _c.length; _b++) {
-	                    var h = _c[_b];
-	                    _loop_1(h);
-	                }
-	            }
-	            this.nextStep();
+	                _fileModel.ParseToGeoJSON(state.content, ext, this.setGeoJSONTypes.bind(this));
 	        }
 	    };
-	    LayerImportWizard.prototype.setFileDetails = function (fileDetails) {
-	        var details = this.props.state.importWizardState;
-	        details.latitudeField = fileDetails.latitudeField;
-	        details.longitudeField = fileDetails.longitudeField;
-	        details.coordinateSystem = fileDetails.coordinateSystem;
-	        this.submit();
+	    LayerImportWizard.prototype.setGeoJSONTypes = function (geoJSON) {
+	        var state = this.props.state.importWizardState;
+	        state.layer.geoJSON = geoJSON;
+	        for (var _i = 0, _a = state.layer.geoJSON.features; _i < _a.length; _i++) {
+	            var i = _a[_i];
+	            var props = state.layer.geoJSON.features ? i.properties : {};
+	            var _loop_1 = function(h) {
+	                var isnumber = !isNaN(parseFloat(props[h]));
+	                if (isnumber)
+	                    props[h] = +props[h];
+	                var header = state.layer.headers.slice().filter(function (e) { return e.value === h; })[0];
+	                if (!header) {
+	                    state.layer.headers.push(new Layer_1.IHeader({ value: h, type: isnumber ? 'number' : 'string', label: undefined, decimalAccuracy: undefined }));
+	                }
+	                else {
+	                    if (header.type === 'number' && !isnumber) {
+	                        header.type = 'string';
+	                    }
+	                }
+	            };
+	            for (var _b = 0, _c = Object.keys(props); _b < _c.length; _b++) {
+	                var h = _c[_b];
+	                _loop_1(h);
+	            }
+	        }
+	        this.nextStep();
+	    };
+	    LayerImportWizard.prototype.setFileDetails = function () {
+	        common_1.ShowLoading();
+	        var state = this.props.state.importWizardState;
+	        var layer = state.layer;
+	        if (!layer.geoJSON && state.fileExtension === 'csv') {
+	            var submit = this.submit.bind(this);
+	            var setGeoJSONTypes_1 = this.setGeoJSONTypes.bind(this);
+	            setTimeout(function () {
+	                var geoJSON = null;
+	                csv2geojson.csv2geojson(state.content, {
+	                    latfield: state.latitudeField,
+	                    lonfield: state.longitudeField,
+	                    delimiter: state.delimiter
+	                }, function (err, data) {
+	                    if (!err) {
+	                        setTimeout(setGeoJSONTypes_1(data), 10);
+	                    }
+	                    else {
+	                        console.log(err);
+	                    }
+	                });
+	            }, 10);
+	        }
+	        else
+	            this.submit();
 	    };
 	    LayerImportWizard.prototype.submit = function () {
 	        var state = this.props.state.importWizardState;
 	        var layer = state.layer;
-	        if (!layer.geoJSON && state.fileExtension === 'csv') {
-	            layer.geoJSON = _fileModel.ParseCSVToGeoJSON(state.content, state.latitudeField, state.longitudeField, state.delimiter, state.layer.headers);
-	        }
+	        layer.headers = layer.headers.filter(function (val) { return val.label !== state.longitudeField && val.label !== state.latitudeField; });
 	        if (state.coordinateSystem && state.coordinateSystem !== 'WGS84') {
 	            layer.geoJSON = _fileModel.ProjectCoords(layer.geoJSON, state.coordinateSystem);
 	        }
-	        layer.getValues();
-	        if (layer.pointFeatureCount > 500) {
-	            layer.clusterOptions.useClustering = true;
-	            alert('The dataset contains a large number of map points. In order to boost performance, we have enabled map clustering. If you wish, you may turn this off in the clustering options');
-	        }
-	        layer.getColors();
 	        this.props.submit(layer);
 	    };
 	    LayerImportWizard.prototype.getCurrentView = function () {
@@ -37006,24 +37063,7 @@
 	        else
 	            return 'string';
 	    };
-	    FilePreProcessModel.prototype.ParseCSVToGeoJSON = function (input, latField, lonField, delim, headers) {
-	        var geoJSON = null;
-	        csv2geojson.csv2geojson(input, {
-	            latfield: latField,
-	            lonfield: lonField,
-	            delimiter: delim
-	        }, function (err, data) {
-	            if (!err) {
-	                geoJSON = data;
-	            }
-	            else {
-	                console.log(err);
-	            }
-	        });
-	        geoJSON = this.setGeoJSONTypes(geoJSON, headers);
-	        return geoJSON;
-	    };
-	    FilePreProcessModel.prototype.ParseToGeoJSON = function (input, fileFormat) {
+	    FilePreProcessModel.prototype.ParseToGeoJSON = function (input, fileFormat, onComplete) {
 	        var geoJSON = null;
 	        if (fileFormat === 'kml') {
 	            var xml = this.stringToXML(input);
@@ -37040,9 +37080,7 @@
 	            var xml = (new DOMParser()).parseFromString(input, 'text/xml');
 	            geoJSON = osmtogeojson(xml);
 	        }
-	        if (geoJSON) {
-	            return geoJSON;
-	        }
+	        onComplete(geoJSON);
 	    };
 	    FilePreProcessModel.prototype.stringToXML = function (oString) {
 	        return (new DOMParser()).parseFromString(oString, "text/xml");
@@ -37054,22 +37092,6 @@
 	            var convert = proj4(fromProj, 'WGS84', [x, y]);
 	            feature.geometry.coordinates[1] = convert[1];
 	            feature.geometry.coordinates[0] = convert[0];
-	        });
-	        return geoJSON;
-	    };
-	    FilePreProcessModel.prototype.setGeoJSONTypes = function (geoJSON, headers) {
-	        var numbers = [];
-	        headers.map(function (head) {
-	            if (head.type === 'number') {
-	                numbers.push(head.label);
-	            }
-	        });
-	        geoJSON.features.forEach(function (feature) {
-	            for (var prop in feature.properties) {
-	                if (numbers.indexOf(prop) > -1) {
-	                    feature.properties[prop] = +feature.properties[prop];
-	                }
-	            }
 	        });
 	        return geoJSON;
 	    };
@@ -42709,12 +42731,8 @@
 	        };
 	        this.proceed = function () {
 	            var custom = document.getElementById('customProj').value;
-	            var values = {
-	                latitudeField: _this.props.state.latitudeField,
-	                longitudeField: _this.props.state.longitudeField,
-	                coordinateSystem: custom !== 'Insert custom Proj4-string here' ? custom : _this.props.state.coordinateSystem,
-	            };
-	            _this.props.saveValues(values);
+	            _this.props.state.coordinateSystem = custom !== 'Insert custom Proj4-string here' ? custom : _this.props.state.coordinateSystem;
+	            _this.props.saveValues();
 	        };
 	    }
 	    FileDetailsView.prototype.componentWillMount = function () {
@@ -60827,12 +60845,12 @@
 	                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 	                id: 'OSM Streets'
 	            }),
-	            L.tileLayer('https://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+	            L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
 	                maxZoom: 18,
 	                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 	                id: 'OSM Black&White'
 	            }),
-	            L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+	            L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
 	                maxZoom: 17,
 	                attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
 	                id: 'OpenTopoMap'
@@ -76724,6 +76742,7 @@
 	        this.state = { fileName: null };
 	    }
 	    WelcomeScreen.prototype.loadDemo = function (filename) {
+	        common_1.ShowLoading();
 	        common_1.LoadExternalMap('demos/' + filename + '.mmap', this.props.loadMap);
 	    };
 	    WelcomeScreen.prototype.createNewMap = function () {
@@ -76752,6 +76771,7 @@
 	        }
 	    };
 	    WelcomeScreen.prototype.loadMap = function (e) {
+	        common_1.ShowLoading();
 	        e.preventDefault();
 	        e.stopPropagation();
 	        this.props.loadMap(this.state.savedJSON);
@@ -76769,7 +76789,7 @@
 	        return (React.createElement("div", {style: { textAlign: 'center' }}, React.createElement("a", {href: "https://github.com/simopaasisalo/MakeMaps"}, React.createElement("i", {className: 'fa fa-github', style: { position: 'absolute', right: 5, fontSize: '40px' }})), React.createElement("img", {src: 'app/images/logo_pre.png', style: { display: 'block', margin: '0 auto', padding: 5 }}), "MakeMaps is an open source map creation tool that lets you make powerful visualizations from your spatial data", React.createElement("br", null), "Guides and feedback channels can be found in the ", React.createElement("a", {href: "https://github.com/simopaasisalo/MakeMaps"}, "GitHub page"), ". Contributions and feature requests welcome!", React.createElement("hr", null), React.createElement("h3", null, "Here's a few demos: "), React.createElement("div", {style: { overflowX: 'visible', overflowY: 'hidden', height: 440, whiteSpace: 'nowrap' }}, React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/chorodemo.png', description: 'This demo shows the choropleth map type by mapping the United States by population density.', loadDemo: this.loadDemo.bind(this, 'chorodemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/symboldemo.png', description: 'This demo demonstrates the different symbol options of MakeMaps. Data random generated for demo purposes.', loadDemo: this.loadDemo.bind(this, 'symboldemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_chartdemo.png', description: 'This demo shows the chart-as-a-symbol map by visualizing distribution between different traffic types in Helsinki using a pie chart. Data acquired from hri.fi', loadDemo: this.loadDemo.bind(this, 'hki_chartdemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_heatdemo.png', description: 'This demo showcases the heat map by visualizing the daily public transportation boardings by HSL', loadDemo: this.loadDemo.bind(this, 'hki_heatdemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/clusterdemo.png', description: 'This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently', loadDemo: this.loadDemo.bind(this, 'clusterdemo')})), React.createElement("hr", {style: { color: '#cecece', width: '75%' }}), React.createElement("div", {style: { display: 'inline' }}, React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, React.createElement("h3", null, "Load a previously made map"), React.createElement(Dropzone, {style: dropStyle, onDrop: this.onDrop.bind(this), accept: '.mmap'}, this.state.fileName ?
 	            React.createElement("span", null, React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), this.state.fileName, React.createElement("div", {style: { margin: '0 auto' }}, React.createElement("button", {className: 'primaryButton', onClick: this.loadMap.bind(this)}, "Show me")))
 	            :
-	                React.createElement("div", {style: { margin: '0 auto' }}, "Have a map you worked on previously? Someone sent you a cool map to see for yourself? Upload it here!", React.createElement("br", null), "Drop a map here or click to upload"))), React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, React.createElement("h3", null, "Create a new map"), "Start creating your own map from here. Select a layer type, upload your file and get visualizin'!", React.createElement("br", null), React.createElement("button", {className: 'primaryButton', onClick: this.createNewMap.bind(this)}, "Create a map")))));
+	                React.createElement("div", {style: { margin: '0 auto' }}, "Have a map you worked on previously? Someone sent you a cool map to see for yourself? Upload it here!", React.createElement("br", null), "Drop a map here or click to upload"))), React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, React.createElement("h3", null, "Create a new map"), "Start creating your own map from here. Upload your file and get visualizin' in seconds!", React.createElement("br", null), React.createElement("button", {className: 'primaryButton', onClick: this.createNewMap.bind(this)}, "Create a map")))));
 	    };
 	    return WelcomeScreen;
 	}(React.Component));
