@@ -38,11 +38,11 @@ Embedding
   2. mapURL - URL of the .mmap-file
 ```
 <iframe style="height: 400px; width: 400px;"
-src="http://simopaasisalo.github.io/MakeMaps/index.html
+src="http://makemaps.online
 ?
-mapURL=http://simopaasisalo.github.io/MakeMaps/demos/symboldemo.mmap"</iframe>
+mapURL=http://makemaps.online/demos/symboldemo.mmap"</iframe>
 ```
 
 Author
 -----
-Simo Paasisalo [Mail](mailto:simopaa@student.uef.fi)|[LinkedIn](https://fi.linkedin.com/in/simopaasisalo)
+Simo Paasisalo [Mail](mailto:info@makemaps.online)|[LinkedIn](https://fi.linkedin.com/in/simopaasisalo)
