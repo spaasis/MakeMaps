@@ -28,9 +28,15 @@ export class SymbolMenu extends React.Component<{
     }
 
     onXVariableChange = (val) => {
-        let sym = this.props.state.editingLayer.symbolOptions;
+        let layer = this.props.state.editingLayer;
+        let sym = layer.symbolOptions;
+        if (sym.symbolType === SymbolTypes.Blocks) {
+            sym.blockSizeVar = val ? val : '';
+            sym.blockValue = Math.ceil(layer.values[sym.blockSizeVar.value][layer.values[sym.blockSizeVar.value].length - 1] / 5);
 
-        sym.sizeXVar = val ? val : '';
+        }
+        else
+            sym.sizeXVar = val ? val : '';
         sym.sizeMultiplier = sym.sizeMultiplier ? sym.sizeMultiplier : 1;
         if (this.props.state.autoRefresh)
             this.props.state.editingLayer.refresh();
@@ -311,7 +317,7 @@ export class SymbolMenu extends React.Component<{
                         />
                     <br/>
                 </label>
-                {sym.symbolType !== SymbolTypes.Icon?
+                {sym.symbolType !== SymbolTypes.Icon ?
                     <div>
                         <label>Scale {sym.symbolType === SymbolTypes.Rectangle ? 'width' : 'size'} by</label>
                         <Select
@@ -328,7 +334,7 @@ export class SymbolMenu extends React.Component<{
                                 value={sym.sizeYVar}
                                 />
                         </div> : null}
-                        {sym.symbolType !== SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar )?
+                        {sym.symbolType !== SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar) ?
                             <div><label>Size multiplier</label>
                                 <input type="number" value={sym.sizeMultiplier} onChange={(e) => {
                                     layer.symbolOptions.sizeMultiplier = (e.currentTarget as any).valueAsNumber;
