@@ -311,7 +311,7 @@ export class SymbolMenu extends React.Component<{
                         />
                     <br/>
                 </label>
-                {sym.symbolType !== SymbolTypes.Icon && sym.symbolType !== SymbolTypes.Blocks ?
+                {sym.symbolType !== SymbolTypes.Icon?
                     <div>
                         <label>Scale {sym.symbolType === SymbolTypes.Rectangle ? 'width' : 'size'} by</label>
                         <Select
@@ -328,7 +328,7 @@ export class SymbolMenu extends React.Component<{
                                 value={sym.sizeYVar}
                                 />
                         </div> : null}
-                        {sym.sizeXVar || sym.sizeYVar ?
+                        {sym.symbolType !== SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar )?
                             <div><label>Size multiplier</label>
                                 <input type="number" value={sym.sizeMultiplier} onChange={(e) => {
                                     layer.symbolOptions.sizeMultiplier = (e.currentTarget as any).valueAsNumber;
