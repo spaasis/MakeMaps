@@ -15,7 +15,7 @@ export class Layer {
     /** The name of the layer. Will be shown in the UI*/
     @observable name: string;
     /** The GeoJSON representation of the data.*/
-    @observable geoJSON: { features: any[], type: string };
+    geoJSON: { features: any[], type: string };
     /** The type of the layer. Will affect the options available.*/
     @observable layerType: LayerTypes;
     /** The data property names.*/
@@ -50,10 +50,9 @@ export class Layer {
 
     /** Update layer based on changed options and properties. */
     refresh() {
-        let layer = this.displayLayer;
         console.time("LayerCreate")
-        let col: ColorOptions = JSON.parse(JSON.stringify(this.colorOptions));
-        let sym: SymbolOptions = JSON.parse(JSON.stringify(this.symbolOptions));
+        let col: ColorOptions = this.colorOptions;
+        let sym: SymbolOptions = this.symbolOptions;
         let style = function(opts: ColorOptions, feature) {
             return {
                 fillOpacity: opts.fillOpacity,
@@ -63,10 +62,10 @@ export class Layer {
                 weight: opts.weight,
             }
         }
-        if (layer && this.layerType !== LayerTypes.HeatMap && !this.toggleRedraw) {
+        if (this.displayLayer && this.layerType !== LayerTypes.HeatMap && !this.toggleRedraw) {
             let that = this;
             let path = false;
-            layer.eachLayer(function(l: any) {
+            this.displayLayer.eachLayer(function(l: any) {
 
                 if (l.setStyle) {
                     l.setStyle(style(col, l.feature));
@@ -85,20 +84,26 @@ export class Layer {
         else if (this.geoJSON) {
             if (this.layerType === LayerTypes.HeatMap) {
                 if (this.colorOptions.colorField)
-                    layer = (createHeatLayer(this) as any);
+                    this.displayLayer = (createHeatLayer(this) as any);
             }
             else {
-                let geoJSON = JSON.parse(JSON.stringify(this.geoJSON));
+                console.time('geojsonlayer')
                 let options: L.GeoJSONOptions = {}
-                layer = L.geoJson(geoJSON, ({
+                this.displayLayer = L.geoJson([], {
                     onEachFeature: this.onEachFeature,
                     pointToLayer: getMarker.bind(this, col, sym),
                     style: style.bind(this, col),
-                }));
+                });
+
+                this.batchAdd(0, 500, this.geoJSON, this.displayLayer);
+                console.timeEnd('geojsonlayer')
+
             }
-            if (layer) {
-                console.time("LayerRender")
+            if (this.displayLayer) {
+                this.appState.map.removeLayer(this.displayLayer)
                 if (this.layerType !== LayerTypes.HeatMap && this.clusterOptions.useClustering) {
+                  console.time("LayerCluster")
+
                     let markers = L.markerClusterGroup({
                         iconCreateFunction: this.createClusteredIcon.bind(this),
                     });
@@ -110,18 +115,17 @@ export class Layer {
                         c.layer.closePopup();
 
                     });
-                    markers.addLayer(layer);
-                    layer = markers as any;
-                    this.appState.map.addLayer(layer);
+                    this.batchAdd(0, 500, this.displayLayer.getLayers(), markers);
+                    this.displayLayer = markers as any;
+                    console.timeEnd("LayerCluster")
+
 
                 }
-                else {
-                    layer.addTo(this.appState.map);
-                }
+                console.time("LayerRender")
+
+                this.appState.map.addLayer(this.displayLayer);
+
                 console.timeEnd("LayerRender")
-                if (this.displayLayer)
-                    this.appState.map.removeLayer(this.displayLayer)
-                this.displayLayer = layer;
                 this.refreshFilters();
                 if (!this.values) {
                     this.values = {};
@@ -133,15 +137,10 @@ export class Layer {
         }
         console.timeEnd("LayerCreate");
 
-
-
-
         if (this.layerType !== LayerTypes.HeatMap) {
-            if (this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar &&
+            if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
                 (this.symbolOptions.symbolType === SymbolTypes.Circle ||
-                    this.symbolOptions.symbolType === SymbolTypes.Rectangle
-                )
-            ) {
+                    this.symbolOptions.symbolType === SymbolTypes.Rectangle)) {
                 getScaleSymbolMaxValues.call(this);
             }
         }
@@ -157,11 +156,9 @@ export class Layer {
     /**  Manually trigger popup update without refreshing the layer*/
     refreshPopUps() {
         if (this.displayLayer && this.popupHeaders.slice().length > 0) {
-            console.time('refreshPopUps');
             this.displayLayer.eachLayer(function(l: any) {
                 addPopups.call(this, l.feature, l);
             }, this)
-            console.timeEnd('refreshPopUps');
         }
 
     }
@@ -180,6 +177,7 @@ export class Layer {
             return;
         }
 
+
         let values = this.values[opts.colorField.value]
         let colors = [];
         opts.limits = chroma.limits(values, opts.mode, opts.steps);
@@ -191,7 +189,6 @@ export class Layer {
     getValues() {
         if (!this.values)
             this.values = {};
-        console.time("Layer.GetValues");
         let pointCount = 0;
         this.geoJSON.features.map(function(feat) {
             if (feat.geometry.type == 'Point') {
@@ -214,7 +211,6 @@ export class Layer {
             }
         }
         this.pointFeatureCount = pointCount;
-        console.timeEnd("Layer.GetValues");
 
     }
 
@@ -285,16 +281,36 @@ export class Layer {
             iconAnchor: L.point(25, 25),
         });
     }
+    /** Add the determined amount of feature layers to displayLayer and let the UI refresh in between*/
+    batchAdd(start: number, end: number, source, target) {
+        let i;
+        for (i = start; i < end; i++) {
+          if (source.features){
+            if (source.features[i])
+                target.addData(source.features[i]);
+            else
+                return;
+              }
+              else if (source){
+                if (source[i])
+                    target.addLayer(source[i]);
+                else
+                    return;
+              }
+        }
+        if (source.features? i >= source.features.length: i>=source.length)
+            return;
+        else {
+            setTimeout(this.batchAdd(i, i + 500, source,target), 10);
+        }
+    }
 }
 
 /** Function to run on every point-type data to visualize it according to the settings*/
 function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.LatLng): L.Marker {
-
-    if (col.colors && col.limits)
-        col.fillColor = col.colors.slice().length == 0 || !col.useMultipleFillColors ? col.fillColor : GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value]);
-    let borderColor = col.color;
-    let x: number = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-    let y: number = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+    if (col.colors.slice().length > 0 && col.limits.slice().length > 0 && col.useMultipleFillColors)
+        col.fillColor = GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value]);
+    let x, y;
     switch (sym.symbolType) {
         case SymbolTypes.Icon:
             let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), sym.iconField ? feature.properties[sym.iconField.value] : 0);
@@ -303,7 +319,7 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
                 prefix: 'fa',
                 markerColor: col.fillColor,
                 svg: true,
-                svgBorderColor: borderColor,
+                svgBorderColor: col.color,
                 svgOpacity: col.fillOpacity,
                 shape: icon ? icon.shape : sym.icons[0].shape,
                 iconColor: col.iconTextColor,
@@ -313,6 +329,8 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
         case SymbolTypes.Chart:
             let vals = [];
             let i = 0;
+            x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+
             sym.chartFields.map(function(e) {
                 if (feature.properties[e.value] > 0)
                     vals.push({ feat: e, val: feature.properties[e.value], color: col.chartColors[e.value] });
@@ -336,15 +354,18 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
         case SymbolTypes.Blocks:
             let side = Math.ceil(Math.sqrt(feature.properties[sym.blockSizeVar] / sym.blockValue));
             let blockCount = Math.ceil(feature.properties[sym.blockSizeVar] / sym.blockValue);
-            let blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, borderColor, col.weight);
+            let blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, col.color, col.weight);
             let blockMarker = L.divIcon({ iconAnchor: L.point(5 * side, 5 * side), html: blockHtml, className: '' });
             return L.marker(latlng, { icon: blockMarker });
         case SymbolTypes.Rectangle:
-            let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + borderColor + '"/>';
+            x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+            y = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+            let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + '"/>';
             let rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
             return L.marker(latlng, { icon: rectIcon });
         default:
-            let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + borderColor + ';border-radius: 30px;"/>';
+            x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+            let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + ';border-radius: 30px;"/>';
             let circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
             return L.marker(latlng, { icon: circleIcon });
     }

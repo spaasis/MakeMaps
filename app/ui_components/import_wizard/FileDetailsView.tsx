@@ -13,7 +13,7 @@ export class FileDetailsView extends React.Component<
 {
     state: ImportWizardState,
     /** Saves the lat- and lon- field names and the coordinate system name to the import wizard*/
-    saveValues: (IFileDetails) => void,
+    saveValues: () => void,
     /** Go to the previous step of the wizard */
     goBack: () => void,
 }, {}>{
@@ -45,12 +45,8 @@ export class FileDetailsView extends React.Component<
 
     proceed = () => {
         let custom = (document.getElementById('customProj') as any).value;
-        let values = {
-            latitudeField: this.props.state.latitudeField,
-            longitudeField: this.props.state.longitudeField,
-            coordinateSystem: custom !== 'Insert custom Proj4-string here' ? custom : this.props.state.coordinateSystem,
-        }
-        this.props.saveValues(values);
+        this.props.state.coordinateSystem = custom !== 'Insert custom Proj4-string here' ? custom : this.props.state.coordinateSystem;
+        this.props.saveValues();
     }
     render() {
 

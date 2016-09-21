@@ -9,7 +9,7 @@ import { Legend } from '../stores/Legend';
 import { LayerImportWizard } from './import_wizard/LayerImportWizard';
 import { MakeMapsMenu } from './menu/Menu';
 import { MapInitModel } from '../models/MapInitModel';
-import { GetSymbolSize, LoadExternalMap } from '../common_items/common';
+import { GetSymbolSize, LoadExternalMap, ShowLoading, HideLoading, ShowNotification, HideNotification } from '../common_items/common';
 import { OnScreenFilter } from './misc/OnScreenFilter';
 import { OnScreenLegend } from './misc/OnScreenLegend';
 import { WelcomeScreen } from './misc/WelcomeScreen';
@@ -92,7 +92,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
      */
     initMap() {
         this.props.state.baseLayers = _mapInitModel.InitBaseMaps();
-        this.props.state.activeBaseLayer = this.props.state.baseLayers[0];
+        this.props.state.activeBaseLayer = this.props.state.baseLayers[2];
         let props = {
             layers: this.props.state.activeBaseLayer,
             fullscreenControl: true,
@@ -128,19 +128,24 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
      */
     layerImportSubmit(l: Layer) {
 
+        l.getValues()
+        if (l.pointFeatureCount > 500) {
+            l.clusterOptions.useClustering = true;
+            ShowNotification('The dataset contains a large number of map points. Point clustering has beeen enabled to boost performance. If you wish, you may turn this off in the clustering options');
+        }
         l.appState = this.props.state;
         l.id = _currentLayerId++;
         l.colorOptions.colorField = l.numberHeaders[0];
         l.colorOptions.useMultipleFillColors = true;
         l.getColors();
-        l.refresh();
+        setTimeout(l.refresh(), 10);
+        this.props.state.map.fitBounds(l.layerType === LayerTypes.HeatMap ? (l.displayLayer as any)._latlngs : l.displayLayer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
         this.props.state.layers.push(l);
         this.props.state.layerMenuState.order.push({ name: l.name, id: l.id });
         this.props.state.importWizardShown = false;
         this.props.state.editingLayer = l;
         this.props.state.menuShown = true;
-        this.props.state.map.fitBounds(l.layerType === LayerTypes.HeatMap ? (l.displayLayer as any)._latlngs : l.displayLayer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
-
+        HideLoading();
     }
     /** changeLayerOrder - Redraws the layers in the order given */
     changeLayerOrder() {
@@ -151,7 +156,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                     (layer.displayLayer as any).bringToFront();
 
                 }
-                else {//for some reason this places the heat map to the top and will not come back down
+                else {
                     this.props.state.map.removeLayer(layer.displayLayer);
                     this.props.state.map.addLayer(layer.displayLayer);
 
@@ -249,11 +254,11 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             }
             let popupHeaders: IHeader[] = [];
             for (let k in lyr.popupHeaders) {
-                popupHeaders.push(getHeaderByValue(lyr.popupHeaders[k].value))
+                popupHeaders.push(getHeaderByValue(lyr.popupHeaders[k]))
             }
             let chartFields: IHeader[] = [];
             for (let k in lyr.symbolOptions.chartFields) {
-                chartFields.push(getHeaderByValue(lyr.popupHeaders[k].value))
+                chartFields.push(getHeaderByValue(lyr.popupHeaders[k]))
             }
             newLayer.id = _currentLayerId++;
             newLayer.name = lyr.name
@@ -262,11 +267,11 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             newLayer.layerType = lyr.layerType;
             newLayer.geoJSON = lyr.geoJSON;
             newLayer.colorOptions = new ColorOptions(lyr.colorOptions);
-            newLayer.colorOptions.colorField = lyr.colorOptions.colorField ? getHeaderByValue(lyr.colorOptions.colorField.value) : undefined;
+            newLayer.colorOptions.colorField = lyr.colorOptions.colorField ? getHeaderByValue(lyr.colorOptions.colorField) : undefined;
             newLayer.symbolOptions = new SymbolOptions(lyr.symbolOptions);
-            newLayer.symbolOptions.iconField = lyr.symbolOptions.iconField ? getHeaderByValue(lyr.symbolOptions.iconField.value) : undefined;
-            newLayer.symbolOptions.sizeXVar = lyr.symbolOptions.sizeXVar ? getHeaderByValue(lyr.symbolOptions.sizeXVar.value) : undefined;
-            newLayer.symbolOptions.sizeYVar = lyr.symbolOptions.sizeYVar ? getHeaderByValue(lyr.symbolOptions.sizeYVar.value) : undefined;
+            newLayer.symbolOptions.iconField = lyr.symbolOptions.iconField ? getHeaderByValue(lyr.symbolOptions.iconField) : undefined;
+            newLayer.symbolOptions.sizeXVar = lyr.symbolOptions.sizeXVar ? getHeaderByValue(lyr.symbolOptions.sizeXVar) : undefined;
+            newLayer.symbolOptions.sizeYVar = lyr.symbolOptions.sizeYVar ? getHeaderByValue(lyr.symbolOptions.sizeYVar) : undefined;
             newLayer.symbolOptions.chartFields = chartFields;
             newLayer.clusterOptions = new ClusterOptions(lyr.clusterOptions);
             this.props.state.layers.push(newLayer);
@@ -283,10 +288,11 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         this.props.state.welcomeShown = false;
         this.props.state.editingLayer = this.props.state.layers[0];
         this.props.state.menuShown = !this.props.state.embed;
+        HideLoading();
         console.timeEnd("LoadSavedMap")
 
-        function getHeaderByValue(value: string) {
-            return headers.filter(function(h) { return h.value == value })[0]
+        function getHeaderByValue(header: IHeader) {
+            return headers.filter(function(h) { return h.value == header.value })[0]
         }
     }
 
@@ -339,6 +345,18 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                     </div>
                 }
 
+                <div className='notification' id='loading'>
+                    <span style={{ lineHeight: '40px', paddingLeft:10, paddingRight:10 }}>Loading</span>
+                    <div className="sk-double-bounce">
+                        <div className="sk-child sk-double-bounce1"></div>
+                        <div className="sk-child sk-double-bounce2"></div>
+                    </div>
+                </div>
+                <div className='notification' id='notification'>
+                    <span id='notificationText' style={{ lineHeight: '40px', paddingLeft:10, paddingRight:10  }}>Notification</span>
+                    <br/>
+                    <button className='menuButton' onClick={() => { HideNotification() } }>Ok</button>
+                </div>
             </div>
         );
     }

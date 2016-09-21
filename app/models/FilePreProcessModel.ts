@@ -43,43 +43,7 @@ export class FilePreProcessModel {
             return 'string';
     }
 
-
-    /**
-     * public - Converts input csv data into GeoJSON object
-     *
-     * @param  input      the import file in text format
-     * @param  latField  latitude field name
-     * @param  lonField  longitude field name
-     * @param  delim     delimiter
-     * @param  headers  layer headers
-     * @return           GeoJSON object
-     */
-    public ParseCSVToGeoJSON(input: string, latField: string, lonField: string, delim: string, headers: IHeader[]) {
-        let geoJSON: { features: any[], type: string } = null;
-        csv2geojson.csv2geojson(input, {
-            latfield: latField,
-            lonfield: lonField,
-            delimiter: delim
-        },
-            function(err, data) {
-                if (!err) {
-                    geoJSON = data;
-
-                }
-                else {
-                    //TODO
-                    console.log(err);
-                }
-            });
-
-        geoJSON = this.setGeoJSONTypes(geoJSON, headers);
-
-        return geoJSON;
-
-    }
-
-
-    public ParseToGeoJSON(input: string, fileFormat: string) {
+    public ParseToGeoJSON(input: string, fileFormat: string, onComplete: (geoJSON) => void) {
         let geoJSON: { features: any[], type: string } = null;
 
         if (fileFormat === 'kml') {
@@ -97,9 +61,7 @@ export class FilePreProcessModel {
             let xml = (new DOMParser()).parseFromString(input, 'text/xml');
             geoJSON = osmtogeojson(xml);
         }
-        if (geoJSON) {
-            return geoJSON;
-        }
+        onComplete(geoJSON);
         // else if (fileFormat === 'rar' || fileFormat === 'zip' || fileFormat === 'shp') {
         //     let promise = (shp(input) as any).then(function(geojson) {
         //         return geojson;
@@ -135,29 +97,7 @@ export class FilePreProcessModel {
     }
 
 
-    /**
-     * private - Sets GeoJSON feature data types based on the the header information for later calculations (symbol sizing, etc.)
-     *
-     * @param   geoJSON   The GeoJSON object
-     * @param  headers    Header information. Contains type descriptions
-     * @return            The changed GeoJSON object
-     */
-    private setGeoJSONTypes(geoJSON, headers: IHeader[]) {
-        let numbers: string[] = [];
-        headers.map(function(head) {
-            if (head.type === 'number') {
-                numbers.push(head.label);
-            }
-        })
-        geoJSON.features.forEach(feature => {
-            for (let prop in feature.properties) {
-                if (numbers.indexOf(prop) > -1) {
-                    feature.properties[prop] = +feature.properties[prop]; //convert to number
-                }
-            }
-        });
-        return geoJSON
-    }
+
 
 
 

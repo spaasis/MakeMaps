@@ -35,6 +35,7 @@
     "reactify": "^1.1.1",
     "rest": "^2.0.0",
     "sortablejs": "^1.4.2",
+    "spinkit": "^1.2.5",
     "togeojson": "^0.13.0",
     "wellknown": "^0.4.2"
   },

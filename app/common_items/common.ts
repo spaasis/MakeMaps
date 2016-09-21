@@ -12,7 +12,22 @@ function GetSymbolSize(val: number, sizeMultiplier: number, minSize: number, max
 
 }
 
+function ShowLoading() {
+    document.getElementById('loading').style.display = 'flex';
+}
 
+function HideLoading() {
+    document.getElementById('loading').style.display = 'none';
+}
+
+function ShowNotification(text: string) {
+    document.getElementById('notificationText').innerText = text;
+    document.getElementById('notification').style.display = 'block';
+}
+
+function HideNotification() {
+    document.getElementById('notification').style.display = 'none';
+}
 
 /** Calculate a set of limits between a minimum and maximum values*/
 function CalculateLimits(min: number, max: number, count: number, accuracy: number) {
@@ -78,4 +93,4 @@ function LoadSavedMap(path: string, onLoad: (string) => void) {
 
 
 
-export { DefaultProjections, GetSymbolSize, CalculateLimits, GetItemBetweenLimits, LoadExternalMap }
+export { DefaultProjections, GetSymbolSize, CalculateLimits, GetItemBetweenLimits, LoadExternalMap, ShowLoading, HideLoading, ShowNotification, HideNotification }

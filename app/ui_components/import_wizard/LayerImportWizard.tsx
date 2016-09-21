@@ -1,14 +1,13 @@
 import * as React from 'react';
-
 import { FileUploadView } from './FileUploadView';
 import { FileDetailsView } from './FileDetailsView';
+import { ShowLoading, HideLoading, ShowNotification, HideNotification } from '../../common_items/common'
 import { FilePreProcessModel } from '../../models/FilePreProcessModel';
-
 let _fileModel = new FilePreProcessModel();
-
 import { ImportWizardState, AppState } from '../../stores/States';
 import { Layer, IHeader, LayerTypes } from '../../stores/Layer';
 import { observer } from 'mobx-react';
+let csv2geojson = require('csv2geojson');
 
 @observer
 export class LayerImportWizard extends React.Component<{
@@ -20,6 +19,8 @@ export class LayerImportWizard extends React.Component<{
 }, {}>{
     nextStep() {
         this.props.state.importWizardState.step++;
+        if (this.props.state.importWizardState.step == 2)
+            this.submit();
     }
 
     previousStep() {
@@ -29,71 +30,93 @@ export class LayerImportWizard extends React.Component<{
     setFileInfo() {
         let state = this.props.state.importWizardState;
         let ext = state.fileExtension;
+
         if (ext === 'csv') {
             this.nextStep();
         }
         else {
             if (ext === 'geojson')
-                state.layer.geoJSON = JSON.parse(state.content);
+                this.setGeoJSONTypes(JSON.parse(state.content));
             else
-                state.layer.geoJSON = _fileModel.ParseToGeoJSON(state.content, ext)
-            for (let i of state.layer.geoJSON.features) { //have to loop every feature here, because each can have different properties
-                let props = state.layer.geoJSON.features ? i.properties : {};
-                for (let h of Object.keys(props)) {
-                    let isnumber = !isNaN(parseFloat(props[h]));
-                    if (isnumber)
-                        props[h] = +props[h];
-                    let header = state.layer.headers.slice().filter(function(e) { return e.value === h })[0];
+                _fileModel.ParseToGeoJSON(state.content, ext, this.setGeoJSONTypes.bind(this))
 
-                    if (!header) {
-                        state.layer.headers.push(new IHeader({ value: h, type: isnumber ? 'number' : 'string', label: undefined, decimalAccuracy: undefined }));
-                    }
-                    else {
-                        if (header.type === 'number' && !isnumber) { //previously marked as number but new value is text => mark as string
-                            header.type = 'string';
-                        }
-                    }
-                }
-            }
-            this.nextStep();
         }
     }
 
-    setFileDetails(fileDetails) {
-        let details = this.props.state.importWizardState;
+    setGeoJSONTypes(geoJSON) {
+        let state = this.props.state.importWizardState;
+        state.layer.geoJSON = geoJSON;
+        for (let i of state.layer.geoJSON.features) {
+            let props = state.layer.geoJSON.features ? i.properties : {};
+            for (let h of Object.keys(props)) {
+                let isnumber = !isNaN(parseFloat(props[h]));
+                if (isnumber)
+                    props[h] = +props[h];
+                let header = state.layer.headers.slice().filter(function(e) { return e.value === h })[0];
 
-        details.latitudeField = fileDetails.latitudeField;
-        details.longitudeField = fileDetails.longitudeField;
-        details.coordinateSystem = fileDetails.coordinateSystem;
-        this.submit();
+                if (!header) {
+                    state.layer.headers.push(new IHeader({ value: h, type: isnumber ? 'number' : 'string', label: undefined, decimalAccuracy: undefined }));
+                }
+                else {
+                    if (header.type === 'number' && !isnumber) { //previously marked as number but new value is text => mark as string
+                        header.type = 'string';
+                    }
+                }
+            }
+
+        }
+        this.nextStep();
+
+    }
+
+    setFileDetails() {
+        ShowLoading();
+        let state = this.props.state.importWizardState;
+        let layer = state.layer;
+
+
+        if (!layer.geoJSON && state.fileExtension === 'csv') {
+
+            let submit = this.submit.bind(this);
+            let setGeoJSONTypes = this.setGeoJSONTypes.bind(this);
+            setTimeout(
+                function() {
+                    let geoJSON: { features: any[], type: string } = null;
+                    csv2geojson.csv2geojson(state.content, {
+                        latfield: state.latitudeField,
+                        lonfield: state.longitudeField,
+                        delimiter: state.delimiter
+                    },
+                        function(err, data) {
+                            if (!err) {
+                                setTimeout(
+                                    setGeoJSONTypes(data), 10);
+                            }
+
+                            else {
+                                //TODO
+                                console.log(err);
+                            }
+                        });
+
+                }, 10);
+        }
+        else
+            this.submit();
     }
 
     /**
-     * submit - Parse given data to GeoJSON and pass to Map
-     *
-     * @return {void}
+     * submit - Pass the layer to map
      */
     submit() {
         let state = this.props.state.importWizardState;
         let layer = state.layer;
-        if (!layer.geoJSON && state.fileExtension === 'csv') {
-            layer.geoJSON = _fileModel.ParseCSVToGeoJSON(state.content,
-                state.latitudeField,
-                state.longitudeField,
-                state.delimiter,
-                state.layer.headers);
-        }
-
+        layer.headers = layer.headers.filter(function(val) { return val.label !== state.longitudeField && val.label !== state.latitudeField });
         if (state.coordinateSystem && state.coordinateSystem !== 'WGS84') {
             layer.geoJSON = _fileModel.ProjectCoords(layer.geoJSON, state.coordinateSystem);
         }
-        layer.getValues()
-        if (layer.pointFeatureCount > 500) {
-            layer.clusterOptions.useClustering = true;
-            alert('The dataset contains a large number of map points. In order to boost performance, we have enabled map clustering. If you wish, you may turn this off in the clustering options');
-        }
-        layer.getColors();
         this.props.submit(layer);
+
     }
 
     getCurrentView() {

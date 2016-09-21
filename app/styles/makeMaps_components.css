@@ -196,13 +196,35 @@ hr{
   display: none !important;
 }
 
-/* The animation code */
+.notification{
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: none;
+  background: white;
+  border: 1px solid #cecece;
+  border-radius: 15px;
+  margin:0 auto;
+}
+
+#loading{
+  top: 0;
+  z-index: 999;
+  max-width: 120px;
+}
+
+#notification{
+  flex-direction: column;
+  z-index: 998;
+  top: 40%;
+  max-width: 500px;
+}
+
 @keyframes menuOpen {
    from {width:0}
    to {width: 250}
 }
 
-/* The animation code */
 @keyframes menuClose {
    from {width:250}
    to {width: 0}

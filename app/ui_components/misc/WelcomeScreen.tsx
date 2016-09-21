@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { DemoPreview } from './DemoPreview';
 let Dropzone = require('react-dropzone');
-import { LoadExternalMap } from '../../common_items/common';
+import { LoadExternalMap, ShowLoading } from '../../common_items/common';
 
 
 export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcomeScreenStates>{
@@ -16,6 +16,7 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
      * @param  filename  Name of the file (without extension) to load
      */
     loadDemo(filename: string) {
+      ShowLoading();
         LoadExternalMap('demos/'+filename+'.mmap', this.props.loadMap);
     }
     createNewMap() {
@@ -47,6 +48,7 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
         }
     }
     loadMap(e){
+      ShowLoading();
       e.preventDefault();
       e.stopPropagation();
       this.props.loadMap(this.state.savedJSON);
@@ -128,7 +130,7 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
                 {
                      <div style={{ width: '50%', display: 'inline-block' }}>
                        <h3>Create a new map</h3>
-                        Start creating your own map from here. Select a layer type, upload your file and get visualizin'!
+                        Start creating your own map from here. Upload your file and get visualizin' in seconds!
                         <br/>
                     <button className='primaryButton' onClick={this.createNewMap.bind(this)}>Create a map</button>
                     </div>
