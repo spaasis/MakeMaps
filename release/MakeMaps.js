@@ -60040,8 +60040,14 @@
 	                layer.refresh();
 	        };
 	        this.onXVariableChange = function (val) {
-	            var sym = _this.props.state.editingLayer.symbolOptions;
-	            sym.sizeXVar = val ? val : '';
+	            var layer = _this.props.state.editingLayer;
+	            var sym = layer.symbolOptions;
+	            if (sym.symbolType === Layer_1.SymbolTypes.Blocks) {
+	                sym.blockSizeVar = val ? val : '';
+	                sym.blockValue = Math.ceil(layer.values[sym.blockSizeVar.value][layer.values[sym.blockSizeVar.value].length - 1] / 5);
+	            }
+	            else
+	                sym.sizeXVar = val ? val : '';
 	            sym.sizeMultiplier = sym.sizeMultiplier ? sym.sizeMultiplier : 1;
 	            if (_this.props.state.autoRefresh)
 	                _this.props.state.editingLayer.refresh();
