@@ -23135,6 +23135,7 @@
 	            };
 	        };
 	        if (this.displayLayer && this.layerType !== LayerTypes.HeatMap && !this.toggleRedraw) {
+	            var start = Date.now();
 	            var that = this;
 	            var path_1 = false;
 	            this.displayLayer.eachLayer(function (l) {
@@ -23150,6 +23151,13 @@
 	            });
 	            this.refreshFilters();
 	            this.refreshCluster();
+	            var end = Date.now();
+	            if (end - start > 500) {
+	                if (this.appState.autoRefresh) {
+	                    common_1.ShowNotification('An update operation seems to be taking too long. Automatic refreshing has been disabled.');
+	                    this.appState.autoRefresh = false;
+	                }
+	            }
 	            console.timeEnd("LayerCreate");
 	        }
 	        else if (this.geoJSON) {
@@ -23194,9 +23202,9 @@
 	                    this.getValues();
 	                }
 	                this.toggleRedraw = false;
+	                console.timeEnd("LayerCreate");
 	            }
 	        }
-	        console.timeEnd("LayerCreate");
 	        if (this.layerType !== LayerTypes.HeatMap) {
 	            if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
 	                (this.symbolOptions.symbolType === SymbolTypes.Circle ||
@@ -23416,8 +23424,8 @@
 	            var marker = L.divIcon({ iconAnchor: L.point(x, x), html: chartHtml, className: '' });
 	            return L.marker(latlng, { icon: marker });
 	        case SymbolTypes.Blocks:
-	            var side = Math.ceil(Math.sqrt(feature.properties[sym.blockSizeVar] / sym.blockValue));
-	            var blockCount = Math.ceil(feature.properties[sym.blockSizeVar] / sym.blockValue);
+	            var side = Math.ceil(Math.sqrt(feature.properties[sym.blockSizeVar.value] / sym.blockValue));
+	            var blockCount = Math.ceil(feature.properties[sym.blockSizeVar.value] / sym.blockValue);
 	            var blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, col.color, col.weight);
 	            var blockMarker = L.divIcon({ iconAnchor: L.point(5 * side, 5 * side), html: blockHtml, className: '' });
 	            return L.marker(latlng, { icon: blockMarker });
@@ -23779,7 +23787,7 @@
 	    ], SymbolOptions.prototype, "sizeYVar", void 0);
 	    __decorate([
 	        mobx_1.observable, 
-	        __metadata('design:type', String)
+	        __metadata('design:type', IHeader)
 	    ], SymbolOptions.prototype, "blockSizeVar", void 0);
 	    __decorate([
 	        mobx_1.observable, 
@@ -60021,8 +60029,8 @@
 	            var sym = _this.props.state.editingLayer.symbolOptions;
 	            sym.symbolType = type;
 	            if (type === Layer_1.SymbolTypes.Blocks && !sym.blockSizeVar) {
-	                sym.blockSizeVar = layer.numberHeaders[0].value;
-	                sym.blockValue = sym.blockValue == 0 ? Math.ceil(layer.values[sym.blockSizeVar][layer.values[sym.blockSizeVar].length - 1] / 5) : sym.blockValue;
+	                sym.blockSizeVar = layer.numberHeaders[0];
+	                sym.blockValue = sym.blockValue == 0 ? Math.ceil(layer.values[sym.blockSizeVar.value][layer.values[sym.blockSizeVar.value].length - 1] / 5) : sym.blockValue;
 	            }
 	            if (type === Layer_1.SymbolTypes.Chart) {
 	                if (sym.chartFields.length == 0)
@@ -60139,10 +60147,6 @@
 	            if (_this.props.state.autoRefresh)
 	                layer.refresh();
 	        };
-	        this.saveOptions = function () {
-	            if (_this.props.state.autoRefresh)
-	                _this.props.state.editingLayer.refresh();
-	        };
 	    }
 	    SymbolMenu.prototype.getIcon = function (shape, fa, stroke, fill, onClick) {
 	        var circleIcon = React.createElement("svg", {viewBox: "0 0 69.529271 95.44922", height: "40", width: "40"}, React.createElement("g", {transform: "translate(-139.52 -173.21)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z"})));
@@ -60207,7 +60211,7 @@
 	                lineHeight: 1.5
 	            }
 	        };
-	        return (React.createElement("div", {className: "makeMaps-options"}, React.createElement("label", null, "Select symbol type "), React.createElement("br", null), React.createElement("label", {forHTML: 'circle'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-circle-o'}), "Circle", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Circle), checked: sym.symbolType === Layer_1.SymbolTypes.Circle, name: 'symboltype', id: 'circle'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'rect'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-signal'}), "Rectangle", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Rectangle), checked: sym.symbolType === Layer_1.SymbolTypes.Rectangle, name: 'symboltype', id: 'rect'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'icon'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-map-marker'}), "Icon", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Icon), checked: sym.symbolType === Layer_1.SymbolTypes.Icon, name: 'symboltype', id: 'icon'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'chart'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-pie-chart'}), "Chart", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Chart), checked: sym.symbolType === Layer_1.SymbolTypes.Chart, name: 'symboltype', id: 'chart'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'blocks'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-th-large'}), "Blocks", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Blocks), checked: sym.symbolType === Layer_1.SymbolTypes.Blocks, name: 'symboltype', id: 'blocks'}), React.createElement("br", null)), sym.symbolType !== Layer_1.SymbolTypes.Icon ?
+	        return (React.createElement("div", {className: "makeMaps-options"}, React.createElement("label", null, "Select symbol type "), React.createElement("br", null), React.createElement("label", {forHTML: 'circle'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-circle-o'}), "Circle", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Circle), checked: sym.symbolType === Layer_1.SymbolTypes.Circle, name: 'symboltype', id: 'circle'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'rect'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-signal'}), "Rectangle", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Rectangle), checked: sym.symbolType === Layer_1.SymbolTypes.Rectangle, name: 'symboltype', id: 'rect'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'icon'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-map-marker'}), "Icon", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Icon), checked: sym.symbolType === Layer_1.SymbolTypes.Icon, name: 'symboltype', id: 'icon'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'chart'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-pie-chart'}), "Chart", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Chart), checked: sym.symbolType === Layer_1.SymbolTypes.Chart, name: 'symboltype', id: 'chart'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'blocks'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-th-large'}), "Blocks", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Blocks), checked: sym.symbolType === Layer_1.SymbolTypes.Blocks, name: 'symboltype', id: 'blocks'}), React.createElement("br", null)), sym.symbolType !== Layer_1.SymbolTypes.Icon && sym.symbolType !== Layer_1.SymbolTypes.Blocks ?
 	            React.createElement("div", null, React.createElement("label", null, "Scale ", sym.symbolType === Layer_1.SymbolTypes.Rectangle ? 'width' : 'size', " by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onXVariableChange, value: sym.symbolType === Layer_1.SymbolTypes.Blocks ? sym.blockSizeVar : sym.sizeXVar, clearable: sym.symbolType !== Layer_1.SymbolTypes.Blocks}), sym.symbolType === Layer_1.SymbolTypes.Rectangle ? React.createElement("div", null, React.createElement("label", null, "Scale height by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onYVariableChange, value: sym.sizeYVar})) : null, sym.sizeXVar || sym.sizeYVar ?
 	                React.createElement("div", null, React.createElement("label", null, "Size multiplier"), React.createElement("input", {type: "number", value: sym.sizeMultiplier, onChange: function (e) {
 	                    layer.symbolOptions.sizeMultiplier = e.currentTarget.valueAsNumber;
@@ -60242,7 +60246,7 @@
 	                    layer.refresh();
 	            }, min: 1}))
 	            : null, this.props.state.autoRefresh ? null :
-	            React.createElement("button", {className: 'menuButton', onClick: this.saveOptions}, "Refresh map"), React.createElement(Modal, {isOpen: state.iconSelectOpen, style: iconSelectStyle}, state.iconSelectOpen ? React.createElement("div", null, "Icon", this.renderIcons.call(this), "Or", React.createElement("br", null), React.createElement("label", null, "Use another ", React.createElement("a", {href: 'http://fontawesome.io/icons/'}, "Font Awesome"), " icon"), React.createElement("input", {type: "text", onChange: this.onFAIconChange, value: sym.icons[state.currentIconIndex].fa}), React.createElement("br", null), "Icon shape", React.createElement("br", null), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'circle')}, this.getIcon('circle', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'square')}, this.getIcon('square', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'star')}, this.getIcon('star', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'penta')}, this.getIcon('penta', '', '#999999', 'transparent', null)), React.createElement("br", null), React.createElement("button", {className: 'primaryButton', onClick: this.toggleIconSelect.bind(this, state.currentIconIndex), style: { position: 'absolute', left: 80 }}, "OK"))
+	            React.createElement("button", {className: 'menuButton', onClick: function () { layer.refresh(); }}, "Refresh map"), React.createElement(Modal, {isOpen: state.iconSelectOpen, style: iconSelectStyle}, state.iconSelectOpen ? React.createElement("div", null, "Icon", this.renderIcons.call(this), "Or", React.createElement("br", null), React.createElement("label", null, "Use another ", React.createElement("a", {href: 'http://fontawesome.io/icons/'}, "Font Awesome"), " icon"), React.createElement("input", {type: "text", onChange: this.onFAIconChange, value: sym.icons[state.currentIconIndex].fa}), React.createElement("br", null), "Icon shape", React.createElement("br", null), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'circle')}, this.getIcon('circle', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'square')}, this.getIcon('square', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'star')}, this.getIcon('star', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'penta')}, this.getIcon('penta', '', '#999999', 'transparent', null)), React.createElement("br", null), React.createElement("button", {className: 'primaryButton', onClick: this.toggleIconSelect.bind(this, state.currentIconIndex), style: { position: 'absolute', left: 80 }}, "OK"))
 	            : null)));
 	    };
 	    SymbolMenu.prototype.renderIcons = function () {
@@ -76601,7 +76605,7 @@
 	            overflow: this.props.state.legend.horizontal ? 'none' : 'auto',
 	            lineHeight: this.props.state.legend.horizontal ? '' : 24 + 'px',
 	        };
-	        return (React.createElement("div", {style: { margin: '5px', float: 'left' }}, layer.symbolOptions.sizeXVar.label, React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, React.createElement("div", {style: style}), "=", React.createElement("span", {style: { display: 'inline-block' }}, layer.symbolOptions.blockValue))));
+	        return (React.createElement("div", {style: { margin: '5px', float: 'left' }}, layer.symbolOptions.blockSizeVar ? layer.symbolOptions.blockSizeVar.label : '', React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, React.createElement("div", {style: style}), "=", React.createElement("span", {style: { display: 'inline-block' }}, layer.symbolOptions.blockValue))));
 	    };
 	    OnScreenLegend.prototype.getStepPercentages = function (values, limits) {
 	        var counts = [];
