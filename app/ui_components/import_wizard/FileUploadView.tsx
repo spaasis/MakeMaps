@@ -1,9 +1,9 @@
 import * as React from 'react';
 let Dropzone = require('react-dropzone');
 import { FilePreProcessModel } from '../../models/FilePreProcessModel';
-
+import * as XLSX from 'xlsx';
 let _fileModel = new FilePreProcessModel();
-let _allowedFileTypes = ['geojson', 'csv', 'gpx', 'kml', 'wkt', 'osm'];//, 'shp', 'rar', 'zip'];
+let _allowedFileTypes = ['geojson', 'csv', 'gpx', 'kml', 'wkt', 'osm', 'xlsx', 'xlsxm', 'xlsb', 'xls', 'ods'];//, 'shp', 'rar', 'zip'];
 import { ImportWizardState } from '../../stores/States';
 import { observer } from 'mobx-react';
 
@@ -24,10 +24,12 @@ export class FileUploadView extends React.Component<{
         files.forEach((file) => {
             fileName = file.name;
             ext = fileName.split('.').pop().toLowerCase();
-            if (ext != 'zip' && ext != 'rar')
-                reader.readAsText(file);
-            else
+            if (ext === 'xlsx')
+                reader.readAsBinaryString(file);
+            else if (ext == 'zip' || ext == 'rar')
                 reader.readAsArrayBuffer(file);
+            else
+                reader.readAsText(file);
         });
         function contentUploaded(e) {
             let contents: any = e.target;
@@ -46,6 +48,12 @@ export class FileUploadView extends React.Component<{
 
     proceed = () => {
         let layer = this.props.state.layer;
+        if (this.props.state.fileExtension === 'xlsx') {
+            let workbook = XLSX.read(this.props.state.content, { type: 'binary' });
+            this.props.state.content = XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]); //TODO:other sheets as well (as different layers)
+
+            this.props.state.fileExtension = 'csv';
+        }
         if (this.props.state.fileExtension === 'csv') {
             let head, delim;
             [head, delim] = _fileModel.ParseHeadersFromCSV(this.props.state.content);
@@ -80,7 +88,8 @@ export class FileUploadView extends React.Component<{
                     <h2> Upload the file containing the data </h2>
                     <hr/>
                     <p>Currently supported file types: </p>
-                    <p> GeoJSON, CSV(point data with coordinates in two columns), KML, GPX, WKT, OSM</p>
+                    <p> GeoJSON, Microsoft Office spreadsheets, OpenDocument spreadsheets, CSV, KML, GPX, WKT, OSM...</p>
+                    <a target="_blank" rel="noopener noreferrer" href='https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'>More info about supported file types</a>
                     <Dropzone
                         style={dropStyle}
                         onDrop={this.onDrop.bind(this)}

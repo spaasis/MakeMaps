@@ -12,6 +12,7 @@
     "react": "registry:dt/react#0.14.0+20160720060442",
     "react-dom": "registry:dt/react-dom#0.14.0+20160412154040",
     "react-dropzone": "registry:dt/react-dropzone#0.0.0+20160316171810",
-    "react-select": "registry:dt/react-select#1.0.0+20160721021207"
+    "react-select": "registry:dt/react-select#1.0.0+20160721021207",
+    "xlsx": "registry:dt/xlsx#0.0.0+20160811195152"
   }
 }

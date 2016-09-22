@@ -20,6 +20,19 @@ module.exports = {
         loader: "json-loader"
       },
     ]
-  }
+  },
+  // required for xlsx to work with webpack
+  node: {
+    fs: 'empty'
+  },
+
+  externals: [
+    {
+      './cptable': 'var cptable'
+    },
+    {
+      './jszip': 'jszip'
+    }
+  ],
 
 };
