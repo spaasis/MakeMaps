@@ -1,5 +1,6 @@
 import * as React from 'react';
 let Dropzone = require('react-dropzone');
+import{ShowNotification, ShowLoading, HideLoading} from '../../common_items/common';
 import { FilePreProcessModel } from '../../models/FilePreProcessModel';
 import * as XLSX from 'xlsx';
 let _fileModel = new FilePreProcessModel();
@@ -20,6 +21,7 @@ export class FileUploadView extends React.Component<{
         let reader = new FileReader();
         let fileName, content;
         let ext: string;
+        ShowLoading();
         reader.onload = contentUploaded.bind(this);
         files.forEach((file) => {
             fileName = file.name;
@@ -39,9 +41,11 @@ export class FileUploadView extends React.Component<{
                 this.props.state.fileName = fileName;
                 this.props.state.layer.name = fileName;
                 this.props.state.fileExtension = ext;
+                HideLoading();
             }
             else {
-                alert('File type not yet supported!');
+              HideLoading
+                ShowNotification('File type not yet supported!');
             }
         }
     }
@@ -57,6 +61,10 @@ export class FileUploadView extends React.Component<{
         if (this.props.state.fileExtension === 'csv') {
             let head, delim;
             [head, delim] = _fileModel.ParseHeadersFromCSV(this.props.state.content);
+            if (head.length==0){
+              ShowNotification('No headers found! Make sure that the file you uploaded contains appropriate headers. Consult the wiki for more information');
+              return;
+            }
             for (let i of head) {
                 layer.headers.push({ value: i.name, label: i.name, type: i.type, decimalAccuracy: 0 });
             }
@@ -67,7 +75,7 @@ export class FileUploadView extends React.Component<{
 
         }
         else {
-            alert("Upload a file!");
+            ShowNotification('Upload a file!');
         }
     }
     render() {

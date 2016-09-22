@@ -20,27 +20,21 @@ export class FilePreProcessModel {
         let delim: string = '';
 
         let parse = Papa.parse(input, { preview: 1, header: true });
-        for (let field of parse.meta.fields) {
-            headers.push({ name: field, type: this.guessType(parse.data, field) })
-        }
         delim = parse.meta.delimiter;
+        for (let field of parse.meta.fields) {
+          if (this.isNumber(field)){
+            headers = [];
+            return  [headers, delim];
+          }
+            headers.push({ name: field, type:this.isNumber(parse.data[0][field])?'number' :'string'});
+        }
 
 
         return [headers, delim];
     }
-    /**
-     * private - Preliminary type guessing based on the first row of data
-     *TODO: DateTime?
-     * @param   data        the first row of parsed data
-     * @param   fieldName   the field name to inspect
-     * @return              type as string
-     */
-    private guessType(data: any[], fieldName: string) {
-        if (!isNaN(parseFloat(data[0][fieldName]))) {
-            return 'number'
-        }
-        else
-            return 'string';
+
+    private isNumber(val:string){
+      return val == '' || !isNaN(+val)
     }
 
     public ParseToGeoJSON(input: string, fileFormat: string, onComplete: (geoJSON) => void) {
