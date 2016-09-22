@@ -87214,6 +87214,8 @@
 	                        "Single block value", 
 	                        React.createElement("input", {type: "number", value: sym.blockValue, onChange: function (e) {
 	                            layer.symbolOptions.blockValue = e.currentTarget.valueAsNumber;
+	                            if (_this.props.state.autoRefresh)
+	                                layer.refresh();
 	                        }, min: 1})), 
 	                    React.createElement("label", null, 
 	                        "Single block width", 
