@@ -312,32 +312,12 @@
 	                padding: '0px',
 	            }
 	        };
-	        return (React.createElement("div", null, 
-	            React.createElement("div", {id: 'map'}, 
-	                this.getFilters(), 
-	                this.showLegend()), 
-	            this.props.state.embed ? null :
-	                React.createElement("div", null, 
-	                    React.createElement(Modal, {isOpen: this.props.state.welcomeShown, style: modalStyle}, 
-	                        React.createElement(WelcomeScreen_1.WelcomeScreen, {loadMap: this.loadSavedMap.bind(this), openLayerImport: this.startLayerImport.bind(this)})
-	                    ), 
-	                    this.props.state.importWizardShown ?
-	                        React.createElement(Modal, {isOpen: this.props.state.importWizardShown, style: modalStyle}, 
-	                            React.createElement(LayerImportWizard_1.LayerImportWizard, {state: this.props.state, submit: this.layerImportSubmit.bind(this), cancel: this.cancelLayerImport.bind(this)})
-	                        )
-	                        : null, 
-	                    this.props.state.menuShown ?
-	                        React.createElement(Menu_1.MakeMapsMenu, {state: this.props.state, addLayer: this.startLayerImport.bind(this), changeLayerOrder: this.changeLayerOrder.bind(this), saveImage: this.saveImage, saveFile: this.saveFile.bind(this)})
-	                        : null), 
-	            React.createElement("div", {className: 'notification', id: 'loading'}, 
-	                React.createElement("span", {style: { lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}, "Loading"), 
-	                React.createElement("div", {className: "sk-double-bounce"}, 
-	                    React.createElement("div", {className: "sk-child sk-double-bounce1"}), 
-	                    React.createElement("div", {className: "sk-child sk-double-bounce2"}))), 
-	            React.createElement("div", {className: 'notification', id: 'notification'}, 
-	                React.createElement("span", {id: 'notificationText', style: { lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}, "Notification"), 
-	                React.createElement("br", null), 
-	                React.createElement("button", {className: 'menuButton', onClick: function () { common_1.HideNotification(); }}, "Ok"))));
+	        return (React.createElement("div", null, React.createElement("div", {id: 'map'}, this.getFilters(), this.showLegend()), this.props.state.embed ? null :
+	            React.createElement("div", null, React.createElement(Modal, {isOpen: this.props.state.welcomeShown, style: modalStyle}, React.createElement(WelcomeScreen_1.WelcomeScreen, {loadMap: this.loadSavedMap.bind(this), openLayerImport: this.startLayerImport.bind(this)})), this.props.state.importWizardShown ?
+	                React.createElement(Modal, {isOpen: this.props.state.importWizardShown, style: modalStyle}, React.createElement(LayerImportWizard_1.LayerImportWizard, {state: this.props.state, submit: this.layerImportSubmit.bind(this), cancel: this.cancelLayerImport.bind(this)}))
+	                : null, this.props.state.menuShown ?
+	                React.createElement(Menu_1.MakeMapsMenu, {state: this.props.state, addLayer: this.startLayerImport.bind(this), changeLayerOrder: this.changeLayerOrder.bind(this), saveImage: this.saveImage, saveFile: this.saveFile.bind(this)})
+	                : null), React.createElement("div", {className: 'notification', id: 'loading'}, React.createElement("span", {style: { lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}, "Loading"), React.createElement("div", {className: "sk-double-bounce"}, React.createElement("div", {className: "sk-child sk-double-bounce1"}), React.createElement("div", {className: "sk-child sk-double-bounce2"}))), React.createElement("div", {className: 'notification', id: 'notification'}, React.createElement("span", {id: 'notificationText', style: { lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}, "Notification"), React.createElement("br", null), React.createElement("button", {className: 'menuButton', onClick: function () { common_1.HideNotification(); }}, "Ok"))));
 	    };
 	    MapMain = __decorate([
 	        mobx_react_1.observer, 
@@ -23913,6 +23893,10 @@
 	            var vals_1 = [];
 	            var i_1 = 0;
 	            x = sym.sizeXVar ? common_1.GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+	            if (x === 0) {
+	                return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });
+	                ;
+	            }
 	            sym.chartFields.map(function (e) {
 	                if (feature.properties[e.value] > 0)
 	                    vals_1.push({ feat: e, val: feature.properties[e.value], color: col.chartColors[e.value] });
@@ -23922,7 +23906,7 @@
 	                fullCircle: sym.chartType === 'pie',
 	                data: vals_1,
 	                valueFunc: function (d) { return d.val; },
-	                strokeWidth: 1,
+	                strokeWidth: col.weight,
 	                outerRadius: x,
 	                innerRadius: x / 3,
 	                pieClass: function (d) { return d.data.feat; },
@@ -23933,19 +23917,28 @@
 	            var marker = L.divIcon({ iconAnchor: L.point(x, x), html: chartHtml, className: '' });
 	            return L.marker(latlng, { icon: marker });
 	        case SymbolTypes.Blocks:
-	            var side = Math.ceil(Math.sqrt(feature.properties[sym.blockSizeVar.value] / sym.blockValue));
 	            var blockCount = Math.ceil(feature.properties[sym.blockSizeVar.value] / sym.blockValue);
-	            var blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, col.color, col.weight);
-	            var blockMarker = L.divIcon({ iconAnchor: L.point(5 * side, 5 * side), html: blockHtml, className: '' });
+	            var columns = Math.min(sym.maxBlockColumns, blockCount);
+	            var rows = Math.min(sym.maxBlockRows, blockCount);
+	            var blocks = makeBlockSymbol(blockCount, columns, rows, col.fillColor, col.color, col.weight, sym.blockWidth);
+	            var blockMarker = L.divIcon({ iconAnchor: L.point(sym.blockWidth / 2 * blocks.columns, sym.blockWidth / 2 * blocks.rows), html: blocks.html, className: '' });
 	            return L.marker(latlng, { icon: blockMarker });
 	        case SymbolTypes.Rectangle:
 	            x = sym.sizeXVar ? common_1.GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
 	            y = sym.sizeYVar ? common_1.GetSymbolSize(feature.properties[sym.sizeYVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+	            if (x === 0 || y === 0) {
+	                return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });
+	                ;
+	            }
 	            var rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + '"/>';
 	            var rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
 	            return L.marker(latlng, { icon: rectIcon });
 	        default:
 	            x = sym.sizeXVar ? common_1.GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+	            if (x === 0) {
+	                return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });
+	                ;
+	            }
 	            var circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + ';border-radius: 30px;"/>';
 	            var circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
 	            return L.marker(latlng, { icon: circleIcon });
@@ -24022,7 +24015,7 @@
 	    if (!options.data || !options.valueFunc) {
 	        return '';
 	    }
-	    var data = options.data, valueFunc = options.valueFunc, r = options.outerRadius ? options.outerRadius : 28, rInner = options.innerRadius ? options.innerRadius : r - 10, strokeWidth = options.strokeWidth ? options.strokeWidth : 1, pathTitleFunc = options.pathTitleFunc ? options.pathTitleFunc : function (d) { return d.data.feat.label + ': ' + d.data.val; }, pieLabel = options.pieLabel ? options.pieLabel : '', pathFillFunc = options.pathFillFunc, border = options.borderColor, opacity = options.opacity, origo = (r + strokeWidth), w = origo * 2, h = w, donut = d3.layout.pie(), arc = options.fullCircle ? d3.svg.arc().outerRadius(r) : d3.svg.arc().innerRadius(rInner).outerRadius(r);
+	    var data = options.data, valueFunc = options.valueFunc, r = options.outerRadius ? options.outerRadius : 28, rInner = options.innerRadius ? options.innerRadius : r - 10, pathTitleFunc = options.pathTitleFunc ? options.pathTitleFunc : function (d) { return d.data.feat.label + ': ' + d.data.val; }, pieLabel = options.pieLabel ? options.pieLabel : '', pathFillFunc = options.pathFillFunc, border = options.borderColor, opacity = options.opacity, origo = (r + options.strokeWidth), w = origo * 2, h = w, donut = d3.layout.pie(), arc = options.fullCircle ? d3.svg.arc().outerRadius(r) : d3.svg.arc().innerRadius(rInner).outerRadius(r);
 	    var svg = document.createElementNS(d3.ns.prefix.svg, 'svg');
 	    var vis = d3.select(svg)
 	        .data([data])
@@ -24037,7 +24030,7 @@
 	        .attr('fill', pathFillFunc)
 	        .attr('opacity', opacity)
 	        .attr('stroke', border)
-	        .attr('stroke-width', strokeWidth)
+	        .attr('stroke-width', options.strokeWidth)
 	        .attr('d', arc)
 	        .append('svg:title')
 	        .text(pathTitleFunc);
@@ -24055,35 +24048,51 @@
 	    }
 	    return "";
 	}
-	function makeBlockSymbol(sideLength, blockAmount, fillColor, borderColor, borderWeight) {
+	function makeBlockSymbol(blockAmount, columns, rows, fillColor, borderColor, borderWeight, width) {
 	    var arr = [];
-	    for (var i = sideLength; i > 0; i--) {
-	        arr.push(React.createElement("tr", {key: i}, getColumns.call(this, i).map(function (column) {
-	            return column;
-	        })));
+	    var filledBlocks = 0;
+	    var actualColumns = 0;
+	    var actualRows = 0;
+	    var style = {
+	        height: width,
+	        width: width,
+	        backgroundColor: fillColor,
+	        margin: 0,
+	        padding: 0,
+	        border: borderWeight + 'px solid ' + borderColor,
+	    };
+	    for (var row = 0; row < rows; row++) {
+	        if (filledBlocks < blockAmount) {
+	            actualRows++;
+	            arr.push(React.createElement("tr", {key: row}, getColumns.call(this, row).map(function (column) {
+	                return column;
+	            })));
+	        }
+	        else
+	            break;
 	    }
 	    function getColumns(i) {
-	        var columns = [];
-	        for (var c = 0; c < sideLength; c++) {
-	            var style = {
-	                width: 10,
-	                height: 10,
-	                backgroundColor: i + sideLength * c <= blockAmount ? fillColor : 'transparent',
-	                margin: 0,
-	                padding: 0,
-	                border: i + sideLength * c <= blockAmount ? borderWeight + 'px solid ' + borderColor : '0px',
-	            };
-	            columns.push(React.createElement("td", {style: style, key: i + c}));
+	        var arr = [];
+	        for (var c = 0; c < columns; c++) {
+	            var isDrawn = c * rows + (rows - i) <= blockAmount;
+	            if (isDrawn) {
+	                arr.push(React.createElement("td", {style: style, key: i + c}));
+	                filledBlocks++;
+	                actualColumns = Math.max(c + 1, actualColumns);
+	            }
+	            else {
+	                return arr;
+	            }
 	        }
-	        return columns;
+	        return arr;
 	    }
 	    var table = React.createElement("table", {style: {
-	        width: 10 * sideLength,
-	        borderCollapse: 'collapse'
+	        borderCollapse: 'collapse',
+	        width: actualColumns * width,
 	    }}, React.createElement("tbody", null, arr.map(function (td) {
 	        return td;
 	    })));
-	    return reactDOMServer.renderToString(table);
+	    return { html: reactDOMServer.renderToString(table), rows: actualRows, columns: actualColumns };
 	}
 	function createHeatLayer(l) {
 	    var arr = [];
@@ -24246,6 +24255,9 @@
 	        this.chartFields = prev && prev.chartFields || [];
 	        this.chartType = prev && prev.chartType || 'pie';
 	        this.blockValue = prev && prev.blockValue || 0;
+	        this.blockWidth = prev && prev.blockWidth || 10;
+	        this.maxBlockColumns = prev && prev.maxBlockColumns || 2;
+	        this.maxBlockRows = prev && prev.maxBlockRows || 10;
 	        this.actualMinYValue = prev && prev.actualMinYValue || undefined;
 	        this.actualMaxYValue = prev && prev.actualMaxYValue || undefined;
 	        this.actualMinXValue = prev && prev.actualMinXValue || undefined;
@@ -24322,6 +24334,18 @@
 	        mobx_1.observable, 
 	        __metadata('design:type', Number)
 	    ], SymbolOptions.prototype, "blockValue", void 0);
+	    __decorate([
+	        mobx_1.observable, 
+	        __metadata('design:type', Number)
+	    ], SymbolOptions.prototype, "blockWidth", void 0);
+	    __decorate([
+	        mobx_1.observable, 
+	        __metadata('design:type', Number)
+	    ], SymbolOptions.prototype, "maxBlockColumns", void 0);
+	    __decorate([
+	        mobx_1.observable, 
+	        __metadata('design:type', Number)
+	    ], SymbolOptions.prototype, "maxBlockRows", void 0);
 	    __decorate([
 	        mobx_1.observable, 
 	        __metadata('design:type', Number)
@@ -24455,9 +24479,9 @@
 	function GetSymbolSize(val, sizeMultiplier, minSize, maxSize) {
 	    var r = Math.sqrt(val * sizeMultiplier / Math.PI) * 2;
 	    if (r < minSize)
-	        r = minSize;
+	        return minSize;
 	    else if (r > maxSize)
-	        r = maxSize;
+	        return maxSize;
 	    return r;
 	}
 	exports.GetSymbolSize = GetSymbolSize;
@@ -37159,26 +37183,11 @@
 	            color: 'grey',
 	            fontWeight: 'bold'
 	        };
-	        return (React.createElement("div", null, 
-	            React.createElement("div", null, 
-	                React.createElement("h2", null, " Upload the file containing the data "), 
-	                React.createElement("hr", null), 
-	                React.createElement("p", null, "Currently supported file types: "), 
-	                React.createElement("p", null, " GeoJSON, Microsoft Office spreadsheets, OpenDocument spreadsheets, CSV, KML, GPX, WKT, OSM..."), 
-	                React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: 'https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'}, "More info about supported file types"), 
-	                React.createElement(Dropzone, {style: dropStyle, onDrop: this.onDrop.bind(this), accept: _allowedFileTypes.map(function (type) { return '.' + type; }).join(', ')}, this.props.state.fileName ? React.createElement("span", null, 
-	                    React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), 
-	                    " ", 
-	                    this.props.state.fileName, 
-	                    " ") : React.createElement("span", null, "Drop file or click to open upload menu")), 
-	                React.createElement("label", null, "Give a name to the layer"), 
-	                React.createElement("input", {type: "text", onChange: function (e) {
-	                    layer.name = e.target.value;
-	                }, value: layer.name})), 
-	            React.createElement("button", {className: 'secondaryButton', style: { position: 'absolute', left: 15, bottom: 15 }, onClick: function () {
-	                _this.props.cancel();
-	            }}, "Cancel"), 
-	            React.createElement("button", {className: 'primaryButton', disabled: this.props.state.content === undefined || layer.name === '', style: { position: 'absolute', right: 15, bottom: 15 }, onClick: function () { common_1.ShowLoading(); setTimeout(_this.proceed, 10); }}, "Continue")));
+	        return (React.createElement("div", null, React.createElement("div", null, React.createElement("h2", null, " Upload the file containing the data "), React.createElement("hr", null), React.createElement("p", null, "Currently supported file types: "), React.createElement("p", null, " GeoJSON, Microsoft Office spreadsheets, OpenDocument spreadsheets, CSV, KML, GPX, WKT, OSM..."), React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: 'https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'}, "More info about supported file types"), React.createElement(Dropzone, {style: dropStyle, onDrop: this.onDrop.bind(this), accept: _allowedFileTypes.map(function (type) { return '.' + type; }).join(', ')}, this.props.state.fileName ? React.createElement("span", null, React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), " ", this.props.state.fileName, " ") : React.createElement("span", null, "Drop file or click to open upload menu")), React.createElement("label", null, "Give a name to the layer"), React.createElement("input", {type: "text", onChange: function (e) {
+	            layer.name = e.target.value;
+	        }, value: layer.name})), React.createElement("button", {className: 'secondaryButton', style: { position: 'absolute', left: 15, bottom: 15 }, onClick: function () {
+	            _this.props.cancel();
+	        }}, "Cancel"), React.createElement("button", {className: 'primaryButton', disabled: this.props.state.content === undefined || layer.name === '', style: { position: 'absolute', right: 15, bottom: 15 }, onClick: function () { common_1.ShowLoading(); setTimeout(_this.proceed, 10); }}, "Continue")));
 	    };
 	    FileUploadView = __decorate([
 	        mobx_react_1.observer, 
@@ -70380,26 +70389,9 @@
 	        this.props.state.coordinateSystem = 'WGS84';
 	    };
 	    FileDetailsView.prototype.render = function () {
-	        return React.createElement("div", {style: { height: '100%' }}, 
-	            React.createElement("div", null, 
-	                React.createElement("h2", null, "Just a few more details"), 
-	                React.createElement("hr", null), 
-	                this.props.state.isGeoJSON ?
-	                    null :
-	                    React.createElement("div", null, 
-	                        React.createElement("label", null, "Select the latitude/Y field name"), 
-	                        React.createElement(Select, {options: this.activeLayer.numberHeaders, onChange: this.onLatitudeSelectionChange, value: this.props.state.latitudeField}), 
-	                        React.createElement("label", null, "Select the longitude/X field name"), 
-	                        React.createElement(Select, {options: this.activeLayer.numberHeaders, onChange: this.onLongitudeSelectionChange, value: this.props.state.longitudeField})), 
-	                React.createElement("label", null, "Select the coordinate system"), 
-	                React.createElement(Select, {options: coords, onChange: this.onCoordinateSystemChange, value: this.props.state.coordinateSystem}), 
-	                React.createElement("p", null, " Not sure? Try with the default (WGS84) and see if the data lines up."), 
-	                React.createElement("p", null, 
-	                    "Coordinate system missing? Get the Proj4-string for your system from", 
-	                    React.createElement("a", {href: 'http://spatialreference.org/ref/'}, " Spatial Reference")), 
-	                React.createElement("input", {id: 'customProj', defaultValue: 'Insert custom Proj4-string here', style: { width: 400 }})), 
-	            React.createElement("button", {className: 'secondaryButton', style: { position: 'absolute', left: 15, bottom: 15 }, onClick: this.goBack}, "Go back"), 
-	            React.createElement("button", {className: 'primaryButton', disabled: !this.props.state.coordinateSystem || (!this.props.state.isGeoJSON && (!this.props.state.latitudeField || !this.props.state.longitudeField)), style: { position: 'absolute', right: 15, bottom: 15 }, onClick: this.proceed}, "Make a map!"));
+	        return React.createElement("div", {style: { height: '100%' }}, React.createElement("div", null, React.createElement("h2", null, "Just a few more details"), React.createElement("hr", null), this.props.state.isGeoJSON ?
+	            null :
+	            React.createElement("div", null, React.createElement("label", null, "Select the latitude/Y field name"), React.createElement(Select, {options: this.activeLayer.numberHeaders, onChange: this.onLatitudeSelectionChange, value: this.props.state.latitudeField}), React.createElement("label", null, "Select the longitude/X field name"), React.createElement(Select, {options: this.activeLayer.numberHeaders, onChange: this.onLongitudeSelectionChange, value: this.props.state.longitudeField})), React.createElement("label", null, "Select the coordinate system"), React.createElement(Select, {options: coords, onChange: this.onCoordinateSystemChange, value: this.props.state.coordinateSystem}), React.createElement("p", null, " Not sure? Try with the default (WGS84) and see if the data lines up."), React.createElement("p", null, "Coordinate system missing? Get the Proj4-string for your system from", React.createElement("a", {href: 'http://spatialreference.org/ref/'}, " Spatial Reference")), React.createElement("input", {id: 'customProj', defaultValue: 'Insert custom Proj4-string here', style: { width: 400 }})), React.createElement("button", {className: 'secondaryButton', style: { position: 'absolute', left: 15, bottom: 15 }, onClick: this.goBack}, "Go back"), React.createElement("button", {className: 'primaryButton', disabled: !this.props.state.coordinateSystem || (!this.props.state.isGeoJSON && (!this.props.state.latitudeField || !this.props.state.longitudeField)), style: { position: 'absolute', right: 15, bottom: 15 }, onClick: this.proceed}, "Make a map!"));
 	    };
 	    FileDetailsView = __decorate([
 	        mobx_react_1.observer, 
@@ -88446,10 +88438,28 @@
 	        };
 	    }
 	    SymbolMenu.prototype.getIcon = function (shape, fa, stroke, fill, onClick) {
-	        var circleIcon = React.createElement("svg", {viewBox: "0 0 69.529271 95.44922", height: "40", width: "40"}, React.createElement("g", {transform: "translate(-139.52 -173.21)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z"})));
-	        var squareIcon = React.createElement("svg", {viewBox: "0 0 69.457038 96.523441", height: "40", width: "40"}, React.createElement("g", {transform: "translate(-545.27 -658.39)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m545.27 658.39v65.301h22.248l12.48 31.223 12.676-31.223h22.053v-65.301h-69.457z"})));
-	        var starIcon = React.createElement("svg", {height: "40", width: "40", viewBox: "0 0 77.690999 101.4702"}, React.createElement("g", {transform: "translate(-101.15 -162.97)"}, React.createElement("g", {transform: "matrix(1 0 0 1.0165 -65.712 -150.28)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m205.97 308.16-11.561 11.561h-16.346v16.346l-11.197 11.197 11.197 11.197v15.83h15.744l11.615 33.693 11.467-33.568 0.125-0.125h16.346v-16.346l11.197-11.197-11.197-11.197v-15.83h-15.83l-11.561-11.561z"}))));
-	        var pentaIcon = React.createElement("svg", {viewBox: "0 0 71.550368 96.362438", height: "40", width: "40"}, React.createElement("g", {fill: fill, transform: "translate(-367.08 -289.9)"}, React.createElement("path", {stroke: stroke, d: "m367.08 322.5 17.236-32.604h36.151l18.164 32.25-35.665 64.112z"})));
+	        var circleIcon = React.createElement("svg", {viewBox: "0 0 69.529271 95.44922", height: "40", width: "40"}, 
+	            React.createElement("g", {transform: "translate(-139.52 -173.21)"}, 
+	                React.createElement("path", {fill: fill, stroke: stroke, d: "m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z"})
+	            )
+	        );
+	        var squareIcon = React.createElement("svg", {viewBox: "0 0 69.457038 96.523441", height: "40", width: "40"}, 
+	            React.createElement("g", {transform: "translate(-545.27 -658.39)"}, 
+	                React.createElement("path", {fill: fill, stroke: stroke, d: "m545.27 658.39v65.301h22.248l12.48 31.223 12.676-31.223h22.053v-65.301h-69.457z"})
+	            )
+	        );
+	        var starIcon = React.createElement("svg", {height: "40", width: "40", viewBox: "0 0 77.690999 101.4702"}, 
+	            React.createElement("g", {transform: "translate(-101.15 -162.97)"}, 
+	                React.createElement("g", {transform: "matrix(1 0 0 1.0165 -65.712 -150.28)"}, 
+	                    React.createElement("path", {fill: fill, stroke: stroke, d: "m205.97 308.16-11.561 11.561h-16.346v16.346l-11.197 11.197 11.197 11.197v15.83h15.744l11.615 33.693 11.467-33.568 0.125-0.125h16.346v-16.346l11.197-11.197-11.197-11.197v-15.83h-15.83l-11.561-11.561z"})
+	                )
+	            )
+	        );
+	        var pentaIcon = React.createElement("svg", {viewBox: "0 0 71.550368 96.362438", height: "40", width: "40"}, 
+	            React.createElement("g", {fill: fill, transform: "translate(-367.08 -289.9)"}, 
+	                React.createElement("path", {stroke: stroke, d: "m367.08 322.5 17.236-32.604h36.151l18.164 32.25-35.665 64.112z"})
+	            )
+	        );
 	        var activeIcon;
 	        switch (shape) {
 	            case ('circle'):
@@ -88472,7 +88482,9 @@
 	            verticalAlign: 'middle',
 	            width: 42,
 	            height: 42,
-	        }}, activeIcon, React.createElement("i", {style: { position: 'relative', bottom: 33, width: 18, height: 18 }, className: 'fa ' + fa}));
+	        }}, 
+	            activeIcon, 
+	            React.createElement("i", {style: { position: 'relative', bottom: 33, width: 18, height: 18 }, className: 'fa ' + fa}));
 	    };
 	    SymbolMenu.prototype.calculateIconValues = function (fieldValue, steps, accuracy) {
 	        var values = this.props.state.editingLayer.values;
@@ -88508,43 +88520,167 @@
 	                lineHeight: 1.5
 	            }
 	        };
-	        return (React.createElement("div", {className: "makeMaps-options"}, React.createElement("label", null, "Select symbol type "), React.createElement("br", null), React.createElement("label", {forHTML: 'circle'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-circle-o'}), "Circle", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Circle), checked: sym.symbolType === Layer_1.SymbolTypes.Circle, name: 'symboltype', id: 'circle'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'rect'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-signal'}), "Rectangle", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Rectangle), checked: sym.symbolType === Layer_1.SymbolTypes.Rectangle, name: 'symboltype', id: 'rect'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'icon'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-map-marker'}), "Icon", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Icon), checked: sym.symbolType === Layer_1.SymbolTypes.Icon, name: 'symboltype', id: 'icon'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'chart'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-pie-chart'}), "Chart", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Chart), checked: sym.symbolType === Layer_1.SymbolTypes.Chart, name: 'symboltype', id: 'chart'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'blocks'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-th-large'}), "Blocks", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Blocks), checked: sym.symbolType === Layer_1.SymbolTypes.Blocks, name: 'symboltype', id: 'blocks'}), React.createElement("br", null)), sym.symbolType !== Layer_1.SymbolTypes.Icon ?
-	            React.createElement("div", null, React.createElement("label", null, "Scale ", sym.symbolType === Layer_1.SymbolTypes.Rectangle ? 'width' : 'size', " by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onXVariableChange, value: sym.symbolType === Layer_1.SymbolTypes.Blocks ? sym.blockSizeVar : sym.sizeXVar, clearable: sym.symbolType !== Layer_1.SymbolTypes.Blocks}), sym.symbolType === Layer_1.SymbolTypes.Rectangle ? React.createElement("div", null, React.createElement("label", null, "Scale height by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onYVariableChange, value: sym.sizeYVar})) : null, sym.symbolType !== Layer_1.SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar) ?
-	                React.createElement("div", null, React.createElement("label", null, "Size multiplier"), React.createElement("input", {type: "number", value: sym.sizeMultiplier, onChange: function (e) {
-	                    layer.symbolOptions.sizeMultiplier = e.currentTarget.valueAsNumber;
-	                    if (_this.props.state.autoRefresh)
-	                        layer.refresh();
-	                }, min: 0.1, max: 10, step: 0.1}), React.createElement("br", null), React.createElement("label", null, "Size lower limit"), React.createElement("input", {type: "number", value: sym.sizeLowLimit, onChange: function (e) {
-	                    layer.symbolOptions.sizeLowLimit = e.currentTarget.valueAsNumber;
-	                    if (_this.props.state.autoRefresh)
-	                        layer.refresh();
-	                }, min: 0}), React.createElement("br", null), React.createElement("label", null, "Size upper limit"), React.createElement("input", {type: "number", value: sym.sizeUpLimit, onChange: function (e) {
-	                    layer.symbolOptions.sizeUpLimit = e.currentTarget.valueAsNumber;
-	                    if (_this.props.state.autoRefresh)
-	                        layer.refresh();
-	                }, min: 1}))
-	                : null)
-	            : null, sym.symbolType === Layer_1.SymbolTypes.Icon ?
-	            React.createElement("div", null, React.createElement("label", {htmlFor: 'iconSteps'}, "Use multiple icons"), React.createElement("input", {id: 'iconSteps', type: 'checkbox', onChange: this.onUseIconStepsChange, checked: sym.useMultipleIcons}), sym.useMultipleIcons ?
-	                React.createElement("div", null, React.createElement("label", null, "Field to change icon by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onIconFieldChange, value: sym.iconField, clearable: false}), sym.iconField ?
-	                    React.createElement("div", null, "Set the ", React.createElement("i", null, "lower limit"), " and icon", React.createElement("br", null), React.createElement("button", {onClick: this.onIconStepCountChange.bind(this, -1)}, "-"), React.createElement("button", {onClick: this.onIconStepCountChange.bind(this, 1)}, "+"), this.renderSteps.call(this)) : null)
-	                :
-	                    React.createElement("div", null, "Set icon", this.getIcon(sym.icons[0].shape, sym.icons[0].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, 0))), React.createElement("br", null), "Change icon colors in the color menu")
-	            : null, sym.symbolType === Layer_1.SymbolTypes.Chart ?
-	            React.createElement("div", null, React.createElement("label", null, "Select the variables to show"), React.createElement(Select, {options: layer.numberHeaders, multi: true, onChange: this.onChartFieldsChange, value: sym.chartFields.slice(), backspaceRemoves: false}), "Chart type", React.createElement("br", null), React.createElement("label", {forHTML: 'pie'}, "Pie", React.createElement("input", {type: 'radio', onChange: function () {
-	                sym.chartType = 'pie';
-	            }, checked: sym.chartType === 'pie', name: 'charttype', id: 'pie'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'donut'}, "Donut", React.createElement("input", {type: 'radio', onChange: function () {
-	                sym.chartType = 'donut';
-	            }, checked: sym.chartType === 'donut', name: 'charttype', id: 'donut'}), React.createElement("br", null)), React.createElement("br", null), React.createElement("i", null, "TIP: hover over symbol segments to see corresponding value"))
-	            : null, sym.symbolType === Layer_1.SymbolTypes.Blocks ?
-	            React.createElement("div", null, React.createElement("label", null, "Single block value"), React.createElement("input", {type: "number", value: sym.blockValue, onChange: function (e) {
-	                layer.symbolOptions.blockValue = e.currentTarget.valueAsNumber;
-	                if (_this.props.state.autoRefresh)
-	                    layer.refresh();
-	            }, min: 1}))
-	            : null, this.props.state.autoRefresh ? null :
-	            React.createElement("button", {className: 'menuButton', onClick: function () { layer.refresh(); }}, "Refresh map"), React.createElement(Modal, {isOpen: state.iconSelectOpen, style: iconSelectStyle}, state.iconSelectOpen ? React.createElement("div", null, "Icon", this.renderIcons.call(this), "Or", React.createElement("br", null), React.createElement("label", null, "Use another ", React.createElement("a", {href: 'http://fontawesome.io/icons/'}, "Font Awesome"), " icon"), React.createElement("input", {type: "text", onChange: this.onFAIconChange, value: sym.icons[state.currentIconIndex].fa}), React.createElement("br", null), "Icon shape", React.createElement("br", null), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'circle')}, this.getIcon('circle', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'square')}, this.getIcon('square', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'star')}, this.getIcon('star', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'penta')}, this.getIcon('penta', '', '#999999', 'transparent', null)), React.createElement("br", null), React.createElement("button", {className: 'primaryButton', onClick: this.toggleIconSelect.bind(this, state.currentIconIndex), style: { position: 'absolute', left: 80 }}, "OK"))
-	            : null)));
+	        return (React.createElement("div", {className: "makeMaps-options"}, 
+	            React.createElement("label", null, "Select symbol type "), 
+	            React.createElement("br", null), 
+	            React.createElement("label", {forHTML: 'circle'}, 
+	                React.createElement("i", {style: { margin: 4 }, className: 'fa fa-circle-o'}), 
+	                "Circle", 
+	                React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Circle), checked: sym.symbolType === Layer_1.SymbolTypes.Circle, name: 'symboltype', id: 'circle'}), 
+	                React.createElement("br", null)), 
+	            React.createElement("label", {forHTML: 'rect'}, 
+	                React.createElement("i", {style: { margin: 4 }, className: 'fa fa-signal'}), 
+	                "Rectangle", 
+	                React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Rectangle), checked: sym.symbolType === Layer_1.SymbolTypes.Rectangle, name: 'symboltype', id: 'rect'}), 
+	                React.createElement("br", null)), 
+	            React.createElement("label", {forHTML: 'icon'}, 
+	                React.createElement("i", {style: { margin: 4 }, className: 'fa fa-map-marker'}), 
+	                "Icon", 
+	                React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Icon), checked: sym.symbolType === Layer_1.SymbolTypes.Icon, name: 'symboltype', id: 'icon'}), 
+	                React.createElement("br", null)), 
+	            React.createElement("label", {forHTML: 'chart'}, 
+	                React.createElement("i", {style: { margin: 4 }, className: 'fa fa-pie-chart'}), 
+	                "Chart", 
+	                React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Chart), checked: sym.symbolType === Layer_1.SymbolTypes.Chart, name: 'symboltype', id: 'chart'}), 
+	                React.createElement("br", null)), 
+	            React.createElement("label", {forHTML: 'blocks'}, 
+	                React.createElement("i", {style: { margin: 4 }, className: 'fa fa-th-large'}), 
+	                "Blocks", 
+	                React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Blocks), checked: sym.symbolType === Layer_1.SymbolTypes.Blocks, name: 'symboltype', id: 'blocks'}), 
+	                React.createElement("br", null)), 
+	            sym.symbolType !== Layer_1.SymbolTypes.Icon ?
+	                React.createElement("div", null, 
+	                    React.createElement("label", null, 
+	                        "Scale ", 
+	                        sym.symbolType === Layer_1.SymbolTypes.Rectangle ? 'width' : 'size', 
+	                        " by"), 
+	                    React.createElement(Select, {options: layer.numberHeaders, onChange: this.onXVariableChange, value: sym.symbolType === Layer_1.SymbolTypes.Blocks ? sym.blockSizeVar : sym.sizeXVar, clearable: sym.symbolType !== Layer_1.SymbolTypes.Blocks}), 
+	                    sym.symbolType === Layer_1.SymbolTypes.Rectangle ? React.createElement("div", null, 
+	                        React.createElement("label", null, "Scale height by"), 
+	                        React.createElement(Select, {options: layer.numberHeaders, onChange: this.onYVariableChange, value: sym.sizeYVar})) : null, 
+	                    sym.symbolType !== Layer_1.SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar) ?
+	                        React.createElement("div", null, 
+	                            React.createElement("label", null, "Size multiplier"), 
+	                            React.createElement("input", {type: "number", value: sym.sizeMultiplier, onChange: function (e) {
+	                                layer.symbolOptions.sizeMultiplier = e.currentTarget.valueAsNumber;
+	                                if (_this.props.state.autoRefresh)
+	                                    layer.refresh();
+	                            }, min: 0.1, max: 10, step: 0.1}), 
+	                            React.createElement("br", null), 
+	                            React.createElement("label", null, "Size lower limit"), 
+	                            React.createElement("input", {type: "number", value: sym.sizeLowLimit, onChange: function (e) {
+	                                layer.symbolOptions.sizeLowLimit = e.currentTarget.valueAsNumber;
+	                                if (_this.props.state.autoRefresh)
+	                                    layer.refresh();
+	                            }, min: 0}), 
+	                            React.createElement("br", null), 
+	                            React.createElement("label", null, "Size upper limit"), 
+	                            React.createElement("input", {type: "number", value: sym.sizeUpLimit, onChange: function (e) {
+	                                layer.symbolOptions.sizeUpLimit = e.currentTarget.valueAsNumber;
+	                                if (_this.props.state.autoRefresh)
+	                                    layer.refresh();
+	                            }, min: 1}))
+	                        : null)
+	                : null, 
+	            sym.symbolType === Layer_1.SymbolTypes.Icon ?
+	                React.createElement("div", null, 
+	                    React.createElement("label", {htmlFor: 'iconSteps'}, "Use multiple icons"), 
+	                    React.createElement("input", {id: 'iconSteps', type: 'checkbox', onChange: this.onUseIconStepsChange, checked: sym.useMultipleIcons}), 
+	                    sym.useMultipleIcons ?
+	                        React.createElement("div", null, 
+	                            React.createElement("label", null, "Field to change icon by"), 
+	                            React.createElement(Select, {options: layer.numberHeaders, onChange: this.onIconFieldChange, value: sym.iconField, clearable: false}), 
+	                            sym.iconField ?
+	                                React.createElement("div", null, 
+	                                    "Set the ", 
+	                                    React.createElement("i", null, "lower limit"), 
+	                                    " and icon", 
+	                                    React.createElement("br", null), 
+	                                    React.createElement("button", {onClick: this.onIconStepCountChange.bind(this, -1)}, "-"), 
+	                                    React.createElement("button", {onClick: this.onIconStepCountChange.bind(this, 1)}, "+"), 
+	                                    this.renderSteps.call(this)) : null)
+	                        :
+	                            React.createElement("div", null, 
+	                                "Set icon", 
+	                                this.getIcon(sym.icons[0].shape, sym.icons[0].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, 0))), 
+	                    React.createElement("br", null), 
+	                    "Change icon colors in the color menu")
+	                : null, 
+	            sym.symbolType === Layer_1.SymbolTypes.Chart ?
+	                React.createElement("div", null, 
+	                    React.createElement("label", null, "Select the variables to show"), 
+	                    React.createElement(Select, {options: layer.numberHeaders, multi: true, onChange: this.onChartFieldsChange, value: sym.chartFields.slice(), backspaceRemoves: false}), 
+	                    "Chart type", 
+	                    React.createElement("br", null), 
+	                    React.createElement("label", {forHTML: 'pie'}, 
+	                        "Pie", 
+	                        React.createElement("input", {type: 'radio', onChange: function () {
+	                            sym.chartType = 'pie';
+	                        }, checked: sym.chartType === 'pie', name: 'charttype', id: 'pie'}), 
+	                        React.createElement("br", null)), 
+	                    React.createElement("label", {forHTML: 'donut'}, 
+	                        "Donut", 
+	                        React.createElement("input", {type: 'radio', onChange: function () {
+	                            sym.chartType = 'donut';
+	                        }, checked: sym.chartType === 'donut', name: 'charttype', id: 'donut'}), 
+	                        React.createElement("br", null)), 
+	                    React.createElement("br", null), 
+	                    React.createElement("i", null, "TIP: hover over symbol segments to see corresponding value"))
+	                : null, 
+	            sym.symbolType === Layer_1.SymbolTypes.Blocks ?
+	                React.createElement("div", null, 
+	                    React.createElement("label", null, 
+	                        "Single block value", 
+	                        React.createElement("input", {type: "number", value: sym.blockValue, onChange: function (e) {
+	                            layer.symbolOptions.blockValue = e.currentTarget.valueAsNumber;
+	                        }, onBlur: function () {
+	                            if (_this.props.state.autoRefresh)
+	                                layer.refresh();
+	                        }, min: 1})), 
+	                    React.createElement("label", null, 
+	                        "Single block width", 
+	                        React.createElement("input", {type: "number", value: sym.blockWidth, onChange: function (e) {
+	                            layer.symbolOptions.blockWidth = e.currentTarget.valueAsNumber;
+	                            if (_this.props.state.autoRefresh)
+	                                layer.refresh();
+	                        }, min: 1})), 
+	                    React.createElement("label", null, 
+	                        "Max. width", 
+	                        React.createElement("input", {type: "number", value: sym.maxBlockColumns, onChange: function (e) {
+	                            layer.symbolOptions.maxBlockColumns = e.currentTarget.valueAsNumber;
+	                            if (_this.props.state.autoRefresh)
+	                                layer.refresh();
+	                        }, min: 1})), 
+	                    React.createElement("label", null, 
+	                        "Max. height", 
+	                        React.createElement("input", {type: "number", value: sym.maxBlockRows, onChange: function (e) {
+	                            layer.symbolOptions.maxBlockRows = e.currentTarget.valueAsNumber;
+	                            if (_this.props.state.autoRefresh)
+	                                layer.refresh();
+	                        }, min: 1})))
+	                : null, 
+	            this.props.state.autoRefresh ? null :
+	                React.createElement("button", {className: 'menuButton', onClick: function () { layer.refresh(); }}, "Refresh map"), 
+	            React.createElement(Modal, {isOpen: state.iconSelectOpen, style: iconSelectStyle}, state.iconSelectOpen ? React.createElement("div", null, 
+	                "Icon", 
+	                this.renderIcons.call(this), 
+	                "Or", 
+	                React.createElement("br", null), 
+	                React.createElement("label", null, 
+	                    "Use another ", 
+	                    React.createElement("a", {href: 'http://fontawesome.io/icons/'}, "Font Awesome"), 
+	                    " icon"), 
+	                React.createElement("input", {type: "text", onChange: this.onFAIconChange, value: sym.icons[state.currentIconIndex].fa}), 
+	                React.createElement("br", null), 
+	                "Icon shape", 
+	                React.createElement("br", null), 
+	                React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'circle')}, this.getIcon('circle', '', '#999999', 'transparent', null)), 
+	                React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'square')}, this.getIcon('square', '', '#999999', 'transparent', null)), 
+	                React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'star')}, this.getIcon('star', '', '#999999', 'transparent', null)), 
+	                React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'penta')}, this.getIcon('penta', '', '#999999', 'transparent', null)), 
+	                React.createElement("br", null), 
+	                React.createElement("button", {className: 'primaryButton', onClick: this.toggleIconSelect.bind(this, state.currentIconIndex), style: { position: 'absolute', left: 80 }}, "OK"))
+	                : null)));
 	    };
 	    SymbolMenu.prototype.renderIcons = function () {
 	        var arr = [];
@@ -88569,9 +88705,11 @@
 	            }
 	            return columns;
 	        }
-	        return (React.createElement("table", {style: { width: '100%', cursor: 'pointer' }}, React.createElement("tbody", null, arr.map(function (td) {
-	            return td;
-	        }))));
+	        return (React.createElement("table", {style: { width: '100%', cursor: 'pointer' }}, 
+	            React.createElement("tbody", null, arr.map(function (td) {
+	                return td;
+	            }))
+	        ));
 	    };
 	    SymbolMenu.prototype.renderSteps = function () {
 	        var layer = this.props.state.editingLayer;
@@ -88586,9 +88724,11 @@
 	        var row = 0;
 	        for (var _i = 0, steps_1 = steps; _i < steps_1.length; _i++) {
 	            var i = steps_1[_i];
-	            rows.push(React.createElement("li", {key: i, style: { lineHeight: 0 }}, React.createElement("input", {id: row + 'min', type: 'number', defaultValue: i.toFixed(2), style: {
-	                width: 100,
-	            }, onChange: this.onStepLimitChange.bind(this, row), step: 1 * Math.pow(10, (-layer.symbolOptions.iconField.decimalAccuracy))}), this.getIcon(layer.symbolOptions.icons[row].shape, layer.symbolOptions.icons[row].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, row))));
+	            rows.push(React.createElement("li", {key: i, style: { lineHeight: 0 }}, 
+	                React.createElement("input", {id: row + 'min', type: 'number', defaultValue: i.toFixed(2), style: {
+	                    width: 100,
+	                }, onChange: this.onStepLimitChange.bind(this, row), step: 1 * Math.pow(10, (-layer.symbolOptions.iconField.decimalAccuracy))}), 
+	                this.getIcon(layer.symbolOptions.icons[row].shape, layer.symbolOptions.icons[row].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, row))));
 	            row++;
 	        }
 	        return React.createElement("ul", {id: 'customSteps', style: { listStyle: 'none', padding: 0 }}, rows.map(function (r) { return r; }));
@@ -105132,45 +105272,10 @@
 	            color: 'grey',
 	            fontWeight: 'bold'
 	        };
-	        return (React.createElement("div", {style: { textAlign: 'center' }}, 
-	            React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps"}, 
-	                React.createElement("i", {className: 'fa fa-github', style: { position: 'absolute', right: 5, fontSize: '40px' }})
-	            ), 
-	            React.createElement("img", {src: 'app/images/logo_pre.png', style: { display: 'block', margin: '0 auto', padding: 5 }}), 
-	            "MakeMaps is an open source map creation tool that lets you make powerful visualizations from your spatial data", 
-	            React.createElement("br", null), 
-	            "Guides and feedback channels can be found in the ", 
-	            React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps/wiki"}, "Project Wiki"), 
-	            ". Contributions and feature requests welcome!", 
-	            React.createElement("hr", null), 
-	            React.createElement("h3", null, "Here's a few demos: "), 
-	            React.createElement("div", {style: { overflowX: 'visible', overflowY: 'hidden', height: 440, whiteSpace: 'nowrap' }}, 
-	                React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/chorodemo.png', description: 'This demo shows the choropleth map type by mapping the United States by population density.', loadDemo: this.loadDemo.bind(this, 'chorodemo')}), 
-	                React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/symboldemo.png', description: 'This demo demonstrates the different symbol options of MakeMaps. Data random generated for demo purposes.', loadDemo: this.loadDemo.bind(this, 'symboldemo')}), 
-	                React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_chartdemo.png', description: 'This demo shows the chart-as-a-symbol map by visualizing distribution between different traffic types in Helsinki using a pie chart. Data acquired from hri.fi', loadDemo: this.loadDemo.bind(this, 'hki_chartdemo')}), 
-	                React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_heatdemo.png', description: 'This demo showcases the heat map by visualizing the daily public transportation boardings by HSL', loadDemo: this.loadDemo.bind(this, 'hki_heatdemo')}), 
-	                React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/clusterdemo.png', description: 'This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently', loadDemo: this.loadDemo.bind(this, 'clusterdemo')})), 
-	            React.createElement("hr", {style: { color: '#cecece', width: '75%' }}), 
-	            React.createElement("div", {style: { display: 'inline' }}, 
-	                React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, 
-	                    React.createElement("h3", null, "Load a previously made map"), 
-	                    React.createElement(Dropzone, {style: dropStyle, onDrop: this.onDrop.bind(this), accept: '.mmap'}, this.state.fileName ?
-	                        React.createElement("span", null, 
-	                            React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), 
-	                            this.state.fileName, 
-	                            React.createElement("div", {style: { margin: '0 auto' }}, 
-	                                React.createElement("button", {className: 'primaryButton', onClick: this.loadMap.bind(this)}, "Show me")
-	                            ))
-	                        :
-	                            React.createElement("div", {style: { margin: '0 auto' }}, 
-	                                "Have a map you worked on previously? Someone sent you a cool map to see for yourself? Upload it here!", 
-	                                React.createElement("br", null), 
-	                                "Drop a map here or click to upload"))), 
-	                React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, 
-	                    React.createElement("h3", null, "Create a new map"), 
-	                    "Start creating your own map from here. Upload your file and get visualizin' in seconds!", 
-	                    React.createElement("br", null), 
-	                    React.createElement("button", {className: 'primaryButton', onClick: this.createNewMap.bind(this)}, "Create a map")))));
+	        return (React.createElement("div", {style: { textAlign: 'center' }}, React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps"}, React.createElement("i", {className: 'fa fa-github', style: { position: 'absolute', right: 5, fontSize: '40px' }})), React.createElement("img", {src: 'app/images/logo_pre.png', style: { display: 'block', margin: '0 auto', padding: 5 }}), "MakeMaps is an open source map creation tool that lets you make powerful visualizations from your spatial data", React.createElement("br", null), "Guides and feedback channels can be found in the ", React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps/wiki"}, "Project Wiki"), ". Contributions and feature requests welcome!", React.createElement("hr", null), React.createElement("h3", null, "Here's a few demos: "), React.createElement("div", {style: { overflowX: 'visible', overflowY: 'hidden', height: 440, whiteSpace: 'nowrap' }}, React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/chorodemo.png', description: 'This demo shows the choropleth map type by mapping the United States by population density.', loadDemo: this.loadDemo.bind(this, 'chorodemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/symboldemo.png', description: 'This demo demonstrates the different symbol options of MakeMaps. Data random generated for demo purposes.', loadDemo: this.loadDemo.bind(this, 'symboldemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_chartdemo.png', description: 'This demo shows the chart-as-a-symbol map by visualizing distribution between different traffic types in Helsinki using a pie chart. Data acquired from hri.fi', loadDemo: this.loadDemo.bind(this, 'hki_chartdemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_heatdemo.png', description: 'This demo showcases the heat map by visualizing the daily public transportation boardings by HSL', loadDemo: this.loadDemo.bind(this, 'hki_heatdemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/clusterdemo.png', description: 'This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently', loadDemo: this.loadDemo.bind(this, 'clusterdemo')})), React.createElement("hr", {style: { color: '#cecece', width: '75%' }}), React.createElement("div", {style: { display: 'inline' }}, React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, React.createElement("h3", null, "Load a previously made map"), React.createElement(Dropzone, {style: dropStyle, onDrop: this.onDrop.bind(this), accept: '.mmap'}, this.state.fileName ?
+	            React.createElement("span", null, React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), this.state.fileName, React.createElement("div", {style: { margin: '0 auto' }}, React.createElement("button", {className: 'primaryButton', onClick: this.loadMap.bind(this)}, "Show me")))
+	            :
+	                React.createElement("div", {style: { margin: '0 auto' }}, "Have a map you worked on previously? Someone sent you a cool map to see for yourself? Upload it here!", React.createElement("br", null), "Drop a map here or click to upload"))), React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, React.createElement("h3", null, "Create a new map"), "Start creating your own map from here. Upload your file and get visualizin' in seconds!", React.createElement("br", null), React.createElement("button", {className: 'primaryButton', onClick: this.createNewMap.bind(this)}, "Create a map")))));
 	    };
 	    return WelcomeScreen;
 	}(React.Component));
