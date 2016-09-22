@@ -54,6 +54,7 @@ hr{
   position: absolute;
   bottom: 0;
   display: none;
+  white-space: nowrap;
 }
 
 .menuHeaderDiv{

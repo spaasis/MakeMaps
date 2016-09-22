@@ -5,9 +5,9 @@ let DefaultProjections: Array<string> = ['WGS84', 'EPSG:4269', 'EPSG:3857', 'ETR
 function GetSymbolSize(val: number, sizeMultiplier: number, minSize: number, maxSize: number) {
     let r = Math.sqrt(val * sizeMultiplier / Math.PI) * 2;
     if (r < minSize)
-        r = minSize;
+        return minSize;
     else if (r > maxSize)
-        r = maxSize;
+        return maxSize;
     return r;
 
 }

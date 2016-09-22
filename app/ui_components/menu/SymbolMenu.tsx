@@ -444,12 +444,44 @@ export class SymbolMenu extends React.Component<{
                 }
                 {sym.symbolType === SymbolTypes.Blocks ?
                     <div>
-                        <label>Single block value</label>
-                        <input type="number" value={sym.blockValue} onChange={(e) => {
-                            layer.symbolOptions.blockValue = (e.currentTarget as any).valueAsNumber;
-                            if (this.props.state.autoRefresh)
-                                layer.refresh();
-                        } } min={1}/>
+                        <label>Single block value
+                            <input type="number" value={sym.blockValue}
+                                onChange={(e) => {
+                                    layer.symbolOptions.blockValue = (e.currentTarget as any).valueAsNumber;
+                                } }
+                                onBlur={() => {
+                                    if (this.props.state.autoRefresh)
+                                        layer.refresh();
+                                } }
+                                min={1}/>
+                        </label>
+                        <label>Single block width
+                            <input type="number" value={sym.blockWidth}
+                                onChange={(e) => {
+                                    layer.symbolOptions.blockWidth = (e.currentTarget as any).valueAsNumber;
+                                    if (this.props.state.autoRefresh)
+                                        layer.refresh();
+                                } }
+                                min={1}/>
+                        </label>
+                        <label>Max. width
+                            <input type="number" value={sym.maxBlockColumns}
+                                onChange={(e) => {
+                                    layer.symbolOptions.maxBlockColumns = (e.currentTarget as any).valueAsNumber;
+                                    if (this.props.state.autoRefresh)
+                                        layer.refresh();
+                                } }
+                                min={1}/>
+                        </label>
+                        <label>Max. height
+                            <input type="number" value={sym.maxBlockRows}
+                                onChange={(e) => {
+                                    layer.symbolOptions.maxBlockRows = (e.currentTarget as any).valueAsNumber;
+                                    if (this.props.state.autoRefresh)
+                                        layer.refresh();
+                                } }
+                                min={1}/>
+                        </label>
                     </div>
                     : null
 

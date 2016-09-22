@@ -339,7 +339,9 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
             let vals = [];
             let i = 0;
             x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-
+            if (x === 0) {
+                return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });;
+            }
             sym.chartFields.map(function(e) {
                 if (feature.properties[e.value] > 0)
                     vals.push({ feat: e, val: feature.properties[e.value], color: col.chartColors[e.value] });
@@ -350,7 +352,7 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
                 fullCircle: sym.chartType === 'pie',
                 data: vals,
                 valueFunc: function(d) { return d.val; },
-                strokeWidth: 1,
+                strokeWidth: col.weight,
                 outerRadius: x,
                 innerRadius: x / 3,
                 pieClass: function(d) { return d.data.feat },
@@ -361,19 +363,26 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
             let marker = L.divIcon({ iconAnchor: L.point(x, x), html: chartHtml, className: '' });
             return L.marker(latlng, { icon: marker });
         case SymbolTypes.Blocks:
-            let side = Math.ceil(Math.sqrt(feature.properties[sym.blockSizeVar.value] / sym.blockValue));
             let blockCount = Math.ceil(feature.properties[sym.blockSizeVar.value] / sym.blockValue);
-            let blockHtml = makeBlockSymbol(side, blockCount, col.fillColor, col.color, col.weight);
-            let blockMarker = L.divIcon({ iconAnchor: L.point(5 * side, 5 * side), html: blockHtml, className: '' });
+            let columns = Math.min(sym.maxBlockColumns, blockCount);
+            let rows = Math.min(sym.maxBlockRows, blockCount);
+            let blocks = makeBlockSymbol(blockCount, columns, rows, col.fillColor, col.color, col.weight, sym.blockWidth);
+            let blockMarker = L.divIcon({ iconAnchor: L.point(sym.blockWidth / 2 * blocks.columns, sym.blockWidth / 2 * blocks.rows), html: blocks.html, className: '' });
             return L.marker(latlng, { icon: blockMarker });
         case SymbolTypes.Rectangle:
             x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
             y = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+            if (x === 0 || y === 0) {
+                return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });;
+            }
             let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + '"/>';
             let rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
             return L.marker(latlng, { icon: rectIcon });
         default:
             x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+            if (x === 0) {
+                return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });;
+            }
             let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + ';border-radius: 30px;"/>';
             let circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
             return L.marker(latlng, { icon: circleIcon });
@@ -459,14 +468,13 @@ function makePieChart(options) {
         valueFunc = options.valueFunc,
         r = options.outerRadius ? options.outerRadius : 28,
         rInner = options.innerRadius ? options.innerRadius : r - 10,
-        strokeWidth = options.strokeWidth ? options.strokeWidth : 1,
         pathTitleFunc = options.pathTitleFunc ? options.pathTitleFunc : function(d) { return d.data.feat.label + ': ' + d.data.val }, //Title for each path
-        pieLabel = options.pieLabel ? options.pieLabel : '', //Label for the whole pie
+        pieLabel = options.pieLabel ? options.pieLabel : '', //Label for the whole chart
         pathFillFunc = options.pathFillFunc,
         border = options.borderColor,
         opacity = options.opacity,
 
-        origo = (r + strokeWidth), //Center coordinate
+        origo = (r + options.strokeWidth), //Center coordinate
         w = origo * 2, //width and height of the svg element
         h = w,
         donut = d3.layout.pie(),
@@ -490,7 +498,7 @@ function makePieChart(options) {
         .attr('fill', pathFillFunc)
         .attr('opacity', opacity)
         .attr('stroke', border)
-        .attr('stroke-width', strokeWidth)
+        .attr('stroke-width', options.strokeWidth)
         .attr('d', arc)
         .append('svg:title')
         .text(pathTitleFunc);
@@ -512,41 +520,56 @@ function makePieChart(options) {
     return "";
 }
 
-function makeBlockSymbol(sideLength: number, blockAmount: number, fillColor: string, borderColor: string, borderWeight: number) {
+function makeBlockSymbol(blockAmount: number, columns: number, rows: number, fillColor: string, borderColor: string, borderWeight: number, width: number) {
     let arr = [];
-    for (let i = sideLength; i > 0; i--) {
-
-        arr.push(
-            <tr key={i}>
-                {getColumns.call(this, i).map(
-                    function(column) {
-                        return column;
-                    })
-                }
-            </tr>
-        );
+    let filledBlocks = 0;
+    let actualColumns = 0;
+    let actualRows = 0;
+    let style = {
+        height: width,
+        width: width,
+        backgroundColor: fillColor,
+        margin: 0,
+        padding: 0,
+        border: borderWeight + 'px solid ' + borderColor,
+    }
+    for (let row = 0; row < rows; row++) {
+        if (filledBlocks < blockAmount) {
+            actualRows++;
+            arr.push(
+                <tr key={row}>
+                    {getColumns.call(this, row).map(
+                        function(column) {
+                            return column;
+                        })
+                    }
+                </tr>
+            );
+        }
+        else
+            break;
     }
 
     function getColumns(i: number) {
-        let columns = [];
-        for (let c = 0; c < sideLength; c++) {
-            let style = {
-                width: 10,
-                height: 10,
-                backgroundColor: i + sideLength * c <= blockAmount ? fillColor : 'transparent',
-                margin: 0,
-                padding: 0,
-                border: i + sideLength * c <= blockAmount ? borderWeight + 'px solid ' + borderColor : '0px',
+        let arr = [];
+        for (let c = 0; c < columns; c++) {
+            let isDrawn = c * rows + (rows - i) <= blockAmount;
+            if (isDrawn) {
+                arr.push(<td style={style} key={i + c}/>);
+                filledBlocks++;
+                actualColumns = Math.max(c + 1, actualColumns);
             }
-            columns.push(<td style={style} key={i + c}/>);
+            else {
+                return arr;
+            }
         }
-        return columns;
+        return arr;
     }
 
     let table =
         <table style={{
-            width: 10 * sideLength,
-            borderCollapse: 'collapse'
+            borderCollapse: 'collapse',
+            width: actualColumns * width,
         }}>
             <tbody>
                 {arr.map(function(td) {
@@ -554,7 +577,7 @@ function makeBlockSymbol(sideLength: number, blockAmount: number, fillColor: str
                 })}
             </tbody>
         </table>;
-    return reactDOMServer.renderToString(table);
+    return { html: reactDOMServer.renderToString(table), rows: actualRows, columns: actualColumns };
 }
 
 function createHeatLayer(l: Layer) {
@@ -709,6 +732,12 @@ export class SymbolOptions {
     @observable chartType: 'pie' | 'donut';
     /** How many units does a single block represent*/
     @observable blockValue: number;
+    /**Block width in pixels*/
+    @observable blockWidth: number;
+    /** Maximum amount of columns in block symbol == width*/
+    @observable maxBlockColumns: number;
+    /** Maximum amount of columns in block symbol == height*/
+    @observable maxBlockRows: number;
     /** If symbol is of scalable type; the minimum of all the x-values being calculated. Is used in the legend */
     @observable actualMinXValue: number;
     /** If symbol is of scalable type; the minimum of all the y-values being calculated. Is used in the legend */
@@ -741,6 +770,9 @@ export class SymbolOptions {
         this.chartFields = prev && prev.chartFields || [];
         this.chartType = prev && prev.chartType || 'pie';
         this.blockValue = prev && prev.blockValue || 0;
+        this.blockWidth = prev && prev.blockWidth || 10;
+        this.maxBlockColumns = prev && prev.maxBlockColumns || 2;
+        this.maxBlockRows = prev && prev.maxBlockRows || 10;
         this.actualMinYValue = prev && prev.actualMinYValue || undefined;
         this.actualMaxYValue = prev && prev.actualMaxYValue || undefined;
         this.actualMinXValue = prev && prev.actualMinXValue || undefined;
