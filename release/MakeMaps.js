@@ -36544,6 +36544,7 @@
 	};
 	var React = __webpack_require__(1);
 	var Dropzone = __webpack_require__(172);
+	var common_1 = __webpack_require__(163);
 	var FilePreProcessModel_1 = __webpack_require__(173);
 	var XLSX = __webpack_require__(189);
 	var _fileModel = new FilePreProcessModel_1.FilePreProcessModel();
@@ -36558,6 +36559,7 @@
 	            var reader = new FileReader();
 	            var fileName, content;
 	            var ext;
+	            common_1.ShowLoading();
 	            reader.onload = contentUploaded.bind(_this);
 	            files.forEach(function (file) {
 	                fileName = file.name;
@@ -36576,9 +36578,11 @@
 	                    this.props.state.fileName = fileName;
 	                    this.props.state.layer.name = fileName;
 	                    this.props.state.fileExtension = ext;
+	                    common_1.HideLoading();
 	                }
 	                else {
-	                    alert('File type not yet supported!');
+	                    common_1.HideLoading;
+	                    common_1.ShowNotification('File type not yet supported!');
 	                }
 	            }
 	        };
@@ -36592,6 +36596,10 @@
 	            if (_this.props.state.fileExtension === 'csv') {
 	                var head = void 0, delim = void 0;
 	                _a = _fileModel.ParseHeadersFromCSV(_this.props.state.content), head = _a[0], delim = _a[1];
+	                if (head.length == 0) {
+	                    common_1.ShowNotification('No headers found! Make sure that the file you uploaded contains appropriate headers. Consult the wiki for more information');
+	                    return;
+	                }
 	                for (var _i = 0, head_1 = head; _i < head_1.length; _i++) {
 	                    var i = head_1[_i];
 	                    layer.headers.push({ value: i.name, label: i.name, type: i.type, decimalAccuracy: 0 });
@@ -36602,7 +36610,7 @@
 	                _this.props.saveValues();
 	            }
 	            else {
-	                alert("Upload a file!");
+	                common_1.ShowNotification('Upload a file!');
 	            }
 	            var _a;
 	        };
@@ -37065,19 +37073,19 @@
 	        var headers = [];
 	        var delim = '';
 	        var parse = Papa.parse(input, { preview: 1, header: true });
+	        delim = parse.meta.delimiter;
 	        for (var _i = 0, _a = parse.meta.fields; _i < _a.length; _i++) {
 	            var field = _a[_i];
-	            headers.push({ name: field, type: this.guessType(parse.data, field) });
+	            if (this.isNumber(field)) {
+	                headers = [];
+	                return [headers, delim];
+	            }
+	            headers.push({ name: field, type: this.isNumber(parse.data[0][field]) ? 'number' : 'string' });
 	        }
-	        delim = parse.meta.delimiter;
 	        return [headers, delim];
 	    };
-	    FilePreProcessModel.prototype.guessType = function (data, fieldName) {
-	        if (!isNaN(parseFloat(data[0][fieldName]))) {
-	            return 'number';
-	        }
-	        else
-	            return 'string';
+	    FilePreProcessModel.prototype.isNumber = function (val) {
+	        return val == '' || !isNaN(+val);
 	    };
 	    FilePreProcessModel.prototype.ParseToGeoJSON = function (input, fileFormat, onComplete) {
 	        var geoJSON = null;
