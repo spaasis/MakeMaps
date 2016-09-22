@@ -37,22 +37,53 @@ export class FilePreProcessModel {
       return val == '' || !isNaN(+val)
     }
 
+    /**
+     * public - Converts input csv data into GeoJSON object
+     *
+     * @param  input      the import file in text format
+     * @param  latField  latitude field name
+     * @param  lonField  longitude field name
+     * @param  delim     delimiter
+     * @param  headers  layer headers
+     * @return           GeoJSON object
+     */
+    public ParseCSVToGeoJSON(input: string, latField: string, lonField: string, delim: string, headers: IHeader[], onComplete:(geoJSON)=>void) {
+        let geoJSON: { features: any[], type: string } = null;
+        csv2geojson.csv2geojson(input, {
+            latfield: latField,
+            lonfield: lonField,
+            delimiter: delim
+        },
+            function(err, data) {
+                if (!err) {
+                    geoJSON = data;
+
+                }
+                else {
+                    //TODO
+                    console.log(err);
+                }
+            });
+
+        onComplete(geoJSON);
+
+    }
+
+
     public ParseToGeoJSON(input: string, fileFormat: string, onComplete: (geoJSON) => void) {
         let geoJSON: { features: any[], type: string } = null;
-
+        if (fileFormat === 'wkt') {
+            onComplete(wkt(input));
+            return;
+        }
+        let xml = this.stringToXML(input);
         if (fileFormat === 'kml') {
-            let xml = this.stringToXML(input);
             geoJSON = togeojson.kml(xml)
         }
         else if (fileFormat === 'gpx') {
-            let xml = this.stringToXML(input);
             geoJSON = togeojson.gpx(xml)
         }
-        else if (fileFormat === 'wkt') {
-            geoJSON = wkt(input);
-        }
         else if (fileFormat === 'osm') {
-            let xml = (new DOMParser()).parseFromString(input, 'text/xml');
             geoJSON = osmtogeojson(xml);
         }
         onComplete(geoJSON);

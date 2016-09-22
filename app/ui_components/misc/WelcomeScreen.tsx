@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { DemoPreview } from './DemoPreview';
 let Dropzone = require('react-dropzone');
-import { LoadExternalMap, ShowLoading } from '../../common_items/common';
+import { LoadExternalMap, ShowLoading, ShowNotification } from '../../common_items/common';
 
 
 export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcomeScreenStates>{
@@ -17,7 +17,9 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
      */
     loadDemo(filename: string) {
       ShowLoading();
-        LoadExternalMap('demos/'+filename+'.mmap', this.props.loadMap);
+      let loadMap = this.props.loadMap;
+      setTimeout(function(){LoadExternalMap('demos/'+filename+'.mmap', loadMap);}, 10)
+
     }
     createNewMap() {
         this.props.openLayerImport();
@@ -42,7 +44,7 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
                 });
             }
             else {
-                alert('Select a .mmap file!');
+                ShowNotification('Select a .mmap file!');
             }
 
         }
@@ -51,7 +53,10 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
       ShowLoading();
       e.preventDefault();
       e.stopPropagation();
-      this.props.loadMap(this.state.savedJSON);
+      let load = this.props.loadMap;
+      let json  =this.state.savedJSON;
+
+      setTimeout(function(){load(json)}, 10);
     }
     render() {
         let dropStyle = {

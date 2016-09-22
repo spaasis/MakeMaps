@@ -92,7 +92,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
      */
     initMap() {
         this.props.state.baseLayers = _mapInitModel.InitBaseMaps();
-        this.props.state.activeBaseLayer = this.props.state.baseLayers[2];
+        this.props.state.activeBaseLayer = this.props.state.baseLayers[0];
         let props = {
             layers: this.props.state.activeBaseLayer,
             fullscreenControl: true,
@@ -241,7 +241,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                 }
             }
         }
-        this.props.state.legend = new Legend(saved.legend);
 
 
         for (let i in saved.layers) {
@@ -284,6 +283,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             lyr.refresh();
             this.props.state.map.fitBounds(lyr.layerType === LayerTypes.HeatMap ? (lyr.displayLayer as any)._latlngs : lyr.displayLayer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
         }
+        this.props.state.legend = new Legend(saved.legend);
 
         this.props.state.welcomeShown = false;
         this.props.state.editingLayer = this.props.state.layers[0];

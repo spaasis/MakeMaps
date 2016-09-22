@@ -1,6 +1,6 @@
 import * as React from 'react';
 let Dropzone = require('react-dropzone');
-import{ShowNotification, ShowLoading, HideLoading} from '../../common_items/common';
+import { ShowNotification, ShowLoading, HideLoading } from '../../common_items/common';
 import { FilePreProcessModel } from '../../models/FilePreProcessModel';
 import * as XLSX from 'xlsx';
 let _fileModel = new FilePreProcessModel();
@@ -21,15 +21,14 @@ export class FileUploadView extends React.Component<{
         let reader = new FileReader();
         let fileName, content;
         let ext: string;
-        ShowLoading();
         reader.onload = contentUploaded.bind(this);
         files.forEach((file) => {
             fileName = file.name;
             ext = fileName.split('.').pop().toLowerCase();
-            if (ext === 'xlsx')
+            if (ext === 'xlsx' || ext === 'xlsxm' || ext === 'xlsb' || ext === 'xls' || ext === 'ods')
                 reader.readAsBinaryString(file);
-            else if (ext == 'zip' || ext == 'rar')
-                reader.readAsArrayBuffer(file);
+            // else if (ext == 'zip','rar')
+            //     reader.readAsArrayBuffer(file);
             else
                 reader.readAsText(file);
         });
@@ -41,41 +40,48 @@ export class FileUploadView extends React.Component<{
                 this.props.state.fileName = fileName;
                 this.props.state.layer.name = fileName;
                 this.props.state.fileExtension = ext;
+                this.props.state.layer.geoJSON = undefined;
                 HideLoading();
             }
             else {
-              HideLoading
+                HideLoading
                 ShowNotification('File type not yet supported!');
             }
         }
     }
 
     proceed = () => {
-        let layer = this.props.state.layer;
-        if (this.props.state.fileExtension === 'xlsx') {
+
+        let ext = this.props.state.fileExtension;
+        if (ext === 'xlsx' || ext === 'xlsxm' || ext === 'xlsb' || ext === 'xls' || ext === 'ods') {
             let workbook = XLSX.read(this.props.state.content, { type: 'binary' });
             this.props.state.content = XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]); //TODO:other sheets as well (as different layers)
 
-            this.props.state.fileExtension = 'csv';
+            ext = 'csv';
         }
-        if (this.props.state.fileExtension === 'csv') {
+        if (ext === 'csv') {
             let head, delim;
             [head, delim] = _fileModel.ParseHeadersFromCSV(this.props.state.content);
-            if (head.length==0){
-              ShowNotification('No headers found! Make sure that the file you uploaded contains appropriate headers. Consult the wiki for more information');
-              return;
+            this.props.state.layer.headers = [];
+            if (head.length == 0) {
+                ShowNotification('No headers found! Make sure that the file you uploaded contains appropriate headers. Consult the wiki for more information');
+                HideLoading();
+                return;
             }
             for (let i of head) {
-                layer.headers.push({ value: i.name, label: i.name, type: i.type, decimalAccuracy: 0 });
+                this.props.state.layer.headers.push({ value: i.name, label: i.name, type: i.type, decimalAccuracy: 0 });
             }
             this.props.state.delimiter = delim;
         }
         if (this.props.state.content) {
+            this.props.state.fileExtension = ext;
             this.props.saveValues();
+            HideLoading();
 
         }
         else {
             ShowNotification('Upload a file!');
+            HideLoading();
         }
     }
     render() {
@@ -114,7 +120,10 @@ export class FileUploadView extends React.Component<{
                 <button className='secondaryButton' style={{ position: 'absolute', left: 15, bottom: 15 }} onClick={() => {
                     this.props.cancel();
                 } }>Cancel</button>
-                <button className='primaryButton' disabled={this.props.state.content === undefined || layer.name === ''}  style={{ position: 'absolute', right: 15, bottom: 15 }} onClick={this.proceed.bind(this)}>Continue</button>
+                <button className='primaryButton'
+                    disabled={this.props.state.content === undefined || layer.name === ''}
+                    style={{ position: 'absolute', right: 15, bottom: 15 }}
+                    onClick={() => { ShowLoading(); setTimeout(this.proceed, 10) } }>Continue</button>
             </div>
         );
     }
