@@ -62,7 +62,7 @@ export class Layer {
                 weight: opts.weight,
             }
         }
-        if (this.toggleRedraw && this.displayLayer) {
+        if (this.displayLayer && (this.toggleRedraw || this.layerType === LayerTypes.HeatMap)) {
             this.appState.map.removeLayer(this.displayLayer);
         }
         if (this.displayLayer && this.layerType !== LayerTypes.HeatMap && !this.toggleRedraw) {
@@ -112,7 +112,7 @@ export class Layer {
 
             }
             if (this.displayLayer) {
-                if (this.pointFeatureCount > 500) {
+                if (this.pointFeatureCount > 500 && !this.clusterOptions.useClustering) {
                     ShowNotification('The dataset contains a large number of map points. Point clustering has beeen enabled to boost performance. If you wish, you may turn this off in the clustering options');
                     this.clusterOptions.useClustering = true;
                 }
