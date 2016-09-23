@@ -104768,24 +104768,30 @@
 	        var options = layer;
 	        var col = options.colorOptions;
 	        var sym = options.symbolOptions;
+	        var isHeat = layer.layerType === Layer_1.LayerTypes.HeatMap;
 	        if (col.colors && col.colors.length !== 0 && col.useMultipleFillColors && sym.symbolType !== Layer_1.SymbolTypes.Chart && (sym.symbolType !== Layer_1.SymbolTypes.Icon || sym.iconField !== col.colorField)) {
 	            var percentages = this.props.state.legend.showPercentages ? this.getStepPercentages(layer.values[col.colorField.value], col.limits) : {};
 	            choroLegend = this.createMultiColorLegend(options, percentages);
 	        }
-	        if (sym.symbolType === Layer_1.SymbolTypes.Chart && col.chartColors) {
+	        if (!isHeat && sym.symbolType === Layer_1.SymbolTypes.Chart && col.chartColors) {
 	            chartLegend = this.createChartSymbolLegend(col, sym);
 	        }
-	        if (sym.sizeXVar || sym.sizeYVar) {
+	        if (!isHeat && sym.sizeXVar || sym.sizeYVar) {
 	            scaledLegend = this.createScaledSizeLegend(options);
 	        }
-	        if (sym.symbolType === Layer_1.SymbolTypes.Icon) {
+	        if (!isHeat && sym.symbolType === Layer_1.SymbolTypes.Icon) {
 	            var percentages = this.props.state.legend.showPercentages && sym.iconLimits.length > 1 ? this.getStepPercentages(layer.values[sym.iconField.value], sym.iconLimits) : {};
 	            iconLegend = this.createIconLegend(options, percentages, layer.name);
 	        }
-	        if (sym.symbolType === Layer_1.SymbolTypes.Blocks) {
+	        if (!isHeat && sym.symbolType === Layer_1.SymbolTypes.Blocks) {
 	            blockLegend = this.createBlockLegend(options);
 	        }
-	        return React.createElement("div", {key: layer.id}, choroLegend, scaledLegend, chartLegend, iconLegend, blockLegend);
+	        return React.createElement("div", {key: layer.id}, 
+	            choroLegend, 
+	            scaledLegend, 
+	            chartLegend, 
+	            iconLegend, 
+	            blockLegend);
 	    };
 	    OnScreenLegend.prototype.createMultiColorLegend = function (layer, percentages) {
 	        var divs = [];
@@ -104798,9 +104804,20 @@
 	                minWidth: '20px',
 	                minHeight: '20px',
 	            };
-	            divs.push(React.createElement("div", {key: i, style: { display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}, React.createElement("div", {style: colorStyle}), React.createElement("span", {style: { marginLeft: '3px', marginRight: '3px' }}, limits[i].toFixed(layer.colorOptions.colorField.decimalAccuracy) + (i < (limits.length - 2) ? '-' : '+'), " ", this.props.state.legend.horizontal ? React.createElement("br", null) : '', " ", i < (limits.length - 2) ? limits[i + 1].toFixed(layer.colorOptions.colorField.decimalAccuracy) : '', this.props.state.legend.showPercentages ? React.createElement("br", null) : null, this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null)));
+	            divs.push(React.createElement("div", {key: i, style: { display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}, 
+	                React.createElement("div", {style: colorStyle}), 
+	                React.createElement("span", {style: { marginLeft: '3px', marginRight: '3px' }}, 
+	                    limits[i].toFixed(layer.colorOptions.colorField.decimalAccuracy) + (i < (limits.length - 2) ? '-' : '+'), 
+	                    " ", 
+	                    this.props.state.legend.horizontal ? React.createElement("br", null) : '', 
+	                    " ", 
+	                    i < (limits.length - 2) ? limits[i + 1].toFixed(layer.colorOptions.colorField.decimalAccuracy) : '', 
+	                    this.props.state.legend.showPercentages ? React.createElement("br", null) : null, 
+	                    this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null)));
 	        }
-	        return React.createElement("div", {style: { margin: '5px', float: 'left', textAlign: 'center' }}, layer.colorOptions.colorField.label, React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, divs.map(function (d) { return d; })));
+	        return React.createElement("div", {style: { margin: '5px', float: 'left', textAlign: 'center' }}, 
+	            layer.colorOptions.colorField.label, 
+	            React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, divs.map(function (d) { return d; })));
 	    };
 	    OnScreenLegend.prototype.createScaledSizeLegend = function (layer) {
 	        var symbolType = layer.symbolOptions.symbolType;
@@ -104820,7 +104837,9 @@
 	            if (square)
 	                return (React.createElement("div", {style: style}, rectangleLegend.call(this, false)));
 	            else {
-	                return (React.createElement("div", {style: style}, xVar ? rectangleLegend.call(this, false) : null, yVar ? rectangleLegend.call(this, true) : null));
+	                return (React.createElement("div", {style: style}, 
+	                    xVar ? rectangleLegend.call(this, false) : null, 
+	                    yVar ? rectangleLegend.call(this, true) : null));
 	            }
 	        }
 	        function rectangleLegend(y) {
@@ -104851,9 +104870,13 @@
 	                    float: this.props.state.legend.horizontal ? 'left' : '',
 	                    marginRight: this.props.state.legend.horizontal ? 5 : 0,
 	                };
-	                divs.push(React.createElement("div", {key: i, style: parentDivStyle}, React.createElement("div", {style: style_1}), React.createElement("span", {style: { display: 'inline-block', width: this.props.state.legend.horizontal ? '' : textWidth * 10 }}, values[i])));
+	                divs.push(React.createElement("div", {key: i, style: parentDivStyle}, 
+	                    React.createElement("div", {style: style_1}), 
+	                    React.createElement("span", {style: { display: 'inline-block', width: this.props.state.legend.horizontal ? '' : textWidth * 10 }}, values[i])));
 	            }
-	            return React.createElement("div", {style: { float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}, y ? layer.symbolOptions.sizeYVar.label : layer.symbolOptions.sizeXVar.label, React.createElement("div", null, divs.map(function (d) { return d; })));
+	            return React.createElement("div", {style: { float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}, 
+	                y ? layer.symbolOptions.sizeYVar.label : layer.symbolOptions.sizeXVar.label, 
+	                React.createElement("div", null, divs.map(function (d) { return d; })));
 	        }
 	        function circleLegend() {
 	            var divs = [], radii = [], values = [];
@@ -104885,9 +104908,13 @@
 	                    overflow: this.props.state.legend.horizontal ? 'none' : 'auto',
 	                    lineHeight: this.props.state.legend.horizontal ? '' : Math.max(2 * radii[i] + 4, 15) + 'px',
 	                };
-	                divs.push(React.createElement("div", {key: i, style: parentDivStyle}, React.createElement("div", {style: style_2}), React.createElement("span", {style: { marginRight: this.props.state.legend.horizontal ? 15 : '' }}, values[i])));
+	                divs.push(React.createElement("div", {key: i, style: parentDivStyle}, 
+	                    React.createElement("div", {style: style_2}), 
+	                    React.createElement("span", {style: { marginRight: this.props.state.legend.horizontal ? 15 : '' }}, values[i])));
 	            }
-	            return React.createElement("div", {style: { float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}, layer.symbolOptions.sizeXVar.label, React.createElement("div", null, divs.map(function (d) { return d; })));
+	            return React.createElement("div", {style: { float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}, 
+	                layer.symbolOptions.sizeXVar.label, 
+	                React.createElement("div", null, divs.map(function (d) { return d; })));
 	        }
 	    };
 	    OnScreenLegend.prototype.createChartSymbolLegend = function (col, sym) {
@@ -104899,9 +104926,13 @@
 	                minWidth: '20px',
 	                minHeight: '20px',
 	            };
-	            divs.push(React.createElement("div", {key: i, style: { display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}, React.createElement("div", {style: colorStyle}), React.createElement("span", {style: { marginLeft: '3px', marginRight: '3px' }}, headers[i].label)));
+	            divs.push(React.createElement("div", {key: i, style: { display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}, 
+	                React.createElement("div", {style: colorStyle}), 
+	                React.createElement("span", {style: { marginLeft: '3px', marginRight: '3px' }}, headers[i].label)));
 	        }
-	        return React.createElement("div", {style: { margin: '5px', float: 'left' }}, React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, divs.map(function (d) { return d; })));
+	        return React.createElement("div", {style: { margin: '5px', float: 'left' }}, 
+	            React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, divs.map(function (d) { return d; }))
+	        );
 	    };
 	    OnScreenLegend.prototype.createIconLegend = function (layer, percentages, layerName) {
 	        var divs = [];
@@ -104915,18 +104946,49 @@
 	                    common_1.GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), (limits[i] + limits[i + 1]) / 2)
 	                    : '000';
 	                var icon = common_1.GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), (limits[i] + limits[i + 1]) / 2);
-	                divs.push(React.createElement("div", {key: i, style: { display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}, !icon ? '' : getIcon(icon.shape, icon.fa, col.color, fillColor, fillColor != '000' ? layer.colorOptions.iconTextColor : 'FFF'), React.createElement("span", {style: { marginLeft: '3px', marginRight: '3px' }}, limits[i].toFixed(sym.iconField.decimalAccuracy) + (i < (limits.length - 2) ? '-' : '+'), " ", this.props.state.legend.horizontal ? React.createElement("br", null) : '', " ", i < (limits.length - 2) ? limits[i + 1].toFixed(sym.iconField.decimalAccuracy) : '', this.props.state.legend.showPercentages ? React.createElement("br", null) : null, this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null)));
+	                divs.push(React.createElement("div", {key: i, style: { display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}, 
+	                    !icon ? '' : getIcon(icon.shape, icon.fa, col.color, fillColor, fillColor != '000' ? layer.colorOptions.iconTextColor : 'FFF'), 
+	                    React.createElement("span", {style: { marginLeft: '3px', marginRight: '3px' }}, 
+	                        limits[i].toFixed(sym.iconField.decimalAccuracy) + (i < (limits.length - 2) ? '-' : '+'), 
+	                        " ", 
+	                        this.props.state.legend.horizontal ? React.createElement("br", null) : '', 
+	                        " ", 
+	                        i < (limits.length - 2) ? limits[i + 1].toFixed(sym.iconField.decimalAccuracy) : '', 
+	                        this.props.state.legend.showPercentages ? React.createElement("br", null) : null, 
+	                        this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null)));
 	            }
-	            return React.createElement("div", {style: { margin: '5px', float: 'left', textAlign: 'center' }}, layer.symbolOptions.iconField.label, React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, divs.map(function (d) { return d; })));
+	            return React.createElement("div", {style: { margin: '5px', float: 'left', textAlign: 'center' }}, 
+	                layer.symbolOptions.iconField.label, 
+	                React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, divs.map(function (d) { return d; })));
 	        }
 	        else {
-	            return React.createElement("div", {style: { margin: '5px', float: 'left', textAlign: 'center' }}, layerName, React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, getIcon(icons[0].shape, icons[0].fa, layer.colorOptions.color, layer.colorOptions.fillColor, layer.colorOptions.iconTextColor)));
+	            return React.createElement("div", {style: { margin: '5px', float: 'left', textAlign: 'center' }}, 
+	                layerName, 
+	                React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, getIcon(icons[0].shape, icons[0].fa, layer.colorOptions.color, layer.colorOptions.fillColor, layer.colorOptions.iconTextColor)));
 	        }
 	        function getIcon(shape, fa, stroke, fill, iconColor) {
-	            var circleIcon = React.createElement("svg", {viewBox: "0 0 69.529271 95.44922", height: "40", width: "40"}, React.createElement("g", {transform: "translate(-139.52 -173.21)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z"})));
-	            var squareIcon = React.createElement("svg", {viewBox: "0 0 69.457038 96.523441", height: "40", width: "40"}, React.createElement("g", {transform: "translate(-545.27 -658.39)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m545.27 658.39v65.301h22.248l12.48 31.223 12.676-31.223h22.053v-65.301h-69.457z"})));
-	            var starIcon = React.createElement("svg", {height: "40", width: "40", viewBox: "0 0 77.690999 101.4702"}, React.createElement("g", {transform: "translate(-101.15 -162.97)"}, React.createElement("g", {transform: "matrix(1 0 0 1.0165 -65.712 -150.28)"}, React.createElement("path", {fill: fill, stroke: stroke, d: "m205.97 308.16-11.561 11.561h-16.346v16.346l-11.197 11.197 11.197 11.197v15.83h15.744l11.615 33.693 11.467-33.568 0.125-0.125h16.346v-16.346l11.197-11.197-11.197-11.197v-15.83h-15.83l-11.561-11.561z"}))));
-	            var pentaIcon = React.createElement("svg", {viewBox: "0 0 71.550368 96.362438", height: "40", width: "40"}, React.createElement("g", {fill: fill, transform: "translate(-367.08 -289.9)"}, React.createElement("path", {stroke: stroke, d: "m367.08 322.5 17.236-32.604h36.151l18.164 32.25-35.665 64.112z"})));
+	            var circleIcon = React.createElement("svg", {viewBox: "0 0 69.529271 95.44922", height: "40", width: "40"}, 
+	                React.createElement("g", {transform: "translate(-139.52 -173.21)"}, 
+	                    React.createElement("path", {fill: fill, stroke: stroke, d: "m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z"})
+	                )
+	            );
+	            var squareIcon = React.createElement("svg", {viewBox: "0 0 69.457038 96.523441", height: "40", width: "40"}, 
+	                React.createElement("g", {transform: "translate(-545.27 -658.39)"}, 
+	                    React.createElement("path", {fill: fill, stroke: stroke, d: "m545.27 658.39v65.301h22.248l12.48 31.223 12.676-31.223h22.053v-65.301h-69.457z"})
+	                )
+	            );
+	            var starIcon = React.createElement("svg", {height: "40", width: "40", viewBox: "0 0 77.690999 101.4702"}, 
+	                React.createElement("g", {transform: "translate(-101.15 -162.97)"}, 
+	                    React.createElement("g", {transform: "matrix(1 0 0 1.0165 -65.712 -150.28)"}, 
+	                        React.createElement("path", {fill: fill, stroke: stroke, d: "m205.97 308.16-11.561 11.561h-16.346v16.346l-11.197 11.197 11.197 11.197v15.83h15.744l11.615 33.693 11.467-33.568 0.125-0.125h16.346v-16.346l11.197-11.197-11.197-11.197v-15.83h-15.83l-11.561-11.561z"})
+	                    )
+	                )
+	            );
+	            var pentaIcon = React.createElement("svg", {viewBox: "0 0 71.550368 96.362438", height: "40", width: "40"}, 
+	                React.createElement("g", {fill: fill, transform: "translate(-367.08 -289.9)"}, 
+	                    React.createElement("path", {stroke: stroke, d: "m367.08 322.5 17.236-32.604h36.151l18.164 32.25-35.665 64.112z"})
+	                )
+	            );
 	            var activeIcon;
 	            switch (shape) {
 	                case ('circle'):
@@ -104947,7 +105009,9 @@
 	                color: iconColor,
 	                width: 42,
 	                height: 42,
-	            }}, activeIcon, React.createElement("i", {style: { position: 'relative', bottom: 33, width: 18, height: 18 }, className: 'fa ' + fa}));
+	            }}, 
+	                activeIcon, 
+	                React.createElement("i", {style: { position: 'relative', bottom: 33, width: 18, height: 18 }, className: 'fa ' + fa}));
 	        }
 	    };
 	    OnScreenLegend.prototype.createBlockLegend = function (layer) {
@@ -104965,7 +105029,12 @@
 	            overflow: this.props.state.legend.horizontal ? 'none' : 'auto',
 	            lineHeight: this.props.state.legend.horizontal ? '' : 24 + 'px',
 	        };
-	        return (React.createElement("div", {style: { margin: '5px', float: 'left' }}, layer.symbolOptions.blockSizeVar ? layer.symbolOptions.blockSizeVar.label : '', React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, React.createElement("div", {style: style}), "=", React.createElement("span", {style: { display: 'inline-block' }}, layer.symbolOptions.blockValue))));
+	        return (React.createElement("div", {style: { margin: '5px', float: 'left' }}, 
+	            layer.symbolOptions.blockSizeVar ? layer.symbolOptions.blockSizeVar.label : '', 
+	            React.createElement("div", {style: { display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}, 
+	                React.createElement("div", {style: style}), 
+	                "=", 
+	                React.createElement("span", {style: { display: 'inline-block' }}, layer.symbolOptions.blockValue))));
 	    };
 	    OnScreenLegend.prototype.getStepPercentages = function (values, limits) {
 	        var counts = [];
@@ -105005,9 +105074,14 @@
 	            background: "#FFF",
 	            borderRadius: 15,
 	            zIndex: 600
-	        }}, React.createElement("h2", {className: 'legendHeader'}, legend.title), React.createElement("div", null, layers.map(function (m) {
-	            return this.createLegend(m);
-	        }, this)), React.createElement("div", {style: { clear: 'both', }}, React.createElement(TextEditor_1.TextEditor, {style: { width: '100%', minHeight: legend.edit ? '40px' : '' }, content: legend.meta, onChange: this.onMetaChange, edit: legend.edit}))));
+	        }}, 
+	            React.createElement("h2", {className: 'legendHeader'}, legend.title), 
+	            React.createElement("div", null, layers.map(function (m) {
+	                return this.createLegend(m);
+	            }, this)), 
+	            React.createElement("div", {style: { clear: 'both', }}, 
+	                React.createElement(TextEditor_1.TextEditor, {style: { width: '100%', minHeight: legend.edit ? '40px' : '' }, content: legend.meta, onChange: this.onMetaChange, edit: legend.edit})
+	            )));
 	    };
 	    OnScreenLegend = __decorate([
 	        mobx_react_1.observer, 
