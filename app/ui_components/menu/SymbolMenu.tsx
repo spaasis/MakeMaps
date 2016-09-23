@@ -448,8 +448,6 @@ export class SymbolMenu extends React.Component<{
                             <input type="number" value={sym.blockValue}
                                 onChange={(e) => {
                                     layer.symbolOptions.blockValue = (e.currentTarget as any).valueAsNumber;
-                                } }
-                                onBlur={() => {
                                     if (this.props.state.autoRefresh)
                                         layer.refresh();
                                 } }

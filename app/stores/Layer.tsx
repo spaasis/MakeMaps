@@ -129,7 +129,7 @@ export class Layer {
 
 
                 }
-                console.time("LayerRender")
+                console.time("LayerRender");
 
                 this.appState.map.addLayer(this.displayLayer);
 
@@ -334,6 +334,7 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
                 iconColor: col.iconTextColor,
             });
             let mark = L.marker(latlng, { icon: customIcon });
+            // (mark as any).options.pane = 'overlayPane';
             return mark;
         case SymbolTypes.Chart:
             let vals = [];
@@ -361,6 +362,7 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
                 opacity: col.fillOpacity
             });
             let marker = L.divIcon({ iconAnchor: L.point(x, x), html: chartHtml, className: '' });
+            // (marker as any).options.pane = 'overlayPane';
             return L.marker(latlng, { icon: marker });
         case SymbolTypes.Blocks:
             let blockCount = Math.ceil(feature.properties[sym.blockSizeVar.value] / sym.blockValue);
@@ -368,6 +370,7 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
             let rows = Math.min(sym.maxBlockRows, blockCount);
             let blocks = makeBlockSymbol(blockCount, columns, rows, col.fillColor, col.color, col.weight, sym.blockWidth);
             let blockMarker = L.divIcon({ iconAnchor: L.point(sym.blockWidth / 2 * blocks.columns, sym.blockWidth / 2 * blocks.rows), html: blocks.html, className: '' });
+            // (blockMarker as any).options.pane = 'overlayPane';
             return L.marker(latlng, { icon: blockMarker });
         case SymbolTypes.Rectangle:
             x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
@@ -377,6 +380,7 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
             }
             let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + '"/>';
             let rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
+            // (rectIcon as any).options.pane = 'overlayPane';
             return L.marker(latlng, { icon: rectIcon });
         default:
             x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
@@ -385,8 +389,11 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
             }
             let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + ';border-radius: 30px;"/>';
             let circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
+            // (circleIcon as any).options.pane = 'overlayPane';
             return L.marker(latlng, { icon: circleIcon });
+        // return (L.circleMarker(latlng, col) as any);
     }
+
 }
 
 function getScaleSymbolMaxValues() {

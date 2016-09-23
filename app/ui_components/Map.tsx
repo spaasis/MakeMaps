@@ -103,6 +103,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         this.props.state.map.on('contextmenu', function(e) { //disable context menu opening on right-click
             return;
         });
+        // (this.props.state.map as any).createPane('dataPane');
     }
 
     startLayerImport() {
@@ -149,17 +150,17 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
     /** changeLayerOrder - Redraws the layers in the order given */
     changeLayerOrder() {
+
         for (let i of this.props.state.layerMenuState.order) {
             let layer = this.props.state.layers.filter(lyr => lyr.id == i.id)[0];
             if (layer.displayLayer) {
                 if (layer.layerType !== LayerTypes.HeatMap) {
                     (layer.displayLayer as any).bringToFront();
-
+                    console.log('front: ' + layer.id);
                 }
                 else {
                     this.props.state.map.removeLayer(layer.displayLayer);
                     this.props.state.map.addLayer(layer.displayLayer);
-
                 }
             }
         }
@@ -346,14 +347,14 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                 }
 
                 <div className='notification' id='loading'>
-                    <span style={{ lineHeight: '40px', paddingLeft:10, paddingRight:10 }}>Loading</span>
+                    <span style={{ lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}>Loading</span>
                     <div className="sk-double-bounce">
                         <div className="sk-child sk-double-bounce1"></div>
                         <div className="sk-child sk-double-bounce2"></div>
                     </div>
                 </div>
                 <div className='notification' id='notification'>
-                    <span id='notificationText' style={{ lineHeight: '40px', paddingLeft:10, paddingRight:10  }}>Notification</span>
+                    <span id='notificationText' style={{ lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}>Notification</span>
                     <br/>
                     <button className='menuButton' onClick={() => { HideNotification() } }>Ok</button>
                 </div>

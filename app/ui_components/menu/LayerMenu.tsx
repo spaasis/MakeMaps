@@ -10,49 +10,18 @@ export class LayerMenu extends React.Component<{
     state: AppState,
     /** Function to signal the opening of the layer import wizard. Triggered by button press*/
     addNewLayer: () => void,
-    /** Save the current order to the map. Triggered by button press*/
+    /** Save the current order to the map*/
     saveOrder: () => void,
 }, {}>{
-    // shouldComponentUpdate(nextProps: ILayerMenuProps, nextState: ILayerMenuStates) {
-    //     return this.props.isVisible !== nextProps.isVisible ||
-    //         this.props.layers !== nextProps.layers ||
-    //         this.areOrdersDifferent(this.state.order, nextState.order);
-    // }
-
-    // componentWillReceiveProps(nextProps: ILayerMenuProps) {
-    //     this.setState({
-    //         order: this.getOriginalOrder(nextProps.layers)
-    //     })
-    // }
-
-    areOrdersDifferent(first: { name: string, id: number }[], second: { name: string, id: number }[]) {
-        if (first.length !== second.length)
-            return true;
-        for (let i = 0; i < first.length; i++) {
-            if (first[i].id !== second[i].id) {
-                return true;
-            }
-        }
-        return false;
-    }
-    getOriginalOrder(layers?: Layer[]) {
-        if (!layers) layers = this.props.state.layers;
-
-        let arr = [];
-        for (let lyr of layers) {
-            arr.push({ name: lyr.name, id: lyr.id });
-        }
-        return arr;
-    }
     handleSort(items: string[]) {
         let arr: { name: string, id: number }[] = [];
         for (let i of items) {
-            arr.push(this.getLayerInfoById(+i));
+            arr.push(this.getLayerById(+i));
         }
         this.props.state.layerMenuState.order = arr;
         this.props.saveOrder();
     }
-    getLayerInfoById(id: number) {
+    getLayerById(id: number) {
 
         for (let lyr of this.props.state.layers) {
             if (lyr.id === id) {
@@ -86,7 +55,7 @@ export class LayerMenu extends React.Component<{
             borderStyle: 'double',
             borderRadius: '15px',
             textAlign: 'center',
-            lineHeight: '20px',
+            lineHeight: '40px',
             border: '1px solid gray'
         }
         return (
@@ -104,11 +73,12 @@ export class LayerMenu extends React.Component<{
                     />
                 <hr/>
                 <label>Drag and drop to reorder</label>
-                <Sortable className='layerList' onChange={this.handleSort.bind(this)}>
-                    {menuState.order.map(function(layer) {
-                        return <div style={layerStyle} key={layer.id} data-id={layer.id} >
-                            {layer.name}
-                            <i className="fa fa-times" onClick = {this.deleteLayer.bind(this, layer.id)}/>
+                <Sortable className='layerList'
+                    onChange={this.handleSort.bind(this)}>
+                    {menuState.order.map(function(item) {
+                        return <div style={layerStyle} key={item.id} data-id={item.id} >
+                            {item.name}
+                            <i className="fa fa-times" onClick = {this.deleteLayer.bind(this, item.id)} style={{ float: 'right', lineHeight: '40px', marginRight: '5px' }}/>
                         </div>;
                     }, this)}
                 </Sortable>
