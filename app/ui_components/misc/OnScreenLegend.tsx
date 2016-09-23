@@ -15,21 +15,22 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         let options = layer;
         let col = options.colorOptions;
         let sym = options.symbolOptions;
+        let isHeat = layer.layerType === LayerTypes.HeatMap;
         if (col.colors && col.colors.length !== 0 && col.useMultipleFillColors && sym.symbolType !== SymbolTypes.Chart && (sym.symbolType !== SymbolTypes.Icon || sym.iconField !== col.colorField)) {
             let percentages = this.props.state.legend.showPercentages ? this.getStepPercentages(layer.values[col.colorField.value], col.limits) : {};
             choroLegend = this.createMultiColorLegend(options, percentages);
         }
-        if (sym.symbolType === SymbolTypes.Chart && col.chartColors) {
+        if (!isHeat && sym.symbolType === SymbolTypes.Chart && col.chartColors) {
             chartLegend = this.createChartSymbolLegend(col, sym);
         }
-        if (sym.sizeXVar || sym.sizeYVar) {
+        if (!isHeat && sym.sizeXVar || sym.sizeYVar) {
             scaledLegend = this.createScaledSizeLegend(options);
         }
-        if (sym.symbolType === SymbolTypes.Icon) {
+        if (!isHeat && sym.symbolType === SymbolTypes.Icon) {
             let percentages = this.props.state.legend.showPercentages && sym.iconLimits.length > 1 ? this.getStepPercentages(layer.values[sym.iconField.value], sym.iconLimits) : {};
             iconLegend = this.createIconLegend(options, percentages, layer.name);
         }
-        if (sym.symbolType === SymbolTypes.Blocks) {
+        if (!isHeat && sym.symbolType === SymbolTypes.Blocks) {
             blockLegend = this.createBlockLegend(options);
         }
 
