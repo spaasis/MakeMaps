@@ -45,17 +45,6 @@ export class ColorMenu extends React.Component<{
         this.props.state.colorMenuState.startColor = hex;
     }
 
-    onOpacityChange = (e) => {
-        let val: number = e.target.valueAsNumber;
-        let layer = this.props.state.editingLayer;
-        if (layer.colorOptions.opacity != val || layer.colorOptions.fillOpacity != val) {
-            layer.colorOptions.opacity = e.target.valueAsNumber;
-            layer.colorOptions.fillOpacity = e.target.valueAsNumber;
-            if (this.props.state.autoRefresh)
-                layer.refresh();
-        }
-    }
-
     onCustomSchemeChange = (e) => {
         let use: boolean = e.target.checked;
         let layer = this.props.state.editingLayer;
@@ -241,6 +230,7 @@ export class ColorMenu extends React.Component<{
             }
         }
         let isChart = layer.symbolOptions.symbolType === SymbolTypes.Chart;
+        let isHeat = layer.layerType === LayerTypes.HeatMap;
 
         //separated some components for readability
         let colorPicker = <Modal
@@ -300,11 +290,11 @@ export class ColorMenu extends React.Component<{
         </div>;
 
         let colorBlocks = <div>
-            {col.useMultipleFillColors || layer.layerType === LayerTypes.HeatMap || isChart ?
+            {col.useMultipleFillColors || isHeat || isChart ?
                 null :
                 <div className='colorBlock' style={fillColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'fillColor')}>Fill</div>
             }
-            {layer.layerType === LayerTypes.HeatMap ? null :
+            {isHeat ? null :
                 <div className='colorBlock'
                     style={{ background: col.color, border: '1px solid ' + col.color, cursor: 'pointer' }}
                     onClick={this.toggleColorPick.bind(this, 'borderColor')}>Border
@@ -319,7 +309,7 @@ export class ColorMenu extends React.Component<{
                         } }/>
                 </div>
             }
-            {layer.symbolOptions.symbolType === SymbolTypes.Icon ?
+            {!isHeat && layer.symbolOptions.symbolType === SymbolTypes.Icon ?
                 <div className='colorBlock' style={iconTextColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'iconTextColor')}>Icon</div>
                 : null
             }
@@ -358,7 +348,7 @@ export class ColorMenu extends React.Component<{
 
         return (
             <div className="makeMaps-options">
-                {layer.layerType === LayerTypes.HeatMap || isChart ? null :
+                {isHeat || isChart ? null :
                     <label htmlFor='multipleSelect'>Use multiple fill colors
                         <input
                             id='multipleSelect'
@@ -373,14 +363,25 @@ export class ColorMenu extends React.Component<{
                 }
                 {colorBlocks}
                 <label>Opacity
-                    <input type='number' max={1} min={0} step={0.1} onChange={this.onOpacityChange} value={col.opacity}/>
+                    <input type='number' max={1} min={0} step={0.1}
+                        onChange={(e) => {
+                            let val: number = (e.target as any).valueAsNumber;
+                            let layer = this.props.state.editingLayer;
+                            if (layer.colorOptions.opacity != val || layer.colorOptions.fillOpacity != val) {
+                                layer.colorOptions.opacity = val;
+                                layer.colorOptions.fillOpacity = val;
+                                if (this.props.state.autoRefresh)
+                                    layer.setOpacity();
+                            }
+                        } }
+                        value={col.opacity}/>
                 </label>
                 {colorPicker}
                 {isChart ? <div>
                     {this.renderSteps()}
                 </div> : null}
                 {
-                    (col.useMultipleFillColors || layer.layerType === LayerTypes.HeatMap) && !isChart ?
+                    (col.useMultipleFillColors || isHeat) && !isChart ?
                         <div>
                             <div>
                                 <label>Select the color variable</label>
@@ -433,7 +434,7 @@ export class ColorMenu extends React.Component<{
                                         :
                                         stepModes
                                     }
-                                    {layer.layerType === LayerTypes.HeatMap ?
+                                    {isHeat ?
                                         <div>
                                             Set the heatmap radius
                                             <input

@@ -99,7 +99,7 @@ export class Filter {
     filterLayer() {
         if (this.show) {
             let id = this.layerId;
-            let layer = this.appState.layers.filter(function(l) { return l.id == id })[0];
+            let layer = this.appState.layers.filter(function(l) { return l.id === id })[0];
             if (layer.layerType !== LayerTypes.HeatMap) {
                 for (let val in this.filterValues) {
                     if ((this.previousLower <= +val && +val < this.currentMin) || (this.currentMin <= +val && +val < this.previousLower) ||

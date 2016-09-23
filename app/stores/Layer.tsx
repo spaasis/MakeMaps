@@ -162,6 +162,8 @@ export class Layer {
         }
 
     }
+
+
     refreshFilters() {
         let filters = this.appState.filters.filter((f) => { return f.layerId === this.id });
         for (let i in filters) {
@@ -199,6 +201,16 @@ export class Layer {
         opts.limits = chroma.limits(values, opts.mode, opts.steps);
         colors = chroma.scale(opts.colorScheme).colors(opts.limits.length - 1);
         opts.colors = opts.revert ? colors.reverse() : colors;
+    }
+
+    setOpacity() {
+        for (let lyr of this.displayLayer.getLayers()) {
+            if ((lyr as any).setOpacity)
+                (lyr as any).setOpacity(this.colorOptions.opacity);
+            else
+                (lyr as any).setStyle({ fillOpacity: this.colorOptions.fillOpacity, opacity: this.colorOptions.opacity })
+        }
+        this.refreshFilters();
     }
 
     /** Get feature values in their own dictionary to reduce the amount of common calculations*/
@@ -336,11 +348,11 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
                 markerColor: col.fillColor,
                 svg: true,
                 svgBorderColor: col.color,
-                svgOpacity: col.fillOpacity,
+                svgOpacity: 1,
                 shape: icon ? icon.shape : sym.icons[0].shape,
                 iconColor: col.iconTextColor,
             });
-            let mark = L.marker(latlng, { icon: customIcon });
+            let mark = L.marker(latlng, { icon: customIcon, opacity: col.opacity });
             return mark;
         case SymbolTypes.Chart:
             let vals = [];
@@ -365,34 +377,33 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
                 pieClass: function(d) { return d.data.feat },
                 pathFillFunc: function(d) { return d.data.color },
                 borderColor: col.color,
-                opacity: col.fillOpacity
             });
             let marker = L.divIcon({ iconAnchor: L.point(x, x), html: chartHtml, className: '' });
-            return L.marker(latlng, { icon: marker });
+            return L.marker(latlng, { icon: marker, opacity: col.opacity });
         case SymbolTypes.Blocks:
             let blockCount = Math.ceil(feature.properties[sym.blockSizeVar.value] / sym.blockValue);
             let columns = Math.min(sym.maxBlockColumns, blockCount);
             let rows = Math.min(sym.maxBlockRows, blockCount);
             let blocks = makeBlockSymbol(blockCount, columns, rows, col.fillColor, col.color, col.weight, sym.blockWidth);
             let blockMarker = L.divIcon({ iconAnchor: L.point(sym.blockWidth / 2 * blocks.columns, sym.blockWidth / 2 * blocks.rows), html: blocks.html, className: '' });
-            return L.marker(latlng, { icon: blockMarker });
+            return L.marker(latlng, { icon: blockMarker, opacity: col.opacity });
         case SymbolTypes.Rectangle:
             x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
             y = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
             if (x === 0 || y === 0) {
                 return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });;
             }
-            let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + '"/>';
+            let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + '"/>';
             let rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
-            return L.marker(latlng, { icon: rectIcon });
+            return L.marker(latlng, { icon: rectIcon, opacity: col.opacity });
         default:
             x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
             if (x === 0) {
                 return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });;
             }
-            let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; opacity:' + col.opacity + '; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + ';border-radius: 30px;"/>';
+            let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + ';border-radius: 30px;"/>';
             let circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
-            return L.marker(latlng, { icon: circleIcon });
+            return L.marker(latlng, { icon: circleIcon, opacity: col.opacity });
     }
 
 }
@@ -480,7 +491,6 @@ function makePieChart(options) {
         pieLabel = options.pieLabel ? options.pieLabel : '', //Label for the whole chart
         pathFillFunc = options.pathFillFunc,
         border = options.borderColor,
-        opacity = options.opacity,
 
         origo = (r + options.strokeWidth), //Center coordinate
         w = origo * 2, //width and height of the svg element
@@ -504,7 +514,6 @@ function makePieChart(options) {
 
     arcs.append('svg:path')
         .attr('fill', pathFillFunc)
-        .attr('opacity', opacity)
         .attr('stroke', border)
         .attr('stroke-width', options.strokeWidth)
         .attr('d', arc)
