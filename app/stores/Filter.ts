@@ -100,7 +100,6 @@ export class Filter {
         if (this.show) {
             let id = this.layerId;
             let layer = this.appState.layers.filter(function(l) { return l.id == id })[0];
-
             if (layer.layerType !== LayerTypes.HeatMap) {
                 for (let val in this.filterValues) {
                     if ((this.previousLower <= +val && +val < this.currentMin) || (this.currentMin <= +val && +val < this.previousLower) ||
@@ -197,7 +196,7 @@ export class Filter {
          * TODO: optimize performance (by storing every filter current value in state?)
          */
         function shouldLayerBeAdded(layer) {
-            let filters: Filter[] = this.appState.filters.filter((f) => { return f.id !== this.id });
+            let filters: Filter[] = this.appState.filters.filter((f) => { return f.id !== this.id && f.layerId === this.layerId });
             let canUnFilter = true;
             for (let i in filters) {
                 let filter = filters[i];

@@ -103,7 +103,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         this.props.state.map.on('contextmenu', function(e) { //disable context menu opening on right-click
             return;
         });
-        // (this.props.state.map as any).createPane('dataPane');
     }
 
     startLayerImport() {
@@ -130,10 +129,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     layerImportSubmit(l: Layer) {
 
         l.getValues()
-        if (l.pointFeatureCount > 500) {
-            l.clusterOptions.useClustering = true;
-            ShowNotification('The dataset contains a large number of map points. Point clustering has beeen enabled to boost performance. If you wish, you may turn this off in the clustering options');
-        }
         l.appState = this.props.state;
         l.id = _currentLayerId++;
         l.colorOptions.colorField = l.numberHeaders[0];
@@ -142,7 +137,10 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         setTimeout(l.refresh(), 10);
         this.props.state.map.fitBounds(l.layerType === LayerTypes.HeatMap ? (l.displayLayer as any)._latlngs : l.displayLayer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
         this.props.state.layers.push(l);
-        this.props.state.layerMenuState.order.push({ name: l.name, id: l.id });
+        if (l.layerType === LayerTypes.HeatMap)
+            this.props.state.layerMenuState.heatLayerOrder.push({ name: l.name, id: l.id });
+        else
+            this.props.state.layerMenuState.standardLayerOrder.push({ name: l.name, id: l.id });
         this.props.state.importWizardShown = false;
         this.props.state.editingLayer = l;
         this.props.state.menuShown = true;
@@ -150,19 +148,23 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
     /** changeLayerOrder - Redraws the layers in the order given */
     changeLayerOrder() {
+        let index = 0;
+        for (let i of this.props.state.layerMenuState.standardLayerOrder) {
+            reAdd.call(this, i);
+        }
+        for (let i of this.props.state.layerMenuState.heatLayerOrder) {
+            reAdd.call(this, i);
+        }
 
-        for (let i of this.props.state.layerMenuState.order) {
+
+        function reAdd(i: { name: string, id: number }) {
             let layer = this.props.state.layers.filter(lyr => lyr.id == i.id)[0];
             if (layer.displayLayer) {
-                if (layer.layerType !== LayerTypes.HeatMap) {
-                    (layer.displayLayer as any).bringToFront();
-                    console.log('front: ' + layer.id);
-                }
-                else {
-                    this.props.state.map.removeLayer(layer.displayLayer);
-                    this.props.state.map.addLayer(layer.displayLayer);
-                }
+                this.props.state.map.removeLayer(layer.displayLayer);
+                this.props.state.map.addLayer(layer.displayLayer);
+                layer.refreshFilters();
             }
+            index++;
         }
     }
 
@@ -275,8 +277,11 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             newLayer.symbolOptions.chartFields = chartFields;
             newLayer.clusterOptions = new ClusterOptions(lyr.clusterOptions);
             this.props.state.layers.push(newLayer);
+            if (newLayer.layerType === LayerTypes.HeatMap)
+                this.props.state.layerMenuState.heatLayerOrder.push({ name: newLayer.name, id: newLayer.id });
+            else
+                this.props.state.layerMenuState.standardLayerOrder.push({ name: newLayer.name, id: newLayer.id });
 
-            this.props.state.layerMenuState.order.push({ name: newLayer.name, id: newLayer.id });
         }
         saved.filters.map(function(f) { this.props.state.filters.push(new Filter(this.props.state, f)) }, this)
         for (let i in this.props.state.layers.slice()) {

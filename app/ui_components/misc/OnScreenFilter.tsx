@@ -41,6 +41,7 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
     }
     onCurrentMinChange = (e) => {
         let val = e.currentTarget.valueAsNumber
+        this.props.state.step = -1;
         if (this.props.state.lockDistance) {
             this.advanceSliderWhenLocked(val, this.props.state.currentMax);
         }
@@ -52,6 +53,7 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
     }
     onCurrentMaxChange = (e) => {
         let val = e.currentTarget.valueAsNumber
+        this.props.state.step = -1;
         if (this.props.state.lockDistance) {
             this.advanceSliderWhenLocked(this.props.state.currentMin, val);
         }
@@ -110,13 +112,16 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
             handle={'.filterhead'}
             onDrag={(e) => { e.preventDefault(); e.stopPropagation(); return; } }
             >
-            <div className='filter'>
+            <div className='filter'
+                onMouseEnter={(e) => { this.props.state.appState.map.dragging.disable() } }
+                onMouseLeave={(e) => { this.props.state.appState.map.dragging.enable() } }
+                >
                 <h3 className='filterhead'>{this.props.state.title}</h3>
                 {this.renderSteps.call(this)}
-                <div style={{ display: 'inline-flex' }}>
+                <div style={{ display: 'inline-flex' }}                    >
                     <input type='number' style={{ width: '70px' }} value={this.props.state.currentMin.toFixed(0)} onChange={this.onCurrentMinChange}/>
                     <Slider className='horizontal-slider'
-                        onAfterChange={this.onFilterScaleChange}
+                        onAfterChange={(e) => { this.onFilterScaleChange(e); this.props.state.step = -1; } }
                         value={[this.props.state.currentMin, this.props.state.currentMax]}
                         min={this.props.state.totalMin - 1}
                         max={this.props.state.totalMax + 1}

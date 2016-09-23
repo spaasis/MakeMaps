@@ -13,12 +13,15 @@ export class LayerMenu extends React.Component<{
     /** Save the current order to the map*/
     saveOrder: () => void,
 }, {}>{
-    handleSort(items: string[]) {
+    handleSort(type: 'heat' | 'standard', items: string[]) {
         let arr: { name: string, id: number }[] = [];
         for (let i of items) {
             arr.push(this.getLayerById(+i));
         }
-        this.props.state.layerMenuState.order = arr;
+        if (type == 'standard')
+            this.props.state.layerMenuState.standardLayerOrder = arr;
+        else
+            this.props.state.layerMenuState.heatLayerOrder = arr;
         this.props.saveOrder();
     }
     getLayerById(id: number) {
@@ -34,7 +37,7 @@ export class LayerMenu extends React.Component<{
         if (layerInfo) {
             this.props.state.layers = this.props.state.layers.filter((lyr) => { return lyr.id != id });
             this.props.state.map.removeLayer(layerInfo.displayLayer);
-            this.props.state.layerMenuState.order = this.props.state.layerMenuState.order.filter((l) => { return l.id != id });
+            this.props.state.layerMenuState.standardLayerOrder = this.props.state.layerMenuState.standardLayerOrder.filter((l) => { return l.id != id });
         }
     }
     render() {
@@ -73,20 +76,34 @@ export class LayerMenu extends React.Component<{
                     />
                 <hr/>
                 <label>Drag and drop to reorder</label>
-                <Sortable className='layerList'
-                    onChange={this.handleSort.bind(this)}>
-                    {menuState.order.map(function(item) {
-                        return <div style={layerStyle} key={item.id} data-id={item.id} >
-                            {item.name}
-                            <i className="fa fa-times" onClick = {this.deleteLayer.bind(this, item.id)} style={{ float: 'right', lineHeight: '40px', marginRight: '5px' }}/>
-                        </div>;
-                    }, this)}
-                </Sortable>
-                {this.props.state.autoRefresh ? null :
-                    <button className='menuButton'
-                        onClick={() => {
-                            this.props.saveOrder(); //unnecessary? just set the state?
-                        } }>Save</button>}
+                {menuState.heatLayerOrder.length > 0 ?
+                    <div>
+                        <label>Heat layers</label>
+                        <Sortable className='layerList'
+                            onChange={this.handleSort.bind(this, 'heat')}>
+                            {menuState.heatLayerOrder.map(function(item) {
+                                return <div style={layerStyle} key={item.id} data-id={item.id} >
+                                    {item.name}
+                                    <i className="fa fa-times" onClick = {this.deleteLayer.bind(this, item.id)} style={{ float: 'right', lineHeight: '40px', marginRight: '5px' }}/>
+                                </div>;
+                            }, this)}
+                        </Sortable>
+                    </div> : null
+                }
+                {menuState.standardLayerOrder.length > 0 ?
+                    <div>
+                        <label>Standard layers</label>
+                        <Sortable className='layerList'
+                            onChange={this.handleSort.bind(this, 'standard')}>
+                            {menuState.standardLayerOrder.map(function(item) {
+                                return <div style={layerStyle} key={item.id} data-id={item.id} >
+                                    {item.name}
+                                    <i className="fa fa-times" onClick = {this.deleteLayer.bind(this, item.id)} style={{ float: 'right', lineHeight: '40px', marginRight: '5px' }}/>
+                                </div>;
+                            }, this)}
+                        </Sortable>
+                    </div> : null
+                }
                 <button className='menuButton' onClick={() => {
                     this.props.addNewLayer();
                 } }>Add new layer</button>
@@ -115,10 +132,12 @@ export class LayerMenu extends React.Component<{
                                 onChange={() => {
                                     if (layer.layerType !== LayerTypes.Standard) {
                                         layer.layerType = LayerTypes.Standard;
-                                        if (this.props.state.autoRefresh) {
-                                            layer.toggleRedraw = true;
-                                            layer.refresh();
-                                        }
+                                        layer.colorOptions.opacity = 0.8;
+                                        layer.colorOptions.fillOpacity = 0.8;
+                                        menuState.heatLayerOrder = menuState.heatLayerOrder.filter(function(l) { return l.id !== layer.id });
+                                        menuState.standardLayerOrder.push({ id: layer.id, name: layer.name });
+                                        layer.toggleRedraw = true;
+                                        layer.refresh();
                                     }
                                 } }
                                 checked={layer.layerType === LayerTypes.Standard}
@@ -138,10 +157,10 @@ export class LayerMenu extends React.Component<{
                                         layer.colorOptions.colorField = layer.colorOptions.colorField || layer.numberHeaders[0];
                                         layer.colorOptions.opacity = 0.3;
                                         layer.colorOptions.fillOpacity = 0.3;
-                                        if (this.props.state.autoRefresh) {
-                                            layer.toggleRedraw = true;
-                                            layer.refresh();
-                                        }
+                                        layer.toggleRedraw = true;
+                                        menuState.standardLayerOrder = menuState.standardLayerOrder.filter(function(l) { return l.id !== layer.id });
+                                        menuState.heatLayerOrder.push({ id: layer.id, name: layer.name });
+                                        layer.refresh();
                                     }
                                 } }
                                 checked={layer.layerType === LayerTypes.HeatMap}

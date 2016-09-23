@@ -2,6 +2,7 @@ import * as React from 'react';
 let Select = require('react-select');
 import { AppState } from '../../stores/States';
 import { Filter } from '../../stores/Filter';
+import { Layer } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 import { LayerTypes } from '../../stores/Layer';
 
@@ -22,7 +23,7 @@ export class FilterMenu extends React.Component<{
     getMinMax() {
         let filter = this.props.state.editingFilter;
         if (filter) {
-            let vals = this.props.state.editingLayer.values;
+            let vals = this.props.state.layers.filter(function(l) { return l.id == filter.layerId })[0].values;
             let field = filter.fieldToFilter;
             let minVal = vals[field][0];
             let maxVal = vals[field][vals[field].length - 1];
@@ -79,7 +80,7 @@ export class FilterMenu extends React.Component<{
         filter.id = this.props.state.nextFilterId;
         filter.layerId = this.props.state.editingLayer.id;
         filter.fieldToFilter = this.props.state.editingLayer.numberHeaders[0].value;
-        filter.title = filter.fieldToFilter;
+        filter.title = this.props.state.editingLayer.numberHeaders[0].label;
 
         this.props.state.filters.push(filter);
         this.props.state.filterMenuState.selectedFilterId = filter.id;
@@ -112,14 +113,21 @@ export class FilterMenu extends React.Component<{
     }
 
     render() {
-        let layer = this.props.state.editingLayer;
-        let filter = this.props.state.editingFilter;
-        let state = this.props.state.filterMenuState;
+        let layers = [];
+        if (this.props.state.layers) {
+            for (let layer of this.props.state.layers) {
+                layers.push({ value: layer, label: layer.name });
+            }
+        }
         let filters = [];
         for (let i in this.props.state.filters.slice()) {
             filters.push({ value: this.props.state.filters[i].id, label: this.props.state.filters[i].title });
         }
-        return (!layer ? null :
+        let filter = this.props.state.editingFilter;
+        let layer = filter ? this.props.state.layers.filter(function(l) { return l.id == filter.layerId })[0] : null;
+        let state = this.props.state.filterMenuState;
+
+        return (this.props.state.layers.slice().length == 0 ? null :
             <div className="makeMaps-options">
                 {filters ?
                     <div>
@@ -138,7 +146,21 @@ export class FilterMenu extends React.Component<{
                 <br/>
 
                 {filter ?
+
                     <div>
+                        <label>Select layer to attach filter to</label>
+                        <Select
+                            options={layers}
+                            onChange = {(val: { label: string, value: Layer }) => {
+                                filter.layerId = val.value.id;
+                            } }
+                            value = {layer}
+                            valueRenderer = {(option: Layer) => {
+                                return option ? option.name : '';
+                            } }
+                            clearable={false}
+                            />
+                        <br/>
                         <label>Give a name to the filter
                             <input type="text" onChange={(e) => {
                                 this.props.state.editingFilter.title = (e.target as any).value;
@@ -198,7 +220,8 @@ export class FilterMenu extends React.Component<{
                                         type='radio'
                                         onChange={() => {
                                             this.props.state.editingFilter.remove = true;
-                                            layer.refreshFilters();
+                                            if (filter.show)
+                                                layer.refreshFilters();
                                         } }
                                         checked={filter.remove}
                                         name='filterMethod'
@@ -214,7 +237,8 @@ export class FilterMenu extends React.Component<{
                                         type='radio'
                                         onChange={() => {
                                             this.props.state.editingFilter.remove = false;
-                                            layer.refreshFilters();
+                                            if (filter.show)
+                                                layer.refreshFilters();
                                         } }
                                         checked={!filter.remove}
                                         name='filterMethod'

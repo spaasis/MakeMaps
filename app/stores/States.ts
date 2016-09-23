@@ -148,7 +148,9 @@ export class LegendMenuState {
 
 export class LayerMenuState {
     /** The current order of layers */
-    @observable order: { name: string, id: number }[] = [];
+    @observable standardLayerOrder: { name: string, id: number }[] = [];
+    /** The current order of heatmap layers */
+    @observable heatLayerOrder: { name: string, id: number }[] = [];
     @observable editingLayer: Layer;
 
 }
