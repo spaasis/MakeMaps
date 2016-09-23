@@ -23631,7 +23631,7 @@
 	                weight: opts.weight,
 	            };
 	        };
-	        if (this.toggleRedraw && this.displayLayer) {
+	        if (this.displayLayer && (this.toggleRedraw || this.layerType === LayerTypes.HeatMap)) {
 	            this.appState.map.removeLayer(this.displayLayer);
 	        }
 	        if (this.displayLayer && this.layerType !== LayerTypes.HeatMap && !this.toggleRedraw) {
