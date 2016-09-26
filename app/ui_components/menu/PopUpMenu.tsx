@@ -58,7 +58,7 @@ export class PopUpMenu extends React.Component<{
                 Or
                 <br/>
                 <label forHTML='hover' style={{ marginTop: 0 }}>
-                    Open on mouse over
+                    Open on hover
                     <input
                         type='radio'
                         onChange={() => {

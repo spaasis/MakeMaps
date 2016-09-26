@@ -14,7 +14,7 @@ export class LayerMenu extends React.Component<{
     saveOrder: () => void,
 }, {}>{
     handleSort(type: 'heat' | 'standard', items: string[]) {
-        let arr: { name: string, id: number }[] = [];
+        let arr: { id: number }[] = [];
         for (let i of items) {
             arr.push(this.getLayerById(+i));
         }
@@ -83,7 +83,7 @@ export class LayerMenu extends React.Component<{
                             onChange={this.handleSort.bind(this, 'heat')}>
                             {menuState.heatLayerOrder.map(function(item) {
                                 return <div style={layerStyle} key={item.id} data-id={item.id} >
-                                    {item.name}
+                                    {this.props.state.layers.filter(function(f) { return f.id === item.id })[0].name}
                                     <i className="fa fa-times" onClick = {this.deleteLayer.bind(this, item.id)} style={{ float: 'right', lineHeight: '40px', marginRight: '5px' }}/>
                                 </div>;
                             }, this)}
@@ -97,7 +97,7 @@ export class LayerMenu extends React.Component<{
                             onChange={this.handleSort.bind(this, 'standard')}>
                             {menuState.standardLayerOrder.map(function(item) {
                                 return <div style={layerStyle} key={item.id} data-id={item.id} >
-                                    {item.name}
+                                    {this.props.state.layers.filter(function(f) { return f.id === item.id })[0].name}
                                     <i className="fa fa-times" onClick = {this.deleteLayer.bind(this, item.id)} style={{ float: 'right', lineHeight: '40px', marginRight: '5px' }}/>
                                 </div>;
                             }, this)}
@@ -123,6 +123,12 @@ export class LayerMenu extends React.Component<{
 
                 {layer ?
                     <div>
+                        Name
+                        <br/>
+                        <input type='text' style={{ width: '100%' }} value={layer.name} onChange={(e) => {
+                            layer.name = (e.target as any).value;
+                        } }/>
+
                         Layer type
                         <br/>
                         <label forHTML='standard'>
@@ -135,7 +141,7 @@ export class LayerMenu extends React.Component<{
                                         layer.colorOptions.opacity = 0.8;
                                         layer.colorOptions.fillOpacity = 0.8;
                                         menuState.heatLayerOrder = menuState.heatLayerOrder.filter(function(l) { return l.id !== layer.id });
-                                        menuState.standardLayerOrder.push({ id: layer.id, name: layer.name });
+                                        menuState.standardLayerOrder.push({ id: layer.id });
                                         layer.toggleRedraw = true;
                                         layer.refresh();
                                     }
@@ -159,7 +165,7 @@ export class LayerMenu extends React.Component<{
                                         layer.colorOptions.fillOpacity = 0.3;
                                         layer.toggleRedraw = true;
                                         menuState.standardLayerOrder = menuState.standardLayerOrder.filter(function(l) { return l.id !== layer.id });
-                                        menuState.heatLayerOrder.push({ id: layer.id, name: layer.name });
+                                        menuState.heatLayerOrder.push({ id: layer.id });
                                         layer.refresh();
                                     }
                                 } }

@@ -33,7 +33,9 @@ function HideNotification() {
 function CalculateLimits(min: number, max: number, count: number, accuracy: number) {
     let limits: number[] = [];
     for (let i = +min; i < max; i += (max - min) / count) {
-        limits.push(+i.toFixed(accuracy));
+        let val = +i.toFixed(accuracy);
+        if (limits.indexOf(val) === -1)
+            limits.push(val);
     }
     if (limits.indexOf(+max.toFixed(accuracy)) === -1)
         limits.push(+max.toFixed(accuracy))

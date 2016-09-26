@@ -118,19 +118,14 @@ export class ColorMenu extends React.Component<{
     calculateValues = () => {
         let lyr: Layer = this.props.state.editingLayer;
         let field: string = lyr.colorOptions.colorField.value;
-        let uniqueValues: number[] = lyr.values[field].filter(function(e, i, arr) { //TODO: optimize! This is unnecessary to perform more than once
-            return arr.lastIndexOf(e) === i;
-        });
-        let steps: number = Math.min(uniqueValues.length, lyr.colorOptions.steps);
+        let steps: number = Math.min(lyr.uniqueValues[field].length, lyr.colorOptions.steps);
         let limits: number[] = [];
         if (!lyr.colorOptions.useCustomScheme) {
             limits = chroma.limits(lyr.values[field], lyr.colorOptions.mode, steps);
         }
         else {
-            if (steps === uniqueValues.length) {
-
-                uniqueValues.push(uniqueValues[uniqueValues.length - 1] + 1);
-                limits = uniqueValues;
+            if (steps >= lyr.uniqueValues[field].length - 1) {
+                limits = lyr.uniqueValues[field];
             }
             else
                 limits = CalculateLimits(lyr.values[field][0], lyr.values[field][lyr.values[field].length - 1], steps, lyr.colorOptions.colorField.decimalAccuracy);
@@ -415,7 +410,7 @@ export class ColorMenu extends React.Component<{
                                     <label>Steps</label>
                                     <input
                                         type='number'
-                                        max={100}
+                                        max={layer.uniqueValues[col.colorField.value].length - 1}
                                         min={2}
                                         step={1}
                                         onChange={(e) => {

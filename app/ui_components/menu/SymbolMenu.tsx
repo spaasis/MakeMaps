@@ -23,6 +23,10 @@ export class SymbolMenu extends React.Component<{
             if (sym.chartFields.length == 0)
                 this.onChartFieldsChange(layer.numberHeaders);
         }
+        if (type === SymbolTypes.Icon) {
+            if (!sym.iconField)
+                sym.iconField = layer.numberHeaders[0];
+        }
         if (this.props.state.autoRefresh)
             layer.refresh();
     }
@@ -218,15 +222,22 @@ export class SymbolMenu extends React.Component<{
 
     }
 
-    calculateIconValues(fieldValue: string, steps: number, accuracy: number) {
+    calculateIconValues(field: string, steps: number, accuracy: number) {
         let values = this.props.state.editingLayer.values;
-        this.props.state.editingLayer.symbolOptions.iconLimits = CalculateLimits(values[fieldValue][0], values[fieldValue][values[fieldValue].length - 1], steps, accuracy); //get limits by min and max value
+        let uniqueValues = this.props.state.editingLayer.uniqueValues;
+
+        if (steps >= uniqueValues[field].length - 1) {
+            this.props.state.editingLayer.symbolOptions.iconLimits = uniqueValues[field];
+        }
+        else
+            this.props.state.editingLayer.symbolOptions.iconLimits = CalculateLimits(values[field][0], values[field][values[field].length - 1], steps, accuracy); //get limits by min and max value
     }
 
     render() {
         let layer = this.props.state.editingLayer;
         let sym: SymbolOptions = layer.symbolOptions;
         let state: SymbolMenuState = this.props.state.symbolMenuState;
+        let autoRefresh = this.props.state.autoRefresh;
         let iconSelectStyle = {
             overlay: {
                 position: 'fixed',
@@ -259,25 +270,13 @@ export class SymbolMenu extends React.Component<{
                 <br/>
                 <label forHTML='circle'>
                     <i style={{ margin: 4 }} className='fa fa-circle-o'/>
-                    Circle
+                    Simple
                     <input
                         type='radio'
-                        onChange={this.onTypeChange.bind(this, SymbolTypes.Circle)}
-                        checked={sym.symbolType === SymbolTypes.Circle}
+                        onChange={this.onTypeChange.bind(this, SymbolTypes.Simple)}
+                        checked={sym.symbolType === SymbolTypes.Simple}
                         name='symboltype'
                         id='circle'
-                        />
-                    <br/>
-                </label>
-                <label forHTML='rect'>
-                    <i style={{ margin: 4 }} className='fa fa-signal'/>
-                    Rectangle
-                    <input
-                        type='radio'
-                        onChange={this.onTypeChange.bind(this, SymbolTypes.Rectangle)}
-                        checked={sym.symbolType === SymbolTypes.Rectangle}
-                        name='symboltype'
-                        id='rect'
                         />
                     <br/>
                 </label>
@@ -319,42 +318,66 @@ export class SymbolMenu extends React.Component<{
                 </label>
                 {sym.symbolType !== SymbolTypes.Icon ?
                     <div>
-                        <label>Scale {sym.symbolType === SymbolTypes.Rectangle ? 'width' : 'size'} by</label>
+                        <label>Scale {sym.symbolType === SymbolTypes.Simple ? 'width' : 'size'} by</label>
                         <Select
                             options={layer.numberHeaders}
                             onChange={this.onXVariableChange}
                             value={sym.symbolType === SymbolTypes.Blocks ? sym.blockSizeVar : sym.sizeXVar}
                             clearable={sym.symbolType !== SymbolTypes.Blocks}
                             />
-                        {sym.symbolType === SymbolTypes.Rectangle ? <div>
+
+                        {sym.symbolType === SymbolTypes.Simple ? <div>
                             <label>Scale height by</label>
                             <Select
                                 options={layer.numberHeaders}
                                 onChange={this.onYVariableChange}
                                 value={sym.sizeYVar}
                                 />
+                            <label>Border radius
+                                <input type='number' value={sym.borderRadius} onChange={(e) => {
+                                    let val = (e.currentTarget as any).valueAsNumber;
+                                    if (sym.borderRadius != val) {
+                                        sym.borderRadius = val;
+                                        if (autoRefresh)
+                                            layer.refresh();
+                                    }
+                                } } min={0} max={100} step={1}/>
+                            </label>
                         </div> : null}
                         {sym.symbolType !== SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar) ?
-                            <div><label>Size multiplier</label>
-                                <input type="number" value={sym.sizeMultiplier} onChange={(e) => {
-                                    layer.symbolOptions.sizeMultiplier = (e.currentTarget as any).valueAsNumber;
-                                    if (this.props.state.autoRefresh)
-                                        layer.refresh();
-                                } } min={0.1} max={10} step={0.1}/>
+                            <div>
+                                <label>Size multiplier
+                                    <input type='number' value={sym.sizeMultiplier} onChange={(e) => {
+                                        let val = (e.currentTarget as any).valueAsNumber;
+                                        if (sym.sizeMultiplier != val) {
+                                            sym.sizeMultiplier = val;
+                                            if (autoRefresh)
+                                                layer.refresh();
+                                        }
+                                    } } min={0.1} max={10} step={0.1}/>
+                                </label>
                                 <br/>
-                                <label>Size lower limit</label>
-                                <input type="number" value={sym.sizeLowLimit} onChange={(e) => {
-                                    layer.symbolOptions.sizeLowLimit = (e.currentTarget as any).valueAsNumber;
-                                    if (this.props.state.autoRefresh)
-                                        layer.refresh();
-                                } } min={0}/>
+                                <label>Size lower limit
+                                    <input type='number' value={sym.sizeLowLimit} onChange={(e) => {
+                                        let val = (e.currentTarget as any).valueAsNumber;
+                                        if (sym.sizeLowLimit != val) {
+                                            sym.sizeLowLimit = val;
+                                            if (autoRefresh)
+                                                layer.refresh();
+                                        }
+                                    } } min={0}/>
+                                </label>
                                 <br/>
-                                <label>Size upper limit</label>
-                                <input type="number" value={sym.sizeUpLimit} onChange={(e) => {
-                                    layer.symbolOptions.sizeUpLimit = (e.currentTarget as any).valueAsNumber;
-                                    if (this.props.state.autoRefresh)
-                                        layer.refresh();
-                                } } min={1}/>
+                                <label>Size upper limit
+                                    <input type='number' value={sym.sizeUpLimit} onChange={(e) => {
+                                        let val = (e.currentTarget as any).valueAsNumber;
+                                        if (sym.sizeUpLimit != val) {
+                                            sym.sizeUpLimit = val;
+                                            if (autoRefresh)
+                                                layer.refresh();
+                                        }
+                                    } } min={1}/>
+                                </label>
                             </div>
                             : null}
                     </div>
@@ -380,7 +403,7 @@ export class SymbolMenu extends React.Component<{
                                             <br/>
                                             <button onClick={this.onIconStepCountChange.bind(this, -1)}>-</button>
                                             <button onClick={this.onIconStepCountChange.bind(this, 1)}>+</button>
-                                            {this.renderSteps.call(this)}
+                                            {this.renderIconSteps.call(this)}
                                         </div> : null}
                                 </div>
                                 :
@@ -415,7 +438,7 @@ export class SymbolMenu extends React.Component<{
                                 onChange={() => {
                                     sym.chartType = 'pie';
                                 } }
-                                checked={sym.chartType === 'pie'}
+                                checked={() => { sym.chartType === 'pie'; if (autoRefresh) layer.refresh() } }
                                 name='charttype'
                                 id='pie'
                                 />
@@ -429,7 +452,7 @@ export class SymbolMenu extends React.Component<{
                                 onChange={() => {
                                     sym.chartType = 'donut';
                                 } }
-                                checked={sym.chartType === 'donut'}
+                                checked={() => { sym.chartType === 'donut'; if (autoRefresh) layer.refresh() } }
                                 name='charttype'
                                 id='donut'
                                 />
@@ -445,38 +468,50 @@ export class SymbolMenu extends React.Component<{
                 {sym.symbolType === SymbolTypes.Blocks ?
                     <div>
                         <label>Single block value
-                            <input type="number" value={sym.blockValue}
+                            <input type='number' value={sym.blockValue}
                                 onChange={(e) => {
-                                    layer.symbolOptions.blockValue = (e.currentTarget as any).valueAsNumber;
-                                    if (this.props.state.autoRefresh)
-                                        layer.refresh();
+                                    let val = (e.currentTarget as any).valueAsNumber;
+                                    if (sym.blockValue != val) {
+                                        sym.blockValue = val;
+                                        if (autoRefresh)
+                                            layer.refresh();
+                                    }
                                 } }
                                 min={1}/>
                         </label>
                         <label>Single block width
-                            <input type="number" value={sym.blockWidth}
+                            <input type='number' value={sym.blockWidth}
                                 onChange={(e) => {
-                                    layer.symbolOptions.blockWidth = (e.currentTarget as any).valueAsNumber;
-                                    if (this.props.state.autoRefresh)
-                                        layer.refresh();
+                                    let val = (e.currentTarget as any).valueAsNumber;
+                                    if (sym.blockWidth != val) {
+                                        sym.blockWidth = val;
+                                        if (autoRefresh)
+                                            layer.refresh();
+                                    }
                                 } }
                                 min={1}/>
                         </label>
                         <label>Max. width
-                            <input type="number" value={sym.maxBlockColumns}
+                            <input type='number' value={sym.maxBlockColumns}
                                 onChange={(e) => {
-                                    layer.symbolOptions.maxBlockColumns = (e.currentTarget as any).valueAsNumber;
-                                    if (this.props.state.autoRefresh)
-                                        layer.refresh();
+                                    let val = (e.currentTarget as any).valueAsNumber;
+                                    if (sym.maxBlockColumns != val) {
+                                        sym.maxBlockColumns = val;
+                                        if (autoRefresh)
+                                            layer.refresh();
+                                    }
                                 } }
                                 min={1}/>
                         </label>
                         <label>Max. height
-                            <input type="number" value={sym.maxBlockRows}
+                            <input type='number' value={sym.maxBlockRows}
                                 onChange={(e) => {
-                                    layer.symbolOptions.maxBlockRows = (e.currentTarget as any).valueAsNumber;
-                                    if (this.props.state.autoRefresh)
-                                        layer.refresh();
+                                    let val = (e.currentTarget as any).valueAsNumber;
+                                    if (sym.maxBlockRows != val) {
+                                        sym.maxBlockRows = val;
+                                        if (autoRefresh)
+                                            layer.refresh();
+                                    }
                                 } }
                                 min={1}/>
                         </label>
@@ -484,7 +519,7 @@ export class SymbolMenu extends React.Component<{
                     : null
 
                 }
-                {this.props.state.autoRefresh ? null :
+                {autoRefresh ? null :
                     <button className='menuButton' onClick={() => { layer.refresh() } }>Refresh map</button>
                 }
                 <Modal
@@ -535,6 +570,10 @@ export class SymbolMenu extends React.Component<{
 
     }
 
+
+    /**
+     * renderIcons - Renders icons for icon selection screen
+     */
     renderIcons() {
         let arr = [];
         let columnCount = 7;
@@ -578,10 +617,16 @@ export class SymbolMenu extends React.Component<{
 
     }
 
-    renderSteps() {
+
+    /**
+     * renderIconSteps - Renders custom icon steps
+     */
+    renderIconSteps() {
         let layer = this.props.state.editingLayer;
         let rows = [];
         let steps: number[] = [];
+        console.log(this.props.state.editingLayer.colorOptions.limits)
+        console.log(this.props.state.editingLayer.symbolOptions.iconLimits)
         for (let i in layer.symbolOptions.iconLimits.slice()) {
             if (+i !== layer.symbolOptions.iconLimits.slice().length - 1) {
                 let step: number = layer.symbolOptions.iconLimits[i];
@@ -589,6 +634,7 @@ export class SymbolMenu extends React.Component<{
             }
         }
         let row = 0;
+
         for (let i of steps) {
 
             rows.push(
@@ -596,10 +642,9 @@ export class SymbolMenu extends React.Component<{
                     <input
                         id={row + 'min'}
                         type='number'
-                        defaultValue={i.toFixed(2)}
+                        defaultValue={i.toFixed(layer.symbolOptions.iconField.decimalAccuracy)}
                         style={{
                             width: 100,
-
                         }}
                         onChange={this.onStepLimitChange.bind(this, row)}
                         step={1 * 10 ** (-layer.symbolOptions.iconField.decimalAccuracy)}

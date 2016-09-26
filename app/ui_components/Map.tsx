@@ -138,9 +138,9 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         this.props.state.map.fitBounds(l.layerType === LayerTypes.HeatMap ? (l.displayLayer as any)._latlngs : l.displayLayer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
         this.props.state.layers.push(l);
         if (l.layerType === LayerTypes.HeatMap)
-            this.props.state.layerMenuState.heatLayerOrder.push({ name: l.name, id: l.id });
+            this.props.state.layerMenuState.heatLayerOrder.push({ id: l.id });
         else
-            this.props.state.layerMenuState.standardLayerOrder.push({ name: l.name, id: l.id });
+            this.props.state.layerMenuState.standardLayerOrder.push({ id: l.id });
         this.props.state.importWizardShown = false;
         this.props.state.editingLayer = l;
         this.props.state.menuShown = true;
@@ -228,9 +228,11 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         (window as any).saveAs(blob, 'map.mmap');
     }
 
-    loadSavedMap(saved: SaveState) {
+    loadSavedMap(saved?: SaveState) {
         console.time("LoadSavedMap")
         let headers: IHeader[];
+        if (!saved)
+            saved = this.props.state.welcomeScreenState.loadedMap;
         if (saved.baseLayerId) {
             let oldBase = this.props.state.activeBaseLayer;
             let newBase: L.TileLayer;
@@ -251,16 +253,16 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             let lyr = saved.layers[i];
             let newLayer = new Layer(this.props.state);
             headers = [];
-            for (let j in lyr.headers) {
-                headers.push(new IHeader(lyr.headers[j]))
+            for (let j of lyr.headers) {
+                headers.push(new IHeader(j));
             }
             let popupHeaders: IHeader[] = [];
-            for (let k in lyr.popupHeaders) {
-                popupHeaders.push(getHeaderByValue(lyr.popupHeaders[k]))
+            for (let k of lyr.popupHeaders) {
+                popupHeaders.push(getHeaderByValue(k.value));
             }
             let chartFields: IHeader[] = [];
-            for (let k in lyr.symbolOptions.chartFields) {
-                chartFields.push(getHeaderByValue(lyr.popupHeaders[k]))
+            for (let k of lyr.symbolOptions.chartFields) {
+                chartFields.push(getHeaderByValue(k.value));
             }
             newLayer.id = _currentLayerId++;
             newLayer.name = lyr.name
@@ -269,18 +271,18 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             newLayer.layerType = lyr.layerType;
             newLayer.geoJSON = lyr.geoJSON;
             newLayer.colorOptions = new ColorOptions(lyr.colorOptions);
-            newLayer.colorOptions.colorField = lyr.colorOptions.colorField ? getHeaderByValue(lyr.colorOptions.colorField) : undefined;
+            newLayer.colorOptions.colorField = lyr.colorOptions.colorField ? getHeaderByValue(lyr.colorOptions.colorField.value) : undefined;
             newLayer.symbolOptions = new SymbolOptions(lyr.symbolOptions);
-            newLayer.symbolOptions.iconField = lyr.symbolOptions.iconField ? getHeaderByValue(lyr.symbolOptions.iconField) : undefined;
-            newLayer.symbolOptions.sizeXVar = lyr.symbolOptions.sizeXVar ? getHeaderByValue(lyr.symbolOptions.sizeXVar) : undefined;
-            newLayer.symbolOptions.sizeYVar = lyr.symbolOptions.sizeYVar ? getHeaderByValue(lyr.symbolOptions.sizeYVar) : undefined;
+            newLayer.symbolOptions.iconField = lyr.symbolOptions.iconField ? getHeaderByValue(lyr.symbolOptions.iconField.value) : undefined;
+            newLayer.symbolOptions.sizeXVar = lyr.symbolOptions.sizeXVar ? getHeaderByValue(lyr.symbolOptions.sizeXVar.value) : undefined;
+            newLayer.symbolOptions.sizeYVar = lyr.symbolOptions.sizeYVar ? getHeaderByValue(lyr.symbolOptions.sizeYVar.value) : undefined;
             newLayer.symbolOptions.chartFields = chartFields;
             newLayer.clusterOptions = new ClusterOptions(lyr.clusterOptions);
             this.props.state.layers.push(newLayer);
             if (newLayer.layerType === LayerTypes.HeatMap)
-                this.props.state.layerMenuState.heatLayerOrder.push({ name: newLayer.name, id: newLayer.id });
+                this.props.state.layerMenuState.heatLayerOrder.push({ id: newLayer.id });
             else
-                this.props.state.layerMenuState.standardLayerOrder.push({ name: newLayer.name, id: newLayer.id });
+                this.props.state.layerMenuState.standardLayerOrder.push({ id: newLayer.id });
 
         }
         saved.filters.map(function(f) { this.props.state.filters.push(new Filter(this.props.state, f)) }, this)
@@ -297,8 +299,8 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         HideLoading();
         console.timeEnd("LoadSavedMap")
 
-        function getHeaderByValue(header: IHeader) {
-            return headers.filter(function(h) { return h.value == header.value })[0]
+        function getHeaderByValue(value: string) {
+            return headers.filter(function(h) { return h.value == value })[0]
         }
     }
 
@@ -324,6 +326,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                             isOpen={this.props.state.welcomeShown}
                             style = {modalStyle}>
                             <WelcomeScreen
+                                appState= {this.props.state}
                                 loadMap={this.loadSavedMap.bind(this)}
                                 openLayerImport={this.startLayerImport.bind(this)}
                                 />

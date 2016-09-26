@@ -22,7 +22,7 @@ export class Legend {
         this.meta = prev && prev.meta || "";
 
         this.horizontal = prev && prev.horizontal !== undefined ? prev.horizontal : true; //longer format needed because default is true: if previous value is false in the shorter syntax, will resolve to false
-        this.visible = prev && prev.visible || true;
+        this.visible = prev && prev.visible !== undefined ? prev.visible : true;
         this.showPercentages = prev && prev.showPercentages || false;
         this.edit = prev && prev.edit || false;
         this.top = prev && prev.top !== undefined ? prev.top : false;

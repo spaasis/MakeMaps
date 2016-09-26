@@ -24,7 +24,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         if (!isHeat && sym.symbolType === SymbolTypes.Chart && col.chartColors) {
             chartLegend = this.createChartSymbolLegend(col, sym);
         }
-        if (!isHeat && sym.sizeXVar || sym.sizeYVar) {
+        if (!isHeat && sym.symbolType === SymbolTypes.Simple) {
             scaledLegend = this.createScaledSizeLegend(options);
         }
         if (!isHeat && sym.symbolType === SymbolTypes.Icon) {
@@ -87,23 +87,19 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             margin: 5,
             clear: this.props.state.legend.horizontal ? 'both' : ''
         }
-        if (symbolType === SymbolTypes.Circle) {
-            return circleLegend.call(this);
-        }
-        else if (symbolType === SymbolTypes.Rectangle) {
 
-            if (square)
-                return (<div style={style}>
-                    {rectangleLegend.call(this, false)}
+        if (square)
+            return (<div style={style}>
+                {rectangleLegend.call(this, false)}
+            </div>);
+        else {
+            return (
+                <div style={style}>
+                    {xVar ? rectangleLegend.call(this, false) : null}
+                    {yVar ? rectangleLegend.call(this, true) : null}
                 </div>);
-            else {
-                return (
-                    <div style={style}>
-                        {xVar ? rectangleLegend.call(this, false) : null}
-                        {yVar ? rectangleLegend.call(this, true) : null}
-                    </div>);
-            }
         }
+
 
         function rectangleLegend(y: boolean) {
 
@@ -126,6 +122,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                     backgroundColor: layer.colorOptions.fillColor,
                     display: this.props.state.legend.horizontal ? '' : 'inline-block',
                     border: '1px solid gray',
+                    borderRadius: opt.borderRadius,
                     marginLeft: this.props.state.legend.horizontal || y ? 'auto' : margin, //center values
                     marginRight: this.props.state.legend.horizontal || y ? 'auto' : margin, //center values
                     marginTop: this.props.state.legend.horizontal && y ? margin : 'auto',

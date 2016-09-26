@@ -41,6 +41,7 @@ export class Layer {
     toggleRedraw: boolean = true;
     pointFeatureCount: number = 0;
     values: { [field: string]: any[]; } = undefined;
+    uniqueValues: { [field: string]: any[]; } = undefined;
 
 
     constructor(state: AppState) {
@@ -112,7 +113,7 @@ export class Layer {
 
             }
             if (this.displayLayer) {
-                if (this.pointFeatureCount > 500 && !this.clusterOptions.useClustering) {
+                if (this.layerType !== LayerTypes.HeatMap && this.pointFeatureCount > 500 && !this.clusterOptions.useClustering) {
                     ShowNotification('The dataset contains a large number of map points. Point clustering has beeen enabled to boost performance. If you wish, you may turn this off in the clustering options');
                     this.clusterOptions.useClustering = true;
                 }
@@ -121,6 +122,7 @@ export class Layer {
 
                     let markers = L.markerClusterGroup({
                         iconCreateFunction: this.createClusteredIcon.bind(this),
+                        // chunkedLoading: true,
                     });
 
                     markers.on('clustermouseover', function(c: any) {
@@ -131,6 +133,7 @@ export class Layer {
 
                     });
                     this.batchAdd(0, 500, this.displayLayer.getLayers(), markers);
+                    // markers.addLayer(this.displayLayer);
                     this.displayLayer = markers as any;
                     console.timeEnd("LayerCluster")
 
@@ -155,8 +158,7 @@ export class Layer {
 
         if (this.layerType !== LayerTypes.HeatMap) {
             if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
-                (this.symbolOptions.symbolType === SymbolTypes.Circle ||
-                    this.symbolOptions.symbolType === SymbolTypes.Rectangle)) {
+                this.symbolOptions.symbolType === SymbolTypes.Simple) {
                 getScaleSymbolMaxValues.call(this);
             }
         }
@@ -183,9 +185,11 @@ export class Layer {
 
     /** Manually trigger cluster update*/
     refreshCluster() {
+        console.time('refreshCluster');
         if ((this.displayLayer as any).refreshClusters) {
             (this.displayLayer as any).refreshClusters();
         }
+        console.timeEnd('refreshCluster');
     }
 
     /** GetColors - calculates the color values based on a field name (colorOptions.colorField)  */
@@ -217,6 +221,8 @@ export class Layer {
     getValues() {
         if (!this.values)
             this.values = {};
+        if (!this.uniqueValues)
+            this.uniqueValues = {};
         let pointCount = 0;
         this.geoJSON.features.map(function(feat) {
             if (feat.geometry.type == 'Point') {
@@ -236,6 +242,10 @@ export class Layer {
 
             if (this.values[header]) {
                 this.values[header].sort(function(a, b) { return a - b })
+                this.uniqueValues[header] = this.values[header].filter(function(e, i, arr) {
+                    return arr.lastIndexOf(e) === i;
+                });
+                this.uniqueValues[header].push(this.uniqueValues[header][this.uniqueValues[header].length - 1] + 1)//add 'extra' item to the list
             }
         }
         this.pointFeatureCount = pointCount;
@@ -243,71 +253,131 @@ export class Layer {
     }
 
     createClusteredIcon(cluster) {
-        let values = [];
-        let sum = 0;
+        let values: { [field: string]: any[]; } = {};
+        let avg: { [field: string]: number; } = {};
+        let sum: { [field: string]: number; } = {};
         let col = this.colorOptions;
         let clu = this.clusterOptions;
+        let sym = this.symbolOptions;
         let count = 0;
         let markers = cluster.getAllChildMarkers();
+
+        let relevantHeaders: IHeader[] = [];
+        if (col.colorField)
+            relevantHeaders.push(col.colorField);
+        switch (sym.symbolType) {
+            case SymbolTypes.Simple:
+                if (sym.sizeXVar)
+                    relevantHeaders.push(sym.sizeXVar);
+                if (sym.sizeYVar)
+                    relevantHeaders.push(sym.sizeYVar);
+                break;
+            case SymbolTypes.Icon:
+                relevantHeaders.push(sym.iconField);
+                break;
+            case SymbolTypes.Blocks:
+                relevantHeaders.push(sym.blockSizeVar);
+                break;
+            case SymbolTypes.Chart:
+                sym.chartFields.map(function(f) { relevantHeaders.push(f) });
+        }
+        for (let h of clu.hoverHeaders) {
+            if (relevantHeaders.indexOf(h.header) == -1 && (h.showAvg || h.showSum)) {
+                relevantHeaders.push(h.header);
+            }
+        }
+
         for (let i = 0; i < markers.length; i++) {
             let marker = markers[i];
             if (marker.options.icon && marker.options.icon.options.className.indexOf('marker-hidden') > -1)
                 continue;
-            let val = marker.feature.properties[col.colorField.value];
-            if (!isNaN(parseFloat(val))) {//if is numeric
-                values.push(+val);
-                sum += val;
-            }
-
             count++;
-        }
-        let avg = values.length > 0 ? (sum / values.length).toFixed(col.colorField.decimalAccuracy) : 0;
 
-        let fillColor;
-        if (!col.colorField || !col.useMultipleFillColors) {
-            fillColor = count >= 100 ? '#fc4925' : count >= 50 ? '#ea9d38' : count >= 20 ? '#deea38' : '#85ea38';
+            for (let h of relevantHeaders.slice()) {
+
+                let val = marker.feature.properties[h.value];
+                if (val !== undefined) {
+                    if (!values[h.value])
+                        values[h.value] = [];
+                    values[h.value].push(val);
+                    if (h.type == 'number') {
+                        if (sum[h.value] === undefined)
+                            sum[h.value] = 0;
+                        sum[h.value] += +val;
+                        avg[h.value] = values[h.value].length > 0 ? +(sum[h.value] / values[h.value].length).toFixed(h.decimalAccuracy) : 0;
+                    }
+
+                }
+            }
+        }
+        if (col.colorField && col.useMultipleFillColors) {
+            col.fillColor = GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), avg[col.colorField.value]);
+        }
+
+        let icon: L.DivIcon;
+
+        if (clu.useSymbolStyle) {
+
+            switch (sym.symbolType) {
+                case SymbolTypes.Icon:
+                    icon = getFaIcon(sym, col, 0, avg[sym.iconField.value]);
+                case SymbolTypes.Chart:
+                    let vals = [];
+                    sym.chartFields.map(function(e) {
+                        if (avg[e.value] > 0)
+                            vals.push({ feat: e, val: avg[e.value], color: col.chartColors[e.value] });
+                    });
+                    let sizeVal = sym.sizeXVar ? avg[sym.sizeXVar.value] : undefined;
+                    icon = getChartIcon(sym, col, 20, vals, sizeVal);
+                case SymbolTypes.Blocks:
+                    icon = getBlockIcon(sym, col, 10, avg[sym.blockSizeVar.value]);
+                default:
+                    let yVal = sym.sizeYVar ? avg[sym.sizeYVar.value] : undefined;
+                    let xVal = sym.sizeXVar ? avg[sym.sizeXVar.value] : undefined;
+                    icon = getSimpleIcon(sym, col, 20, yVal, xVal);
+            }
         }
         else {
-            fillColor = GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), +avg); //TODO: check if variable is the same, own variable and limits to clusters?
-        }
-        let style = {
-            background: fillColor,
-            minWidth: 50,
-            minHeight: 50,
-            borderRadius: '30px',
-            display: count > 0 ? 'flex' : 'none',
-            alignItems: 'center',
-            border: '1px solid ' + col.color,
-            opacity: col.fillOpacity
-        }
-        let icon =
-            <div style={style}>
-                <div style={{
-                    textAlign: 'center',
-                    background: '#FFF',
-                    width: '100%',
-                    borderRadius: '30px'
-                }}>
-                    <b style={{ display: 'block' }} > {count}</b>
+            let style = {
+                background: col.fillColor,
+                minWidth: 50,
+                minHeight: 50,
+                borderRadius: '30px',
+                display: count > 0 ? 'flex' : 'none',
+                alignItems: 'center',
+                border: '1px solid ' + col.color,
+                opacity: col.fillOpacity
+            }
+            let iconElem =
+                <div style={style}>
+                    <div style={{
+                        textAlign: 'center',
+                        background: '#FFF',
+                        width: '100%',
+                        borderRadius: '30px'
+                    }}>
+                        <b style={{ display: 'block' }} > {count}</b>
+                    </div>
                 </div>
-            </div>
 
-        let html: string = reactDOMServer.renderToString(icon);
+            let html: string = reactDOMServer.renderToString(iconElem);
+            icon = L.divIcon({
+                html: html, className: '',
+                iconAnchor: L.point(25, 25),
+            });
+
+
+        }
         if (count > 0) {
-            let popupContent =
-                (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '') +
-                (clu.showSum && col.colorField && col.useMultipleFillColors ? (clu.sumText + ' ' + sum.toFixed(col.colorField.decimalAccuracy) + '<br/>') : '') +
-                (clu.showAvg && col.colorField && col.useMultipleFillColors ? (clu.avgText + ' ' + avg + '<br/>') : '') +
-                'Click or zoom to expand';
+            let popupContent = (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '');
+            clu.hoverHeaders.map(function(h) {
+                popupContent += h.showSum ? h.sumText + ' ' + sum[h.header.value].toFixed(h.header.decimalAccuracy) + '<br/>' : '';
+                popupContent += h.showAvg ? h.avgText + ' ' + avg[h.header.value].toFixed(h.header.decimalAccuracy) + '<br/>' : ''
+            })
+            popupContent += 'Click or zoom to expand';
             cluster.bindPopup(popupContent);
         }
-        // let center = cluster.getBounds().getCenter();
-        // let popup = L.popup({ offset: new L.Point(60, cluster.getBounds().getNorth()) }).setContent(popupContent);
-        // cluster.bindPopup(popup);
-        return L.divIcon({
-            html: html, className: '',
-            iconAnchor: L.point(25, 25),
-        });
+        return icon;
     }
     /** Add the determined amount of feature layers to displayLayer and let the UI refresh in between*/
     batchAdd(start: number, end: number, source, target) {
@@ -341,69 +411,21 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
     let x, y;
     switch (sym.symbolType) {
         case SymbolTypes.Icon:
-            let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), sym.iconField ? feature.properties[sym.iconField.value] : 0);
-            let customIcon = L.ExtraMarkers.icon({
-                icon: icon ? icon.fa : sym.icons[0].fa,
-                prefix: 'fa',
-                markerColor: col.fillColor,
-                svg: true,
-                svgBorderColor: col.color,
-                svgOpacity: 1,
-                shape: icon ? icon.shape : sym.icons[0].shape,
-                iconColor: col.iconTextColor,
-            });
-            let mark = L.marker(latlng, { icon: customIcon, opacity: col.opacity });
-            return mark;
+            return L.marker(latlng, { icon: getFaIcon(sym, col, 0, feature.properties[sym.iconField.value]), opacity: col.opacity });
         case SymbolTypes.Chart:
             let vals = [];
-            let i = 0;
-            x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-            if (x === 0) {
-                return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });;
-            }
             sym.chartFields.map(function(e) {
                 if (feature.properties[e.value] > 0)
                     vals.push({ feat: e, val: feature.properties[e.value], color: col.chartColors[e.value] });
-                i++;
             });
-
-            let chartHtml = makePieChart({
-                fullCircle: sym.chartType === 'pie',
-                data: vals,
-                valueFunc: function(d) { return d.val; },
-                strokeWidth: col.weight,
-                outerRadius: x,
-                innerRadius: x / 3,
-                pieClass: function(d) { return d.data.feat },
-                pathFillFunc: function(d) { return d.data.color },
-                borderColor: col.color,
-            });
-            let marker = L.divIcon({ iconAnchor: L.point(x, x), html: chartHtml, className: '' });
-            return L.marker(latlng, { icon: marker, opacity: col.opacity });
+            let sizeVal = sym.sizeXVar ? feature.properties[sym.sizeXVar.value] : undefined;
+            return L.marker(latlng, { icon: getChartIcon(sym, col, 0, vals, sizeVal), opacity: col.opacity });
         case SymbolTypes.Blocks:
-            let blockCount = Math.ceil(feature.properties[sym.blockSizeVar.value] / sym.blockValue);
-            let columns = Math.min(sym.maxBlockColumns, blockCount);
-            let rows = Math.min(sym.maxBlockRows, blockCount);
-            let blocks = makeBlockSymbol(blockCount, columns, rows, col.fillColor, col.color, col.weight, sym.blockWidth);
-            let blockMarker = L.divIcon({ iconAnchor: L.point(sym.blockWidth / 2 * blocks.columns, sym.blockWidth / 2 * blocks.rows), html: blocks.html, className: '' });
-            return L.marker(latlng, { icon: blockMarker, opacity: col.opacity });
-        case SymbolTypes.Rectangle:
-            x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-            y = sym.sizeYVar ? GetSymbolSize(feature.properties[sym.sizeYVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-            if (x === 0 || y === 0) {
-                return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });;
-            }
-            let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + '"/>';
-            let rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
-            return L.marker(latlng, { icon: rectIcon, opacity: col.opacity });
+            return L.marker(latlng, { icon: getBlockIcon(sym, col, 0, feature.properties[sym.blockSizeVar.value]), opacity: col.opacity });
         default:
-            x = sym.sizeXVar ? GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-            if (x === 0) {
-                return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });;
-            }
-            let circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + ';border-radius: 30px;"/>';
-            let circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
-            return L.marker(latlng, { icon: circleIcon, opacity: col.opacity });
+            let yVal = sym.sizeYVar ? feature.properties[sym.sizeYVar.value] : undefined;
+            let xVal = sym.sizeXVar ? feature.properties[sym.sizeXVar.value] : undefined;
+            return L.marker(latlng, { icon: getSimpleIcon(sym, col, 0, yVal, xVal), opacity: col.opacity });
     }
 
 }
@@ -479,122 +501,177 @@ function getScaleSymbolMaxValues() {
     sym.actualMaxYRadius = maxYradius;
 }
 
-function makePieChart(options) {
-    if (!options.data || !options.valueFunc) {
-        return '';
-    }
-    let data = options.data,
-        valueFunc = options.valueFunc,
-        r = options.outerRadius ? options.outerRadius : 28,
-        rInner = options.innerRadius ? options.innerRadius : r - 10,
-        pathTitleFunc = options.pathTitleFunc ? options.pathTitleFunc : function(d) { return d.data.feat.label + ': ' + d.data.val }, //Title for each path
-        pieLabel = options.pieLabel ? options.pieLabel : '', //Label for the whole chart
-        pathFillFunc = options.pathFillFunc,
-        border = options.borderColor,
-
-        origo = (r + options.strokeWidth), //Center coordinate
-        w = origo * 2, //width and height of the svg element
-        h = w,
-        donut = d3.layout.pie(),
-        arc = options.fullCircle ? d3.svg.arc().outerRadius(r) : d3.svg.arc().innerRadius(rInner).outerRadius(r);
-
-    //Create an svg element
-    let svg = document.createElementNS(d3.ns.prefix.svg, 'svg');
-    //Create the pie chart
-    let vis = d3.select(svg)
-        .data([data])
-        .attr('width', w)
-        .attr('height', h);
-
-    let arcs = vis.selectAll('g.arc')
-        .data(donut.value(valueFunc))
-        .enter().append('svg:g')
-        .attr('class', 'arc')
-        .attr('transform', 'translate(' + origo + ',' + origo + ')');
-
-    arcs.append('svg:path')
-        .attr('fill', pathFillFunc)
-        .attr('stroke', border)
-        .attr('stroke-width', options.strokeWidth)
-        .attr('d', arc)
-        .append('svg:title')
-        .text(pathTitleFunc);
-
-    vis.append('text')
-        .attr('x', origo)
-        .attr('y', origo)
-        .attr('text-anchor', 'middle')
-        //.attr('dominant-baseline', 'central')
-        /*IE doesn't seem to support dominant-baseline, but setting dy to .3em does the trick*/
-        .attr('dy', '.3em')
-        .text(pieLabel);
-    //Return the svg-markup rather than the actual element
-    if (typeof (window as any).XMLSerializer != "undefined") {
-        return (new (window as any).XMLSerializer()).serializeToString(svg);
-    } else if (typeof (svg as any).xml != "undefined") {
-        return (svg as any).xml;
-    }
-    return "";
+function getFaIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, value: number) {
+    let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), sym.iconField ? value : 0);
+    return L.ExtraMarkers.icon({
+        icon: icon ? icon.fa : sym.icons[0].fa,
+        prefix: 'fa',
+        markerColor: col.fillColor,
+        svg: true,
+        svgBorderColor: col.color,
+        svgOpacity: 1,
+        shape: icon ? icon.shape : sym.icons[0].shape,
+        iconColor: col.iconTextColor,
+    });
 }
 
-function makeBlockSymbol(blockAmount: number, columns: number, rows: number, fillColor: string, borderColor: string, borderWeight: number, width: number) {
-    let arr = [];
-    let filledBlocks = 0;
-    let actualColumns = 0;
-    let actualRows = 0;
-    let style = {
-        height: width,
-        width: width,
-        backgroundColor: fillColor,
-        margin: 0,
-        padding: 0,
-        border: borderWeight + 'px solid ' + borderColor,
-    }
-    for (let row = 0; row < rows; row++) {
-        if (filledBlocks < blockAmount) {
-            actualRows++;
-            arr.push(
-                <tr key={row}>
-                    {getColumns.call(this, row).map(
-                        function(column) {
-                            return column;
-                        })
-                    }
-                </tr>
-            );
+function getChartIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, vals: any[], value?: number) {
+
+    let x = value ? GetSymbolSize(value, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+    x += sizeModifier;
+
+    let chartHtml = makePieChart({
+        fullCircle: sym.chartType === 'pie',
+        data: vals,
+        valueFunc: function(d) { return d.val; },
+        strokeWidth: col.weight,
+        outerRadius: x,
+        innerRadius: x / 3,
+        pieClass: function(d) { return d.data.feat },
+        pathFillFunc: function(d) { return d.data.color },
+        borderColor: col.color,
+    });
+    return L.divIcon({ iconAnchor: L.point(x, x), popupAnchor: L.point(0, -x), html: chartHtml, className: '' });
+
+    function makePieChart(options) {
+        if (!options.data || !options.valueFunc) {
+            return '';
         }
-        else
-            break;
+        let data = options.data,
+            valueFunc = options.valueFunc,
+            r = options.outerRadius ? options.outerRadius : 28,
+            rInner = options.innerRadius ? options.innerRadius : r - 10,
+            pathTitleFunc = options.pathTitleFunc ? options.pathTitleFunc : function(d) { return d.data.feat.label + ': ' + d.data.val }, //Title for each path
+            pieLabel = options.pieLabel ? options.pieLabel : '', //Label for the whole chart
+            pathFillFunc = options.pathFillFunc,
+            border = options.borderColor,
+
+            origo = (r + options.strokeWidth), //Center coordinate
+            w = origo * 2, //width and height of the svg element
+            h = w,
+            donut = d3.layout.pie(),
+            arc = options.fullCircle ? d3.svg.arc().outerRadius(r) : d3.svg.arc().innerRadius(rInner).outerRadius(r);
+
+        //Create an svg element
+        let svg = document.createElementNS(d3.ns.prefix.svg, 'svg');
+        //Create the pie chart
+        let vis = d3.select(svg)
+            .data([data])
+            .attr('width', w)
+            .attr('height', h);
+
+        let arcs = vis.selectAll('g.arc')
+            .data(donut.value(valueFunc))
+            .enter().append('svg:g')
+            .attr('class', 'arc')
+            .attr('transform', 'translate(' + origo + ',' + origo + ')');
+
+        arcs.append('svg:path')
+            .attr('fill', pathFillFunc)
+            .attr('stroke', border)
+            .attr('stroke-width', options.strokeWidth)
+            .attr('d', arc)
+            .append('svg:title')
+            .text(pathTitleFunc);
+
+        vis.append('text')
+            .attr('x', origo)
+            .attr('y', origo)
+            .attr('text-anchor', 'middle')
+            //.attr('dominant-baseline', 'central')
+            /*IE doesn't seem to support dominant-baseline, but setting dy to .3em does the trick*/
+            .attr('dy', '.3em')
+            .text(pieLabel);
+        //Return the svg-markup rather than the actual element
+        if (typeof (window as any).XMLSerializer != "undefined") {
+            return (new (window as any).XMLSerializer()).serializeToString(svg);
+        } else if (typeof (svg as any).xml != "undefined") {
+            return (svg as any).xml;
+        }
+        return "";
     }
 
-    function getColumns(i: number) {
+}
+
+function getBlockIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, value: number) {
+    let blockCount = Math.ceil(value / sym.blockValue);
+    let columns = Math.min(sym.maxBlockColumns, blockCount);
+    let rows = Math.min(sym.maxBlockRows, blockCount);
+    let blocks = makeBlockSymbol(col.fillColor, col.color, col.weight, sym.blockWidth + sizeModifier);
+    return L.divIcon({
+        iconAnchor: L.point((sym.blockWidth + sizeModifier) / 2 * blocks.columns, (sym.blockWidth + sizeModifier) / 2 * blocks.rows),
+        popupAnchor: L.point(0, (sym.blockWidth + sizeModifier) / 2 * -blocks.rows),
+        html: blocks.html, className: ''
+    });
+
+    function makeBlockSymbol(fillColor: string, borderColor: string, borderWeight: number, width: number) {
         let arr = [];
-        for (let c = 0; c < columns; c++) {
-            let isDrawn = c * rows + (rows - i) <= blockAmount;
-            if (isDrawn) {
-                arr.push(<td style={style} key={i + c}/>);
-                filledBlocks++;
-                actualColumns = Math.max(c + 1, actualColumns);
-            }
-            else {
-                return arr;
-            }
+        let filledBlocks = 0;
+        let actualColumns = 0;
+        let actualRows = 0;
+        let style = {
+            height: width,
+            width: width,
+            backgroundColor: fillColor,
+            margin: 0,
+            padding: 0,
+            border: borderWeight + 'px solid ' + borderColor,
         }
-        return arr;
-    }
+        for (let row = 0; row < rows; row++) {
+            if (filledBlocks < blockCount) {
+                actualRows++;
+                arr.push(
+                    <tr key={row}>
+                        {getColumns.call(this, row).map(
+                            function(column) {
+                                return column;
+                            })
+                        }
+                    </tr>
+                );
+            }
+            else
+                break;
+        }
 
-    let table =
-        <table style={{
-            borderCollapse: 'collapse',
-            width: actualColumns * width,
-        }}>
-            <tbody>
-                {arr.map(function(td) {
-                    return td;
-                })}
-            </tbody>
-        </table>;
-    return { html: reactDOMServer.renderToString(table), rows: actualRows, columns: actualColumns };
+        function getColumns(i: number) {
+            let arr = [];
+            for (let c = 0; c < columns; c++) {
+                let isDrawn = c * rows + (rows - i) <= blockCount;
+                if (isDrawn) {
+                    arr.push(<td style={style} key={i + c}/>);
+                    filledBlocks++;
+                    actualColumns = Math.max(c + 1, actualColumns);
+                }
+                else {
+                    return arr;
+                }
+            }
+            return arr;
+        }
+
+        let table =
+            <table style={{
+                borderCollapse: 'collapse',
+                width: actualColumns * width,
+            }}>
+                <tbody>
+                    {arr.map(function(td) {
+                        return td;
+                    })}
+                </tbody>
+            </table>;
+        return { html: reactDOMServer.renderToString(table), rows: actualRows, columns: actualColumns };
+    }
+}
+
+function getSimpleIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, yValue: number, xValue: number) {
+    let x = xValue !== undefined ? GetSymbolSize(xValue, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+    let y = yValue !== undefined ? GetSymbolSize(yValue, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+    x += sizeModifier;
+    y += sizeModifier;
+    let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; background-color:' + col.fillColor + '; border: ' + (col.weight + sizeModifier / 6) + 'px solid ' + col.color + '; border-radius: ' + sym.borderRadius + 'px;"/>';
+    return L.divIcon({ iconAnchor: L.point((x + col.weight + sizeModifier / 3) / 2, (y + col.weight + sizeModifier / 3) / 2), popupAnchor: L.point(0, -y / 2), html: rectHtml, className: '' });
 }
 
 function createHeatLayer(l: Layer) {
@@ -669,23 +746,23 @@ export class ColorOptions implements L.PathOptions {
     /** The Chroma-js method to calculate colors. Default q->quantiles*/
     @observable mode: string;
     /** The color of the icon in symbol maps. Default white */
-    @observable iconTextColor: string = '#FFF';
+    @observable iconTextColor: string;
     /** Main fill color. Default yellow*/
-    @observable fillColor: string = '#E0E62D';
+    @observable fillColor: string;
     /** Border color. Default black*/
-    @observable color: string = '#000';
+    @observable color: string;
     /** Border width. Default 1*/
-    @observable weight: number = 1;
+    @observable weight: number;
     /** Main opacity. Default 0.8*/
-    @observable fillOpacity: number = 0.8;
+    @observable fillOpacity: number;
     /** Border opacity. Default 0.8*/
-    @observable opacity: number = 0.8;
+    @observable opacity: number;
     /** Whether to use choropleth colors/user-defined color steps or not*/
     @observable useMultipleFillColors: boolean;
     /** The l.heat radius, in meters */
-    @observable heatMapRadius: number = 25;
+    @observable heatMapRadius: number;
     /** Chart symbol colors*/
-    @observable chartColors: { [field: string]: string; } = undefined;
+    @observable chartColors: { [field: string]: string; };
 
 
 
@@ -737,6 +814,8 @@ export class SymbolOptions {
     @observable sizeYVar: IHeader;
     /** The name of the field to scale block size by*/
     @observable blockSizeVar: IHeader;
+    /** Simple icon CSS border radius in px*/
+    @observable borderRadius: number;
     /** The minimum allowed size when scaling*/
     @observable sizeLowLimit: number;
     /** The maximum allowed size when scaling*/
@@ -774,13 +853,15 @@ export class SymbolOptions {
 
     constructor(prev?: SymbolOptions) {
 
-        this.symbolType = prev && prev.symbolType || SymbolTypes.Circle;
+        this.symbolType = prev && prev.symbolType || SymbolTypes.Simple;
         this.useMultipleIcons = prev && prev.useMultipleIcons || false;
         this.icons = prev && prev.icons || [{ shape: 'circle', fa: 'fa-anchor' }];
         this.iconField = prev && prev.iconField || undefined;
         this.iconLimits = prev && prev.iconLimits || [];
         this.sizeXVar = prev && prev.sizeXVar || undefined;
         this.sizeYVar = prev && prev.sizeYVar || undefined;
+        this.blockSizeVar = prev && prev.blockSizeVar || undefined;
+        this.borderRadius = prev && prev.borderRadius || 30;
         this.sizeLowLimit = prev && prev.sizeLowLimit || 0;
         this.sizeUpLimit = prev && prev.sizeUpLimit || 50;
         this.sizeMultiplier = prev && prev.sizeMultiplier || 1;
@@ -806,20 +887,15 @@ export class ClusterOptions {
     /** Show count on clustered marker hover*/
     @observable showCount: boolean;
     @observable countText: string;
-    @observable showAvg: boolean;
-    @observable avgText: string;
-    @observable showSum: boolean;
-    @observable sumText: string;
+    @observable hoverHeaders: { header: IHeader, showAvg: boolean, showSum: boolean, avgText: string, sumText: string }[];
+    @observable useSymbolStyle: boolean;
 
     constructor(prev?: ClusterOptions) {
         this.useClustering = prev && prev.useClustering || false;
         this.showCount = prev && prev.showCount || true;
         this.countText = prev && prev.countText || 'map points';
-        this.showAvg = prev && prev.showAvg || true;
-        this.avgText = prev && prev.avgText || 'avg:';
-        this.showAvg = prev && prev.showAvg || false;
-        this.sumText = prev && prev.sumText || 'sum:';
-
+        this.useSymbolStyle = prev && prev.useSymbolStyle || false;
+        this.hoverHeaders = prev && prev.hoverHeaders || [];
     }
 }
 
@@ -851,11 +927,9 @@ export enum LayerTypes {
 
 /** Different supported symbol types */
 export enum SymbolTypes {
-    /** Basic circular symbol. Uses L.CircleMarker. Can be resized and colored. */
-    Circle,
-    /** Basic rectancular symbol. Uses L.DivIcon. Width and height can both be resized, and color can be changed. */
-    Rectangle,
-    /** Pie- or donut chart based on multiple icons. Can be resized, but color scheme is static. */
+    /** Simple size-scalable symbols (circle,rectangle)*/
+    Simple,
+    /** Pie- or donut chart based on multiple icons. Can be resized */
     Chart,
     /** leaflet.Awesome-Markers- type marker. Uses Font Awesome-css to show a specific icon. */
     Icon,

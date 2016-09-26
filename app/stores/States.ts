@@ -1,5 +1,5 @@
 import { observable, computed, autorun } from 'mobx';
-import { Layer, LayerTypes } from './Layer';
+import { Layer, LayerTypes, IHeader } from './Layer';
 import { Filter } from './Filter';
 import { Legend } from './Legend';
 let mobx = require('mobx');
@@ -39,6 +39,8 @@ export class AppState {
     /** Currently open submenu index. 0=none*/
     @observable visibleMenu: number = 0;
 
+    @observable welcomeScreenState: WelcomeScreenState = new WelcomeScreenState();
+
     @observable importWizardState: ImportWizardState;
 
     /** UI state of the color menu*/
@@ -59,6 +61,9 @@ export class AppState {
 
     @observable exportMenuState: ExportMenuState = new ExportMenuState();
 
+    @observable clusterMenuState: ClusterMenuState = new ClusterMenuState();
+
+
     @observable autoRefresh: boolean = true;
 
     @observable embed: boolean = false;
@@ -66,9 +71,14 @@ export class AppState {
     map: L.Map;
 }
 
+export class WelcomeScreenState {
+    loadedMap: SaveState;
+    fileName: string;
+}
+
 /** The state to be saved when exporting a map to a file*/
 export class SaveState {
-    baseLayerId: 'string';
+    baseLayerId: string;
     /** The layers of the map.*/
     layers: Layer[] = [];
     /** The data filters of the map.*/
@@ -148,9 +158,9 @@ export class LegendMenuState {
 
 export class LayerMenuState {
     /** The current order of layers */
-    @observable standardLayerOrder: { name: string, id: number }[] = [];
+    @observable standardLayerOrder: { id: number }[] = [];
     /** The current order of heatmap layers */
-    @observable heatLayerOrder: { name: string, id: number }[] = [];
+    @observable heatLayerOrder: { id: number }[] = [];
     @observable editingLayer: Layer;
 
 }
@@ -159,4 +169,8 @@ export class ExportMenuState {
     @observable showLegend: boolean;
     @observable showFilters: boolean;
     @observable imageName: boolean;
+}
+
+export class ClusterMenuState {
+    @observable selectedHeader: IHeader;
 }

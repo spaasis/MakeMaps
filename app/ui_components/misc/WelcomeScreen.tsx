@@ -2,9 +2,10 @@ import * as React from 'react';
 import { DemoPreview } from './DemoPreview';
 let Dropzone = require('react-dropzone');
 import { LoadExternalMap, ShowLoading, ShowNotification } from '../../common_items/common';
+import {AppState} from '../../stores/States';
 
 
-export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcomeScreenStates>{
+export class WelcomeScreen extends React.Component<{ appState: AppState, loadMap: ()=>void, openLayerImport:()=>void}, {}>{
     constructor() {
         super();
         this.state = { fileName: null };
@@ -37,11 +38,12 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
             let contents: any = e.target;
             let ext: string = fileName.split('.').pop().toLowerCase();
             if (ext === 'mmap') {
-                this.setState({
-                    savedJSON: JSON.parse(contents.result),
-                    fileName: fileName,
-
-                });
+              this.props.appState.welcomeScreenState ={ loadedMap : JSON.parse(contents.result), fileName : fileName };
+                // this.setState({
+                //     savedJSON: JSON.parse(contents.result),
+                //     fileName: fileName,
+                //
+                // });
             }
             else {
                 ShowNotification('Select a .mmap file!');
@@ -54,14 +56,13 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
       e.preventDefault();
       e.stopPropagation();
       let load = this.props.loadMap;
-      let json  =this.state.savedJSON;
 
-      setTimeout(function(){load(json)}, 10);
+      setTimeout(function(){load()}, 10);
     }
     render() {
         let dropStyle = {
             height: 150,
-            border: this.state.fileName ? '1px solid #549341' : '1px dotted #549341',
+            border: this.props.appState.welcomeScreenState.fileName ? '1px solid #549341' : '1px dotted #549341',
             borderRadius: 15,
             margin: 5,
             textAlign: 'center',
@@ -74,7 +75,7 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
               <img src='app/images/favicon.png' style={{ display:'inline-block', width:50, height:50, verticalAlign:'middle' }}/>
               <img src='app/images/logo_pre.png' style={{ display:'inline-block', verticalAlign:'middle'}}/>
               <img src='app/images/favicon.png' style={{ display:'inline-block', width:50, height:50, verticalAlign:'middle' }}/>
-              
+
             </div>
             MakeMaps is an open source map creation tool that lets you make powerful visualizations from your spatial data
             <br/>
@@ -119,10 +120,10 @@ export class WelcomeScreen extends React.Component<IWelcomeScreenProps, IWelcome
                             onDrop={this.onDrop.bind(this)}
                             accept={'.mmap'}
                             >
-                            {this.state.fileName ?
+                            {this.props.appState.welcomeScreenState.fileName ?
                                 <span>
                                     <i className='fa fa-check' style={{ color: '#549341', fontSize: 17 }}/>
-                                    {this.state.fileName}
+                                    {this.props.appState.welcomeScreenState.fileName}
                                     <div style={{ margin: '0 auto' }}>
                                     <button  className='primaryButton' onClick={this.loadMap.bind(this)}>Show me</button>
                                     </div>
