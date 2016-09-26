@@ -166,9 +166,9 @@
 	        this.props.state.map.fitBounds(l.layerType === Layer_1.LayerTypes.HeatMap ? l.displayLayer._latlngs : l.displayLayer.getBounds());
 	        this.props.state.layers.push(l);
 	        if (l.layerType === Layer_1.LayerTypes.HeatMap)
-	            this.props.state.layerMenuState.heatLayerOrder.push({ name: l.name, id: l.id });
+	            this.props.state.layerMenuState.heatLayerOrder.push({ id: l.id });
 	        else
-	            this.props.state.layerMenuState.standardLayerOrder.push({ name: l.name, id: l.id });
+	            this.props.state.layerMenuState.standardLayerOrder.push({ id: l.id });
 	        this.props.state.importWizardShown = false;
 	        this.props.state.editingLayer = l;
 	        this.props.state.menuShown = true;
@@ -241,6 +241,8 @@
 	    MapMain.prototype.loadSavedMap = function (saved) {
 	        console.time("LoadSavedMap");
 	        var headers;
+	        if (!saved)
+	            saved = this.props.state.welcomeScreenState.loadedMap;
 	        if (saved.baseLayerId) {
 	            var oldBase = this.props.state.activeBaseLayer;
 	            var newBase = void 0;
@@ -257,16 +259,19 @@
 	            var lyr = saved.layers[i];
 	            var newLayer = new Layer_1.Layer(this.props.state);
 	            headers = [];
-	            for (var j in lyr.headers) {
-	                headers.push(new Layer_1.IHeader(lyr.headers[j]));
+	            for (var _i = 0, _a = lyr.headers; _i < _a.length; _i++) {
+	                var j = _a[_i];
+	                headers.push(new Layer_1.IHeader(j));
 	            }
 	            var popupHeaders = [];
-	            for (var k in lyr.popupHeaders) {
-	                popupHeaders.push(getHeaderByValue(lyr.popupHeaders[k]));
+	            for (var _b = 0, _c = lyr.popupHeaders; _b < _c.length; _b++) {
+	                var k = _c[_b];
+	                popupHeaders.push(getHeaderByValue(k.value));
 	            }
 	            var chartFields = [];
-	            for (var k in lyr.symbolOptions.chartFields) {
-	                chartFields.push(getHeaderByValue(lyr.popupHeaders[k]));
+	            for (var _d = 0, _e = lyr.symbolOptions.chartFields; _d < _e.length; _d++) {
+	                var k = _e[_d];
+	                chartFields.push(getHeaderByValue(k.value));
 	            }
 	            newLayer.id = _currentLayerId++;
 	            newLayer.name = lyr.name;
@@ -275,18 +280,18 @@
 	            newLayer.layerType = lyr.layerType;
 	            newLayer.geoJSON = lyr.geoJSON;
 	            newLayer.colorOptions = new Layer_1.ColorOptions(lyr.colorOptions);
-	            newLayer.colorOptions.colorField = lyr.colorOptions.colorField ? getHeaderByValue(lyr.colorOptions.colorField) : undefined;
+	            newLayer.colorOptions.colorField = lyr.colorOptions.colorField ? getHeaderByValue(lyr.colorOptions.colorField.value) : undefined;
 	            newLayer.symbolOptions = new Layer_1.SymbolOptions(lyr.symbolOptions);
-	            newLayer.symbolOptions.iconField = lyr.symbolOptions.iconField ? getHeaderByValue(lyr.symbolOptions.iconField) : undefined;
-	            newLayer.symbolOptions.sizeXVar = lyr.symbolOptions.sizeXVar ? getHeaderByValue(lyr.symbolOptions.sizeXVar) : undefined;
-	            newLayer.symbolOptions.sizeYVar = lyr.symbolOptions.sizeYVar ? getHeaderByValue(lyr.symbolOptions.sizeYVar) : undefined;
+	            newLayer.symbolOptions.iconField = lyr.symbolOptions.iconField ? getHeaderByValue(lyr.symbolOptions.iconField.value) : undefined;
+	            newLayer.symbolOptions.sizeXVar = lyr.symbolOptions.sizeXVar ? getHeaderByValue(lyr.symbolOptions.sizeXVar.value) : undefined;
+	            newLayer.symbolOptions.sizeYVar = lyr.symbolOptions.sizeYVar ? getHeaderByValue(lyr.symbolOptions.sizeYVar.value) : undefined;
 	            newLayer.symbolOptions.chartFields = chartFields;
 	            newLayer.clusterOptions = new Layer_1.ClusterOptions(lyr.clusterOptions);
 	            this.props.state.layers.push(newLayer);
 	            if (newLayer.layerType === Layer_1.LayerTypes.HeatMap)
-	                this.props.state.layerMenuState.heatLayerOrder.push({ name: newLayer.name, id: newLayer.id });
+	                this.props.state.layerMenuState.heatLayerOrder.push({ id: newLayer.id });
 	            else
-	                this.props.state.layerMenuState.standardLayerOrder.push({ name: newLayer.name, id: newLayer.id });
+	                this.props.state.layerMenuState.standardLayerOrder.push({ id: newLayer.id });
 	        }
 	        saved.filters.map(function (f) { this.props.state.filters.push(new Filter_1.Filter(this.props.state, f)); }, this);
 	        for (var i in this.props.state.layers.slice()) {
@@ -300,8 +305,8 @@
 	        this.props.state.menuShown = !this.props.state.embed;
 	        common_1.HideLoading();
 	        console.timeEnd("LoadSavedMap");
-	        function getHeaderByValue(header) {
-	            return headers.filter(function (h) { return h.value == header.value; })[0];
+	        function getHeaderByValue(value) {
+	            return headers.filter(function (h) { return h.value == value; })[0];
 	        }
 	    };
 	    MapMain.prototype.render = function () {
@@ -313,7 +318,7 @@
 	            }
 	        };
 	        return (React.createElement("div", null, React.createElement("div", {id: 'map'}, this.getFilters(), this.showLegend()), this.props.state.embed ? null :
-	            React.createElement("div", null, React.createElement(Modal, {isOpen: this.props.state.welcomeShown, style: modalStyle}, React.createElement(WelcomeScreen_1.WelcomeScreen, {loadMap: this.loadSavedMap.bind(this), openLayerImport: this.startLayerImport.bind(this)})), this.props.state.importWizardShown ?
+	            React.createElement("div", null, React.createElement(Modal, {isOpen: this.props.state.welcomeShown, style: modalStyle}, React.createElement(WelcomeScreen_1.WelcomeScreen, {appState: this.props.state, loadMap: this.loadSavedMap.bind(this), openLayerImport: this.startLayerImport.bind(this)})), this.props.state.importWizardShown ?
 	                React.createElement(Modal, {isOpen: this.props.state.importWizardShown, style: modalStyle}, React.createElement(LayerImportWizard_1.LayerImportWizard, {state: this.props.state, submit: this.layerImportSubmit.bind(this), cancel: this.cancelLayerImport.bind(this)}))
 	                : null, this.props.state.menuShown ?
 	                React.createElement(Menu_1.MakeMapsMenu, {state: this.props.state, addLayer: this.startLayerImport.bind(this), changeLayerOrder: this.changeLayerOrder.bind(this), saveImage: this.saveImage, saveFile: this.saveFile.bind(this)})
@@ -22769,12 +22774,14 @@
 	        this.filters = [];
 	        this.legend = new Legend_1.Legend();
 	        this.visibleMenu = 0;
+	        this.welcomeScreenState = new WelcomeScreenState();
 	        this.colorMenuState = new ColorMenuState();
 	        this.symbolMenuState = new SymbolMenuState();
 	        this.filterMenuState = new FilterMenuState();
 	        this.legendMenuState = new LegendMenuState();
 	        this.layerMenuState = new LayerMenuState();
 	        this.exportMenuState = new ExportMenuState();
+	        this.clusterMenuState = new ClusterMenuState();
 	        this.autoRefresh = true;
 	        this.embed = false;
 	    }
@@ -22850,6 +22857,10 @@
 	    ], AppState.prototype, "visibleMenu", void 0);
 	    __decorate([
 	        mobx_1.observable, 
+	        __metadata('design:type', WelcomeScreenState)
+	    ], AppState.prototype, "welcomeScreenState", void 0);
+	    __decorate([
+	        mobx_1.observable, 
 	        __metadata('design:type', ImportWizardState)
 	    ], AppState.prototype, "importWizardState", void 0);
 	    __decorate([
@@ -22882,6 +22893,10 @@
 	    ], AppState.prototype, "exportMenuState", void 0);
 	    __decorate([
 	        mobx_1.observable, 
+	        __metadata('design:type', ClusterMenuState)
+	    ], AppState.prototype, "clusterMenuState", void 0);
+	    __decorate([
+	        mobx_1.observable, 
 	        __metadata('design:type', Boolean)
 	    ], AppState.prototype, "autoRefresh", void 0);
 	    __decorate([
@@ -22891,6 +22906,12 @@
 	    return AppState;
 	}());
 	exports.AppState = AppState;
+	var WelcomeScreenState = (function () {
+	    function WelcomeScreenState() {
+	    }
+	    return WelcomeScreenState;
+	}());
+	exports.WelcomeScreenState = WelcomeScreenState;
 	var SaveState = (function () {
 	    function SaveState() {
 	        this.layers = [];
@@ -23085,6 +23106,16 @@
 	    return ExportMenuState;
 	}());
 	exports.ExportMenuState = ExportMenuState;
+	var ClusterMenuState = (function () {
+	    function ClusterMenuState() {
+	    }
+	    __decorate([
+	        mobx_1.observable, 
+	        __metadata('design:type', Layer_1.IHeader)
+	    ], ClusterMenuState.prototype, "selectedHeader", void 0);
+	    return ClusterMenuState;
+	}());
+	exports.ClusterMenuState = ClusterMenuState;
 
 
 /***/ },
@@ -23119,6 +23150,7 @@
 	        this.toggleRedraw = true;
 	        this.pointFeatureCount = 0;
 	        this.values = undefined;
+	        this.uniqueValues = undefined;
 	        this.appState = state;
 	        this.layerType = LayerTypes.Standard;
 	    }
@@ -23188,7 +23220,7 @@
 	                console.timeEnd('geojsonlayer');
 	            }
 	            if (this.displayLayer) {
-	                if (this.pointFeatureCount > 500 && !this.clusterOptions.useClustering) {
+	                if (this.layerType !== LayerTypes.HeatMap && this.pointFeatureCount > 500 && !this.clusterOptions.useClustering) {
 	                    common_1.ShowNotification('The dataset contains a large number of map points. Point clustering has beeen enabled to boost performance. If you wish, you may turn this off in the clustering options');
 	                    this.clusterOptions.useClustering = true;
 	                }
@@ -23221,8 +23253,7 @@
 	        }
 	        if (this.layerType !== LayerTypes.HeatMap) {
 	            if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
-	                (this.symbolOptions.symbolType === SymbolTypes.Circle ||
-	                    this.symbolOptions.symbolType === SymbolTypes.Rectangle)) {
+	                this.symbolOptions.symbolType === SymbolTypes.Simple) {
 	                getScaleSymbolMaxValues.call(this);
 	            }
 	        }
@@ -23242,9 +23273,11 @@
 	        }
 	    };
 	    Layer.prototype.refreshCluster = function () {
+	        console.time('refreshCluster');
 	        if (this.displayLayer.refreshClusters) {
 	            this.displayLayer.refreshClusters();
 	        }
+	        console.timeEnd('refreshCluster');
 	    };
 	    Layer.prototype.getColors = function () {
 	        var opts = this.colorOptions;
@@ -23270,6 +23303,8 @@
 	    Layer.prototype.getValues = function () {
 	        if (!this.values)
 	            this.values = {};
+	        if (!this.uniqueValues)
+	            this.uniqueValues = {};
 	        var pointCount = 0;
 	        this.geoJSON.features.map(function (feat) {
 	            if (feat.geometry.type == 'Point') {
@@ -23285,64 +23320,126 @@
 	            var header = this.headers[i].value;
 	            if (this.values[header]) {
 	                this.values[header].sort(function (a, b) { return a - b; });
+	                this.uniqueValues[header] = this.values[header].filter(function (e, i, arr) {
+	                    return arr.lastIndexOf(e) === i;
+	                });
+	                this.uniqueValues[header].push(this.uniqueValues[header][this.uniqueValues[header].length - 1] + 1);
 	            }
 	        }
 	        this.pointFeatureCount = pointCount;
 	    };
 	    Layer.prototype.createClusteredIcon = function (cluster) {
-	        var values = [];
-	        var sum = 0;
+	        var values = {};
+	        var avg = {};
+	        var sum = {};
 	        var col = this.colorOptions;
 	        var clu = this.clusterOptions;
+	        var sym = this.symbolOptions;
 	        var count = 0;
 	        var markers = cluster.getAllChildMarkers();
+	        var relevantHeaders = [];
+	        if (col.colorField)
+	            relevantHeaders.push(col.colorField);
+	        switch (sym.symbolType) {
+	            case SymbolTypes.Simple:
+	                if (sym.sizeXVar)
+	                    relevantHeaders.push(sym.sizeXVar);
+	                if (sym.sizeYVar)
+	                    relevantHeaders.push(sym.sizeYVar);
+	                break;
+	            case SymbolTypes.Icon:
+	                relevantHeaders.push(sym.iconField);
+	                break;
+	            case SymbolTypes.Blocks:
+	                relevantHeaders.push(sym.blockSizeVar);
+	                break;
+	            case SymbolTypes.Chart:
+	                sym.chartFields.map(function (f) { relevantHeaders.push(f); });
+	        }
+	        for (var _i = 0, _a = clu.hoverHeaders; _i < _a.length; _i++) {
+	            var h = _a[_i];
+	            if (relevantHeaders.indexOf(h.header) == -1 && (h.showAvg || h.showSum)) {
+	                relevantHeaders.push(h.header);
+	            }
+	        }
 	        for (var i = 0; i < markers.length; i++) {
 	            var marker = markers[i];
 	            if (marker.options.icon && marker.options.icon.options.className.indexOf('marker-hidden') > -1)
 	                continue;
-	            var val = marker.feature.properties[col.colorField.value];
-	            if (!isNaN(parseFloat(val))) {
-	                values.push(+val);
-	                sum += val;
-	            }
 	            count++;
+	            for (var _b = 0, _c = relevantHeaders.slice(); _b < _c.length; _b++) {
+	                var h = _c[_b];
+	                var val = marker.feature.properties[h.value];
+	                if (val !== undefined) {
+	                    if (!values[h.value])
+	                        values[h.value] = [];
+	                    values[h.value].push(val);
+	                    if (h.type == 'number') {
+	                        if (sum[h.value] === undefined)
+	                            sum[h.value] = 0;
+	                        sum[h.value] += +val;
+	                        avg[h.value] = values[h.value].length > 0 ? +(sum[h.value] / values[h.value].length).toFixed(h.decimalAccuracy) : 0;
+	                    }
+	                }
+	            }
 	        }
-	        var avg = values.length > 0 ? (sum / values.length).toFixed(col.colorField.decimalAccuracy) : 0;
-	        var fillColor;
-	        if (!col.colorField || !col.useMultipleFillColors) {
-	            fillColor = count >= 100 ? '#fc4925' : count >= 50 ? '#ea9d38' : count >= 20 ? '#deea38' : '#85ea38';
+	        if (col.colorField && col.useMultipleFillColors) {
+	            col.fillColor = common_1.GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), avg[col.colorField.value]);
+	        }
+	        var icon;
+	        if (clu.useSymbolStyle) {
+	            switch (sym.symbolType) {
+	                case SymbolTypes.Icon:
+	                    icon = getFaIcon(sym, col, 0, avg[sym.iconField.value]);
+	                case SymbolTypes.Chart:
+	                    var vals_1 = [];
+	                    sym.chartFields.map(function (e) {
+	                        if (avg[e.value] > 0)
+	                            vals_1.push({ feat: e, val: avg[e.value], color: col.chartColors[e.value] });
+	                    });
+	                    var sizeVal = sym.sizeXVar ? avg[sym.sizeXVar.value] : undefined;
+	                    icon = getChartIcon(sym, col, 20, vals_1, sizeVal);
+	                case SymbolTypes.Blocks:
+	                    icon = getBlockIcon(sym, col, 10, avg[sym.blockSizeVar.value]);
+	                default:
+	                    var yVal = sym.sizeYVar ? avg[sym.sizeYVar.value] : undefined;
+	                    var xVal = sym.sizeXVar ? avg[sym.sizeXVar.value] : undefined;
+	                    icon = getSimpleIcon(sym, col, 20, yVal, xVal);
+	            }
 	        }
 	        else {
-	            fillColor = common_1.GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), +avg);
+	            var style = {
+	                background: col.fillColor,
+	                minWidth: 50,
+	                minHeight: 50,
+	                borderRadius: '30px',
+	                display: count > 0 ? 'flex' : 'none',
+	                alignItems: 'center',
+	                border: '1px solid ' + col.color,
+	                opacity: col.fillOpacity
+	            };
+	            var iconElem = React.createElement("div", {style: style}, React.createElement("div", {style: {
+	                textAlign: 'center',
+	                background: '#FFF',
+	                width: '100%',
+	                borderRadius: '30px'
+	            }}, React.createElement("b", {style: { display: 'block' }}, " ", count)));
+	            var html = reactDOMServer.renderToString(iconElem);
+	            icon = L.divIcon({
+	                html: html, className: '',
+	                iconAnchor: L.point(25, 25),
+	            });
 	        }
-	        var style = {
-	            background: fillColor,
-	            minWidth: 50,
-	            minHeight: 50,
-	            borderRadius: '30px',
-	            display: count > 0 ? 'flex' : 'none',
-	            alignItems: 'center',
-	            border: '1px solid ' + col.color,
-	            opacity: col.fillOpacity
-	        };
-	        var icon = React.createElement("div", {style: style}, React.createElement("div", {style: {
-	            textAlign: 'center',
-	            background: '#FFF',
-	            width: '100%',
-	            borderRadius: '30px'
-	        }}, React.createElement("b", {style: { display: 'block' }}, " ", count)));
-	        var html = reactDOMServer.renderToString(icon);
 	        if (count > 0) {
-	            var popupContent = (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '') +
-	                (clu.showSum && col.colorField && col.useMultipleFillColors ? (clu.sumText + ' ' + sum.toFixed(col.colorField.decimalAccuracy) + '<br/>') : '') +
-	                (clu.showAvg && col.colorField && col.useMultipleFillColors ? (clu.avgText + ' ' + avg + '<br/>') : '') +
-	                'Click or zoom to expand';
-	            cluster.bindPopup(popupContent);
+	            var popupContent_1 = (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '');
+	            clu.hoverHeaders.map(function (h) {
+	                popupContent_1 += h.showSum ? h.sumText + ' ' + sum[h.header.value].toFixed(h.header.decimalAccuracy) + '<br/>' : '';
+	                popupContent_1 += h.showAvg ? h.avgText + ' ' + avg[h.header.value].toFixed(h.header.decimalAccuracy) + '<br/>' : '';
+	            });
+	            popupContent_1 += 'Click or zoom to expand';
+	            cluster.bindPopup(popupContent_1);
 	        }
-	        return L.divIcon({
-	            html: html, className: '',
-	            iconAnchor: L.point(25, 25),
-	        });
+	        return icon;
 	    };
 	    Layer.prototype.batchAdd = function (start, end, source, target) {
 	        var i;
@@ -23411,71 +23508,21 @@
 	    var x, y;
 	    switch (sym.symbolType) {
 	        case SymbolTypes.Icon:
-	            var icon = common_1.GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), sym.iconField ? feature.properties[sym.iconField.value] : 0);
-	            var customIcon = L.ExtraMarkers.icon({
-	                icon: icon ? icon.fa : sym.icons[0].fa,
-	                prefix: 'fa',
-	                markerColor: col.fillColor,
-	                svg: true,
-	                svgBorderColor: col.color,
-	                svgOpacity: 1,
-	                shape: icon ? icon.shape : sym.icons[0].shape,
-	                iconColor: col.iconTextColor,
-	            });
-	            var mark = L.marker(latlng, { icon: customIcon, opacity: col.opacity });
-	            return mark;
+	            return L.marker(latlng, { icon: getFaIcon(sym, col, 0, feature.properties[sym.iconField.value]), opacity: col.opacity });
 	        case SymbolTypes.Chart:
-	            var vals_1 = [];
-	            var i_1 = 0;
-	            x = sym.sizeXVar ? common_1.GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-	            if (x === 0) {
-	                return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });
-	                ;
-	            }
+	            var vals_2 = [];
 	            sym.chartFields.map(function (e) {
 	                if (feature.properties[e.value] > 0)
-	                    vals_1.push({ feat: e, val: feature.properties[e.value], color: col.chartColors[e.value] });
-	                i_1++;
+	                    vals_2.push({ feat: e, val: feature.properties[e.value], color: col.chartColors[e.value] });
 	            });
-	            var chartHtml = makePieChart({
-	                fullCircle: sym.chartType === 'pie',
-	                data: vals_1,
-	                valueFunc: function (d) { return d.val; },
-	                strokeWidth: col.weight,
-	                outerRadius: x,
-	                innerRadius: x / 3,
-	                pieClass: function (d) { return d.data.feat; },
-	                pathFillFunc: function (d) { return d.data.color; },
-	                borderColor: col.color,
-	            });
-	            var marker = L.divIcon({ iconAnchor: L.point(x, x), html: chartHtml, className: '' });
-	            return L.marker(latlng, { icon: marker, opacity: col.opacity });
+	            var sizeVal = sym.sizeXVar ? feature.properties[sym.sizeXVar.value] : undefined;
+	            return L.marker(latlng, { icon: getChartIcon(sym, col, 0, vals_2, sizeVal), opacity: col.opacity });
 	        case SymbolTypes.Blocks:
-	            var blockCount = Math.ceil(feature.properties[sym.blockSizeVar.value] / sym.blockValue);
-	            var columns = Math.min(sym.maxBlockColumns, blockCount);
-	            var rows = Math.min(sym.maxBlockRows, blockCount);
-	            var blocks = makeBlockSymbol(blockCount, columns, rows, col.fillColor, col.color, col.weight, sym.blockWidth);
-	            var blockMarker = L.divIcon({ iconAnchor: L.point(sym.blockWidth / 2 * blocks.columns, sym.blockWidth / 2 * blocks.rows), html: blocks.html, className: '' });
-	            return L.marker(latlng, { icon: blockMarker, opacity: col.opacity });
-	        case SymbolTypes.Rectangle:
-	            x = sym.sizeXVar ? common_1.GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-	            y = sym.sizeYVar ? common_1.GetSymbolSize(feature.properties[sym.sizeYVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-	            if (x === 0 || y === 0) {
-	                return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });
-	                ;
-	            }
-	            var rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + '"/>';
-	            var rectIcon = L.divIcon({ iconAnchor: L.point(x / 2, y / 2), html: rectHtml, className: '' });
-	            return L.marker(latlng, { icon: rectIcon, opacity: col.opacity });
+	            return L.marker(latlng, { icon: getBlockIcon(sym, col, 0, feature.properties[sym.blockSizeVar.value]), opacity: col.opacity });
 	        default:
-	            x = sym.sizeXVar ? common_1.GetSymbolSize(feature.properties[sym.sizeXVar.value], sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-	            if (x === 0) {
-	                return L.marker(latlng, { icon: L.divIcon({ iconAnchor: L.point(x, x), className: '' }) });
-	                ;
-	            }
-	            var circleHtml = '<div style="height: ' + x + 'px; width: ' + x + 'px; background-color:' + col.fillColor + '; border: ' + col.weight + 'px solid ' + col.color + ';border-radius: 30px;"/>';
-	            var circleIcon = L.divIcon({ iconAnchor: L.point(x / 2, x / 2), html: circleHtml, className: '' });
-	            return L.marker(latlng, { icon: circleIcon, opacity: col.opacity });
+	            var yVal = sym.sizeYVar ? feature.properties[sym.sizeYVar.value] : undefined;
+	            var xVal = sym.sizeXVar ? feature.properties[sym.sizeXVar.value] : undefined;
+	            return L.marker(latlng, { icon: getSimpleIcon(sym, col, 0, yVal, xVal), opacity: col.opacity });
 	    }
 	}
 	function getScaleSymbolMaxValues() {
@@ -23545,87 +23592,135 @@
 	    sym.actualMinYRadius = minYradius;
 	    sym.actualMaxYRadius = maxYradius;
 	}
-	function makePieChart(options) {
-	    if (!options.data || !options.valueFunc) {
-	        return '';
-	    }
-	    var data = options.data, valueFunc = options.valueFunc, r = options.outerRadius ? options.outerRadius : 28, rInner = options.innerRadius ? options.innerRadius : r - 10, pathTitleFunc = options.pathTitleFunc ? options.pathTitleFunc : function (d) { return d.data.feat.label + ': ' + d.data.val; }, pieLabel = options.pieLabel ? options.pieLabel : '', pathFillFunc = options.pathFillFunc, border = options.borderColor, origo = (r + options.strokeWidth), w = origo * 2, h = w, donut = d3.layout.pie(), arc = options.fullCircle ? d3.svg.arc().outerRadius(r) : d3.svg.arc().innerRadius(rInner).outerRadius(r);
-	    var svg = document.createElementNS(d3.ns.prefix.svg, 'svg');
-	    var vis = d3.select(svg)
-	        .data([data])
-	        .attr('width', w)
-	        .attr('height', h);
-	    var arcs = vis.selectAll('g.arc')
-	        .data(donut.value(valueFunc))
-	        .enter().append('svg:g')
-	        .attr('class', 'arc')
-	        .attr('transform', 'translate(' + origo + ',' + origo + ')');
-	    arcs.append('svg:path')
-	        .attr('fill', pathFillFunc)
-	        .attr('stroke', border)
-	        .attr('stroke-width', options.strokeWidth)
-	        .attr('d', arc)
-	        .append('svg:title')
-	        .text(pathTitleFunc);
-	    vis.append('text')
-	        .attr('x', origo)
-	        .attr('y', origo)
-	        .attr('text-anchor', 'middle')
-	        .attr('dy', '.3em')
-	        .text(pieLabel);
-	    if (typeof window.XMLSerializer != "undefined") {
-	        return (new window.XMLSerializer()).serializeToString(svg);
-	    }
-	    else if (typeof svg.xml != "undefined") {
-	        return svg.xml;
-	    }
-	    return "";
+	function getFaIcon(sym, col, sizeModifier, value) {
+	    var icon = common_1.GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), sym.iconField ? value : 0);
+	    return L.ExtraMarkers.icon({
+	        icon: icon ? icon.fa : sym.icons[0].fa,
+	        prefix: 'fa',
+	        markerColor: col.fillColor,
+	        svg: true,
+	        svgBorderColor: col.color,
+	        svgOpacity: 1,
+	        shape: icon ? icon.shape : sym.icons[0].shape,
+	        iconColor: col.iconTextColor,
+	    });
 	}
-	function makeBlockSymbol(blockAmount, columns, rows, fillColor, borderColor, borderWeight, width) {
-	    var arr = [];
-	    var filledBlocks = 0;
-	    var actualColumns = 0;
-	    var actualRows = 0;
-	    var style = {
-	        height: width,
-	        width: width,
-	        backgroundColor: fillColor,
-	        margin: 0,
-	        padding: 0,
-	        border: borderWeight + 'px solid ' + borderColor,
-	    };
-	    for (var row = 0; row < rows; row++) {
-	        if (filledBlocks < blockAmount) {
-	            actualRows++;
-	            arr.push(React.createElement("tr", {key: row}, getColumns.call(this, row).map(function (column) {
-	                return column;
-	            })));
+	function getChartIcon(sym, col, sizeModifier, vals, value) {
+	    var x = value ? common_1.GetSymbolSize(value, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+	    x += sizeModifier;
+	    var chartHtml = makePieChart({
+	        fullCircle: sym.chartType === 'pie',
+	        data: vals,
+	        valueFunc: function (d) { return d.val; },
+	        strokeWidth: col.weight,
+	        outerRadius: x,
+	        innerRadius: x / 3,
+	        pieClass: function (d) { return d.data.feat; },
+	        pathFillFunc: function (d) { return d.data.color; },
+	        borderColor: col.color,
+	    });
+	    return L.divIcon({ iconAnchor: L.point(x, x), popupAnchor: L.point(0, -x), html: chartHtml, className: '' });
+	    function makePieChart(options) {
+	        if (!options.data || !options.valueFunc) {
+	            return '';
 	        }
-	        else
-	            break;
+	        var data = options.data, valueFunc = options.valueFunc, r = options.outerRadius ? options.outerRadius : 28, rInner = options.innerRadius ? options.innerRadius : r - 10, pathTitleFunc = options.pathTitleFunc ? options.pathTitleFunc : function (d) { return d.data.feat.label + ': ' + d.data.val; }, pieLabel = options.pieLabel ? options.pieLabel : '', pathFillFunc = options.pathFillFunc, border = options.borderColor, origo = (r + options.strokeWidth), w = origo * 2, h = w, donut = d3.layout.pie(), arc = options.fullCircle ? d3.svg.arc().outerRadius(r) : d3.svg.arc().innerRadius(rInner).outerRadius(r);
+	        var svg = document.createElementNS(d3.ns.prefix.svg, 'svg');
+	        var vis = d3.select(svg)
+	            .data([data])
+	            .attr('width', w)
+	            .attr('height', h);
+	        var arcs = vis.selectAll('g.arc')
+	            .data(donut.value(valueFunc))
+	            .enter().append('svg:g')
+	            .attr('class', 'arc')
+	            .attr('transform', 'translate(' + origo + ',' + origo + ')');
+	        arcs.append('svg:path')
+	            .attr('fill', pathFillFunc)
+	            .attr('stroke', border)
+	            .attr('stroke-width', options.strokeWidth)
+	            .attr('d', arc)
+	            .append('svg:title')
+	            .text(pathTitleFunc);
+	        vis.append('text')
+	            .attr('x', origo)
+	            .attr('y', origo)
+	            .attr('text-anchor', 'middle')
+	            .attr('dy', '.3em')
+	            .text(pieLabel);
+	        if (typeof window.XMLSerializer != "undefined") {
+	            return (new window.XMLSerializer()).serializeToString(svg);
+	        }
+	        else if (typeof svg.xml != "undefined") {
+	            return svg.xml;
+	        }
+	        return "";
 	    }
-	    function getColumns(i) {
+	}
+	function getBlockIcon(sym, col, sizeModifier, value) {
+	    var blockCount = Math.ceil(value / sym.blockValue);
+	    var columns = Math.min(sym.maxBlockColumns, blockCount);
+	    var rows = Math.min(sym.maxBlockRows, blockCount);
+	    var blocks = makeBlockSymbol(col.fillColor, col.color, col.weight, sym.blockWidth + sizeModifier);
+	    return L.divIcon({
+	        iconAnchor: L.point((sym.blockWidth + sizeModifier) / 2 * blocks.columns, (sym.blockWidth + sizeModifier) / 2 * blocks.rows),
+	        popupAnchor: L.point(0, (sym.blockWidth + sizeModifier) / 2 * -blocks.rows),
+	        html: blocks.html, className: ''
+	    });
+	    function makeBlockSymbol(fillColor, borderColor, borderWeight, width) {
 	        var arr = [];
-	        for (var c = 0; c < columns; c++) {
-	            var isDrawn = c * rows + (rows - i) <= blockAmount;
-	            if (isDrawn) {
-	                arr.push(React.createElement("td", {style: style, key: i + c}));
-	                filledBlocks++;
-	                actualColumns = Math.max(c + 1, actualColumns);
+	        var filledBlocks = 0;
+	        var actualColumns = 0;
+	        var actualRows = 0;
+	        var style = {
+	            height: width,
+	            width: width,
+	            backgroundColor: fillColor,
+	            margin: 0,
+	            padding: 0,
+	            border: borderWeight + 'px solid ' + borderColor,
+	        };
+	        for (var row = 0; row < rows; row++) {
+	            if (filledBlocks < blockCount) {
+	                actualRows++;
+	                arr.push(React.createElement("tr", {key: row}, getColumns.call(this, row).map(function (column) {
+	                    return column;
+	                })));
 	            }
-	            else {
-	                return arr;
-	            }
+	            else
+	                break;
 	        }
-	        return arr;
+	        function getColumns(i) {
+	            var arr = [];
+	            for (var c = 0; c < columns; c++) {
+	                var isDrawn = c * rows + (rows - i) <= blockCount;
+	                if (isDrawn) {
+	                    arr.push(React.createElement("td", {style: style, key: i + c}));
+	                    filledBlocks++;
+	                    actualColumns = Math.max(c + 1, actualColumns);
+	                }
+	                else {
+	                    return arr;
+	                }
+	            }
+	            return arr;
+	        }
+	        var table = React.createElement("table", {style: {
+	            borderCollapse: 'collapse',
+	            width: actualColumns * width,
+	        }}, React.createElement("tbody", null, arr.map(function (td) {
+	            return td;
+	        })));
+	        return { html: reactDOMServer.renderToString(table), rows: actualRows, columns: actualColumns };
 	    }
-	    var table = React.createElement("table", {style: {
-	        borderCollapse: 'collapse',
-	        width: actualColumns * width,
-	    }}, React.createElement("tbody", null, arr.map(function (td) {
-	        return td;
-	    })));
-	    return { html: reactDOMServer.renderToString(table), rows: actualRows, columns: actualColumns };
+	}
+	function getSimpleIcon(sym, col, sizeModifier, yValue, xValue) {
+	    var x = xValue !== undefined ? common_1.GetSymbolSize(xValue, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+	    var y = yValue !== undefined ? common_1.GetSymbolSize(yValue, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+	    x += sizeModifier;
+	    y += sizeModifier;
+	    var rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; background-color:' + col.fillColor + '; border: ' + (col.weight + sizeModifier / 6) + 'px solid ' + col.color + '; border-radius: ' + sym.borderRadius + 'px;"/>';
+	    return L.divIcon({ iconAnchor: L.point((x + col.weight + sizeModifier / 3) / 2, (y + col.weight + sizeModifier / 3) / 2), popupAnchor: L.point(0, -y / 2), html: rectHtml, className: '' });
 	}
 	function createHeatLayer(l) {
 	    var arr = [];
@@ -23676,14 +23771,6 @@
 	}
 	var ColorOptions = (function () {
 	    function ColorOptions(prev) {
-	        this.iconTextColor = '#FFF';
-	        this.fillColor = '#E0E62D';
-	        this.color = '#000';
-	        this.weight = 1;
-	        this.fillOpacity = 0.8;
-	        this.opacity = 0.8;
-	        this.heatMapRadius = 25;
-	        this.chartColors = undefined;
 	        this.colorField = prev && prev.colorField || undefined;
 	        this.useCustomScheme = prev && prev.useCustomScheme || false;
 	        this.colors = prev && prev.colors || [];
@@ -23775,13 +23862,15 @@
 	exports.ColorOptions = ColorOptions;
 	var SymbolOptions = (function () {
 	    function SymbolOptions(prev) {
-	        this.symbolType = prev && prev.symbolType || SymbolTypes.Circle;
+	        this.symbolType = prev && prev.symbolType || SymbolTypes.Simple;
 	        this.useMultipleIcons = prev && prev.useMultipleIcons || false;
 	        this.icons = prev && prev.icons || [{ shape: 'circle', fa: 'fa-anchor' }];
 	        this.iconField = prev && prev.iconField || undefined;
 	        this.iconLimits = prev && prev.iconLimits || [];
 	        this.sizeXVar = prev && prev.sizeXVar || undefined;
 	        this.sizeYVar = prev && prev.sizeYVar || undefined;
+	        this.blockSizeVar = prev && prev.blockSizeVar || undefined;
+	        this.borderRadius = prev && prev.borderRadius || 30;
 	        this.sizeLowLimit = prev && prev.sizeLowLimit || 0;
 	        this.sizeUpLimit = prev && prev.sizeUpLimit || 50;
 	        this.sizeMultiplier = prev && prev.sizeMultiplier || 1;
@@ -23843,6 +23932,10 @@
 	        mobx_1.observable, 
 	        __metadata('design:type', IHeader)
 	    ], SymbolOptions.prototype, "blockSizeVar", void 0);
+	    __decorate([
+	        mobx_1.observable, 
+	        __metadata('design:type', Number)
+	    ], SymbolOptions.prototype, "borderRadius", void 0);
 	    __decorate([
 	        mobx_1.observable, 
 	        __metadata('design:type', Number)
@@ -23919,10 +24012,8 @@
 	        this.useClustering = prev && prev.useClustering || false;
 	        this.showCount = prev && prev.showCount || true;
 	        this.countText = prev && prev.countText || 'map points';
-	        this.showAvg = prev && prev.showAvg || true;
-	        this.avgText = prev && prev.avgText || 'avg:';
-	        this.showAvg = prev && prev.showAvg || false;
-	        this.sumText = prev && prev.sumText || 'sum:';
+	        this.useSymbolStyle = prev && prev.useSymbolStyle || false;
+	        this.hoverHeaders = prev && prev.hoverHeaders || [];
 	    }
 	    __decorate([
 	        mobx_1.observable, 
@@ -23938,20 +24029,12 @@
 	    ], ClusterOptions.prototype, "countText", void 0);
 	    __decorate([
 	        mobx_1.observable, 
-	        __metadata('design:type', Boolean)
-	    ], ClusterOptions.prototype, "showAvg", void 0);
-	    __decorate([
-	        mobx_1.observable, 
-	        __metadata('design:type', String)
-	    ], ClusterOptions.prototype, "avgText", void 0);
+	        __metadata('design:type', Array)
+	    ], ClusterOptions.prototype, "hoverHeaders", void 0);
 	    __decorate([
 	        mobx_1.observable, 
 	        __metadata('design:type', Boolean)
-	    ], ClusterOptions.prototype, "showSum", void 0);
-	    __decorate([
-	        mobx_1.observable, 
-	        __metadata('design:type', String)
-	    ], ClusterOptions.prototype, "sumText", void 0);
+	    ], ClusterOptions.prototype, "useSymbolStyle", void 0);
 	    return ClusterOptions;
 	}());
 	exports.ClusterOptions = ClusterOptions;
@@ -23990,11 +24073,10 @@
 	})(exports.LayerTypes || (exports.LayerTypes = {}));
 	var LayerTypes = exports.LayerTypes;
 	(function (SymbolTypes) {
-	    SymbolTypes[SymbolTypes["Circle"] = 0] = "Circle";
-	    SymbolTypes[SymbolTypes["Rectangle"] = 1] = "Rectangle";
-	    SymbolTypes[SymbolTypes["Chart"] = 2] = "Chart";
-	    SymbolTypes[SymbolTypes["Icon"] = 3] = "Icon";
-	    SymbolTypes[SymbolTypes["Blocks"] = 4] = "Blocks";
+	    SymbolTypes[SymbolTypes["Simple"] = 0] = "Simple";
+	    SymbolTypes[SymbolTypes["Chart"] = 1] = "Chart";
+	    SymbolTypes[SymbolTypes["Icon"] = 2] = "Icon";
+	    SymbolTypes[SymbolTypes["Blocks"] = 3] = "Blocks";
 	})(exports.SymbolTypes || (exports.SymbolTypes = {}));
 	var SymbolTypes = exports.SymbolTypes;
 
@@ -24035,7 +24117,9 @@
 	function CalculateLimits(min, max, count, accuracy) {
 	    var limits = [];
 	    for (var i = +min; i < max; i += (max - min) / count) {
-	        limits.push(+i.toFixed(accuracy));
+	        var val = +i.toFixed(accuracy);
+	        if (limits.indexOf(val) === -1)
+	            limits.push(val);
 	    }
 	    if (limits.indexOf(+max.toFixed(accuracy)) === -1)
 	        limits.push(+max.toFixed(accuracy));
@@ -36173,7 +36257,7 @@
 	        this.title = prev && prev.title || "";
 	        this.meta = prev && prev.meta || "";
 	        this.horizontal = prev && prev.horizontal !== undefined ? prev.horizontal : true;
-	        this.visible = prev && prev.visible || true;
+	        this.visible = prev && prev.visible !== undefined ? prev.visible : true;
 	        this.showPercentages = prev && prev.showPercentages || false;
 	        this.edit = prev && prev.edit || false;
 	        this.top = prev && prev.top !== undefined ? prev.top : false;
@@ -72002,10 +72086,10 @@
 	            _this.props.state.map.addLayer(_this.props.state.activeBaseLayer);
 	        }, value: { value: this.props.state.activeBaseLayer, label: this.props.state.activeBaseLayer.options.id }, clearable: false}), React.createElement("hr", null), React.createElement("label", null, "Drag and drop to reorder"), menuState.heatLayerOrder.length > 0 ?
 	            React.createElement("div", null, React.createElement("label", null, "Heat layers"), React.createElement(Sortable, {className: 'layerList', onChange: this.handleSort.bind(this, 'heat')}, menuState.heatLayerOrder.map(function (item) {
-	                return React.createElement("div", {style: layerStyle, key: item.id, "data-id": item.id}, item.name, React.createElement("i", {className: "fa fa-times", onClick: this.deleteLayer.bind(this, item.id), style: { float: 'right', lineHeight: '40px', marginRight: '5px' }}));
+	                return React.createElement("div", {style: layerStyle, key: item.id, "data-id": item.id}, this.props.state.layers.filter(function (f) { return f.id === item.id; })[0].name, React.createElement("i", {className: "fa fa-times", onClick: this.deleteLayer.bind(this, item.id), style: { float: 'right', lineHeight: '40px', marginRight: '5px' }}));
 	            }, this))) : null, menuState.standardLayerOrder.length > 0 ?
 	            React.createElement("div", null, React.createElement("label", null, "Standard layers"), React.createElement(Sortable, {className: 'layerList', onChange: this.handleSort.bind(this, 'standard')}, menuState.standardLayerOrder.map(function (item) {
-	                return React.createElement("div", {style: layerStyle, key: item.id, "data-id": item.id}, item.name, React.createElement("i", {className: "fa fa-times", onClick: this.deleteLayer.bind(this, item.id), style: { float: 'right', lineHeight: '40px', marginRight: '5px' }}));
+	                return React.createElement("div", {style: layerStyle, key: item.id, "data-id": item.id}, this.props.state.layers.filter(function (f) { return f.id === item.id; })[0].name, React.createElement("i", {className: "fa fa-times", onClick: this.deleteLayer.bind(this, item.id), style: { float: 'right', lineHeight: '40px', marginRight: '5px' }}));
 	            }, this))) : null, React.createElement("button", {className: 'menuButton', onClick: function () {
 	            _this.props.addNewLayer();
 	        }}, "Add new layer"), React.createElement("hr", null), React.createElement(Select, {options: layers, onChange: function (val) {
@@ -72013,13 +72097,15 @@
 	        }, value: menuState.editingLayer, valueRenderer: function (option) {
 	            return option ? option.name : '';
 	        }, clearable: false}), layer ?
-	            React.createElement("div", null, "Layer type", React.createElement("br", null), React.createElement("label", {forHTML: 'standard'}, "Standard", React.createElement("input", {type: 'radio', onChange: function () {
+	            React.createElement("div", null, "Name", React.createElement("br", null), React.createElement("input", {type: 'text', style: { width: '100%' }, value: layer.name, onChange: function (e) {
+	                layer.name = e.target.value;
+	            }}), "Layer type", React.createElement("br", null), React.createElement("label", {forHTML: 'standard'}, "Standard", React.createElement("input", {type: 'radio', onChange: function () {
 	                if (layer.layerType !== Layer_1.LayerTypes.Standard) {
 	                    layer.layerType = Layer_1.LayerTypes.Standard;
 	                    layer.colorOptions.opacity = 0.8;
 	                    layer.colorOptions.fillOpacity = 0.8;
 	                    menuState.heatLayerOrder = menuState.heatLayerOrder.filter(function (l) { return l.id !== layer.id; });
-	                    menuState.standardLayerOrder.push({ id: layer.id, name: layer.name });
+	                    menuState.standardLayerOrder.push({ id: layer.id });
 	                    layer.toggleRedraw = true;
 	                    layer.refresh();
 	                }
@@ -72031,7 +72117,7 @@
 	                    layer.colorOptions.fillOpacity = 0.3;
 	                    layer.toggleRedraw = true;
 	                    menuState.standardLayerOrder = menuState.standardLayerOrder.filter(function (l) { return l.id !== layer.id; });
-	                    menuState.heatLayerOrder.push({ id: layer.id, name: layer.name });
+	                    menuState.heatLayerOrder.push({ id: layer.id });
 	                    layer.refresh();
 	                }
 	            }, checked: layer.layerType === Layer_1.LayerTypes.HeatMap, name: 'layertype', id: 'heat'}), React.createElement("br", null)), this.renderHeaders.call(this))
@@ -73569,18 +73655,14 @@
 	        this.calculateValues = function () {
 	            var lyr = _this.props.state.editingLayer;
 	            var field = lyr.colorOptions.colorField.value;
-	            var uniqueValues = lyr.values[field].filter(function (e, i, arr) {
-	                return arr.lastIndexOf(e) === i;
-	            });
-	            var steps = Math.min(uniqueValues.length, lyr.colorOptions.steps);
+	            var steps = Math.min(lyr.uniqueValues[field].length, lyr.colorOptions.steps);
 	            var limits = [];
 	            if (!lyr.colorOptions.useCustomScheme) {
 	                limits = chroma.limits(lyr.values[field], lyr.colorOptions.mode, steps);
 	            }
 	            else {
-	                if (steps === uniqueValues.length) {
-	                    uniqueValues.push(uniqueValues[uniqueValues.length - 1] + 1);
-	                    limits = uniqueValues;
+	                if (steps >= lyr.uniqueValues[field].length - 1) {
+	                    limits = lyr.uniqueValues[field];
 	                }
 	                else
 	                    limits = common_1.CalculateLimits(lyr.values[field][0], lyr.values[field][lyr.values[field].length - 1], steps, lyr.colorOptions.colorField.decimalAccuracy);
@@ -73713,7 +73795,7 @@
 	                React.createElement("div", null, React.createElement("label", {htmlFor: 'customScale'}, "Set custom scheme"), React.createElement("input", {id: 'customScale', type: 'checkbox', onChange: this.onCustomSchemeChange, checked: col.useCustomScheme}), React.createElement("br", null), col.useCustomScheme ?
 	                    null
 	                    :
-	                        colorSchemeOptions, React.createElement("label", null, "Steps"), React.createElement("input", {type: 'number', max: 100, min: 2, step: 1, onChange: function (e) {
+	                        colorSchemeOptions, React.createElement("label", null, "Steps"), React.createElement("input", {type: 'number', max: layer.uniqueValues[col.colorField.value].length - 1, min: 2, step: 1, onChange: function (e) {
 	                    var val = e.currentTarget.valueAsNumber;
 	                    if (col.steps != val) {
 	                        col.steps = val;
@@ -86908,6 +86990,10 @@
 	                if (sym.chartFields.length == 0)
 	                    _this.onChartFieldsChange(layer.numberHeaders);
 	            }
+	            if (type === Layer_1.SymbolTypes.Icon) {
+	                if (!sym.iconField)
+	                    sym.iconField = layer.numberHeaders[0];
+	            }
 	            if (_this.props.state.autoRefresh)
 	                layer.refresh();
 	        };
@@ -87055,15 +87141,20 @@
 	            height: 42,
 	        }}, activeIcon, React.createElement("i", {style: { position: 'relative', bottom: 33, width: 18, height: 18 }, className: 'fa ' + fa}));
 	    };
-	    SymbolMenu.prototype.calculateIconValues = function (fieldValue, steps, accuracy) {
+	    SymbolMenu.prototype.calculateIconValues = function (field, steps, accuracy) {
 	        var values = this.props.state.editingLayer.values;
-	        this.props.state.editingLayer.symbolOptions.iconLimits = common_1.CalculateLimits(values[fieldValue][0], values[fieldValue][values[fieldValue].length - 1], steps, accuracy);
+	        var uniqueValues = this.props.state.editingLayer.uniqueValues;
+	        if (steps >= uniqueValues[field].length - 1) {
+	            this.props.state.editingLayer.symbolOptions.iconLimits = uniqueValues[field];
+	        }
+	        else
+	            this.props.state.editingLayer.symbolOptions.iconLimits = common_1.CalculateLimits(values[field][0], values[field][values[field].length - 1], steps, accuracy);
 	    };
 	    SymbolMenu.prototype.render = function () {
-	        var _this = this;
 	        var layer = this.props.state.editingLayer;
 	        var sym = layer.symbolOptions;
 	        var state = this.props.state.symbolMenuState;
+	        var autoRefresh = this.props.state.autoRefresh;
 	        var iconSelectStyle = {
 	            overlay: {
 	                position: 'fixed',
@@ -87089,53 +87180,83 @@
 	                lineHeight: 1.5
 	            }
 	        };
-	        return (React.createElement("div", {className: "makeMaps-options"}, React.createElement("label", null, "Select symbol type "), React.createElement("br", null), React.createElement("label", {forHTML: 'circle'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-circle-o'}), "Circle", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Circle), checked: sym.symbolType === Layer_1.SymbolTypes.Circle, name: 'symboltype', id: 'circle'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'rect'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-signal'}), "Rectangle", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Rectangle), checked: sym.symbolType === Layer_1.SymbolTypes.Rectangle, name: 'symboltype', id: 'rect'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'icon'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-map-marker'}), "Icon", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Icon), checked: sym.symbolType === Layer_1.SymbolTypes.Icon, name: 'symboltype', id: 'icon'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'chart'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-pie-chart'}), "Chart", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Chart), checked: sym.symbolType === Layer_1.SymbolTypes.Chart, name: 'symboltype', id: 'chart'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'blocks'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-th-large'}), "Blocks", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Blocks), checked: sym.symbolType === Layer_1.SymbolTypes.Blocks, name: 'symboltype', id: 'blocks'}), React.createElement("br", null)), sym.symbolType !== Layer_1.SymbolTypes.Icon ?
-	            React.createElement("div", null, React.createElement("label", null, "Scale ", sym.symbolType === Layer_1.SymbolTypes.Rectangle ? 'width' : 'size', " by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onXVariableChange, value: sym.symbolType === Layer_1.SymbolTypes.Blocks ? sym.blockSizeVar : sym.sizeXVar, clearable: sym.symbolType !== Layer_1.SymbolTypes.Blocks}), sym.symbolType === Layer_1.SymbolTypes.Rectangle ? React.createElement("div", null, React.createElement("label", null, "Scale height by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onYVariableChange, value: sym.sizeYVar})) : null, sym.symbolType !== Layer_1.SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar) ?
-	                React.createElement("div", null, React.createElement("label", null, "Size multiplier"), React.createElement("input", {type: "number", value: sym.sizeMultiplier, onChange: function (e) {
-	                    layer.symbolOptions.sizeMultiplier = e.currentTarget.valueAsNumber;
-	                    if (_this.props.state.autoRefresh)
+	        return (React.createElement("div", {className: "makeMaps-options"}, React.createElement("label", null, "Select symbol type "), React.createElement("br", null), React.createElement("label", {forHTML: 'circle'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-circle-o'}), "Simple", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Simple), checked: sym.symbolType === Layer_1.SymbolTypes.Simple, name: 'symboltype', id: 'circle'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'icon'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-map-marker'}), "Icon", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Icon), checked: sym.symbolType === Layer_1.SymbolTypes.Icon, name: 'symboltype', id: 'icon'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'chart'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-pie-chart'}), "Chart", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Chart), checked: sym.symbolType === Layer_1.SymbolTypes.Chart, name: 'symboltype', id: 'chart'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'blocks'}, React.createElement("i", {style: { margin: 4 }, className: 'fa fa-th-large'}), "Blocks", React.createElement("input", {type: 'radio', onChange: this.onTypeChange.bind(this, Layer_1.SymbolTypes.Blocks), checked: sym.symbolType === Layer_1.SymbolTypes.Blocks, name: 'symboltype', id: 'blocks'}), React.createElement("br", null)), sym.symbolType !== Layer_1.SymbolTypes.Icon ?
+	            React.createElement("div", null, React.createElement("label", null, "Scale ", sym.symbolType === Layer_1.SymbolTypes.Simple ? 'width' : 'size', " by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onXVariableChange, value: sym.symbolType === Layer_1.SymbolTypes.Blocks ? sym.blockSizeVar : sym.sizeXVar, clearable: sym.symbolType !== Layer_1.SymbolTypes.Blocks}), sym.symbolType === Layer_1.SymbolTypes.Simple ? React.createElement("div", null, React.createElement("label", null, "Scale height by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onYVariableChange, value: sym.sizeYVar}), React.createElement("label", null, "Border radius", React.createElement("input", {type: 'number', value: sym.borderRadius, onChange: function (e) {
+	                var val = e.currentTarget.valueAsNumber;
+	                if (sym.borderRadius != val) {
+	                    sym.borderRadius = val;
+	                    if (autoRefresh)
 	                        layer.refresh();
-	                }, min: 0.1, max: 10, step: 0.1}), React.createElement("br", null), React.createElement("label", null, "Size lower limit"), React.createElement("input", {type: "number", value: sym.sizeLowLimit, onChange: function (e) {
-	                    layer.symbolOptions.sizeLowLimit = e.currentTarget.valueAsNumber;
-	                    if (_this.props.state.autoRefresh)
-	                        layer.refresh();
-	                }, min: 0}), React.createElement("br", null), React.createElement("label", null, "Size upper limit"), React.createElement("input", {type: "number", value: sym.sizeUpLimit, onChange: function (e) {
-	                    layer.symbolOptions.sizeUpLimit = e.currentTarget.valueAsNumber;
-	                    if (_this.props.state.autoRefresh)
-	                        layer.refresh();
-	                }, min: 1}))
+	                }
+	            }, min: 0, max: 100, step: 1}))) : null, sym.symbolType !== Layer_1.SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar) ?
+	                React.createElement("div", null, React.createElement("label", null, "Size multiplier", React.createElement("input", {type: 'number', value: sym.sizeMultiplier, onChange: function (e) {
+	                    var val = e.currentTarget.valueAsNumber;
+	                    if (sym.sizeMultiplier != val) {
+	                        sym.sizeMultiplier = val;
+	                        if (autoRefresh)
+	                            layer.refresh();
+	                    }
+	                }, min: 0.1, max: 10, step: 0.1})), React.createElement("br", null), React.createElement("label", null, "Size lower limit", React.createElement("input", {type: 'number', value: sym.sizeLowLimit, onChange: function (e) {
+	                    var val = e.currentTarget.valueAsNumber;
+	                    if (sym.sizeLowLimit != val) {
+	                        sym.sizeLowLimit = val;
+	                        if (autoRefresh)
+	                            layer.refresh();
+	                    }
+	                }, min: 0})), React.createElement("br", null), React.createElement("label", null, "Size upper limit", React.createElement("input", {type: 'number', value: sym.sizeUpLimit, onChange: function (e) {
+	                    var val = e.currentTarget.valueAsNumber;
+	                    if (sym.sizeUpLimit != val) {
+	                        sym.sizeUpLimit = val;
+	                        if (autoRefresh)
+	                            layer.refresh();
+	                    }
+	                }, min: 1})))
 	                : null)
 	            : null, sym.symbolType === Layer_1.SymbolTypes.Icon ?
 	            React.createElement("div", null, React.createElement("label", {htmlFor: 'iconSteps'}, "Use multiple icons"), React.createElement("input", {id: 'iconSteps', type: 'checkbox', onChange: this.onUseIconStepsChange, checked: sym.useMultipleIcons}), sym.useMultipleIcons ?
 	                React.createElement("div", null, React.createElement("label", null, "Field to change icon by"), React.createElement(Select, {options: layer.numberHeaders, onChange: this.onIconFieldChange, value: sym.iconField, clearable: false}), sym.iconField ?
-	                    React.createElement("div", null, "Set the ", React.createElement("i", null, "lower limit"), " and icon", React.createElement("br", null), React.createElement("button", {onClick: this.onIconStepCountChange.bind(this, -1)}, "-"), React.createElement("button", {onClick: this.onIconStepCountChange.bind(this, 1)}, "+"), this.renderSteps.call(this)) : null)
+	                    React.createElement("div", null, "Set the ", React.createElement("i", null, "lower limit"), " and icon", React.createElement("br", null), React.createElement("button", {onClick: this.onIconStepCountChange.bind(this, -1)}, "-"), React.createElement("button", {onClick: this.onIconStepCountChange.bind(this, 1)}, "+"), this.renderIconSteps.call(this)) : null)
 	                :
 	                    React.createElement("div", null, "Set icon", this.getIcon(sym.icons[0].shape, sym.icons[0].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, 0))), React.createElement("br", null), "Change icon colors in the color menu")
 	            : null, sym.symbolType === Layer_1.SymbolTypes.Chart ?
 	            React.createElement("div", null, React.createElement("label", null, "Select the variables to show"), React.createElement(Select, {options: layer.numberHeaders, multi: true, onChange: this.onChartFieldsChange, value: sym.chartFields.slice(), backspaceRemoves: false}), "Chart type", React.createElement("br", null), React.createElement("label", {forHTML: 'pie'}, "Pie", React.createElement("input", {type: 'radio', onChange: function () {
 	                sym.chartType = 'pie';
-	            }, checked: sym.chartType === 'pie', name: 'charttype', id: 'pie'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'donut'}, "Donut", React.createElement("input", {type: 'radio', onChange: function () {
+	            }, checked: function () { sym.chartType === 'pie'; if (autoRefresh)
+	                layer.refresh(); }, name: 'charttype', id: 'pie'}), React.createElement("br", null)), React.createElement("label", {forHTML: 'donut'}, "Donut", React.createElement("input", {type: 'radio', onChange: function () {
 	                sym.chartType = 'donut';
-	            }, checked: sym.chartType === 'donut', name: 'charttype', id: 'donut'}), React.createElement("br", null)), React.createElement("br", null), React.createElement("i", null, "TIP: hover over symbol segments to see corresponding value"))
+	            }, checked: function () { sym.chartType === 'donut'; if (autoRefresh)
+	                layer.refresh(); }, name: 'charttype', id: 'donut'}), React.createElement("br", null)), React.createElement("br", null), React.createElement("i", null, "TIP: hover over symbol segments to see corresponding value"))
 	            : null, sym.symbolType === Layer_1.SymbolTypes.Blocks ?
-	            React.createElement("div", null, React.createElement("label", null, "Single block value", React.createElement("input", {type: "number", value: sym.blockValue, onChange: function (e) {
-	                layer.symbolOptions.blockValue = e.currentTarget.valueAsNumber;
-	                if (_this.props.state.autoRefresh)
-	                    layer.refresh();
-	            }, min: 1})), React.createElement("label", null, "Single block width", React.createElement("input", {type: "number", value: sym.blockWidth, onChange: function (e) {
-	                layer.symbolOptions.blockWidth = e.currentTarget.valueAsNumber;
-	                if (_this.props.state.autoRefresh)
-	                    layer.refresh();
-	            }, min: 1})), React.createElement("label", null, "Max. width", React.createElement("input", {type: "number", value: sym.maxBlockColumns, onChange: function (e) {
-	                layer.symbolOptions.maxBlockColumns = e.currentTarget.valueAsNumber;
-	                if (_this.props.state.autoRefresh)
-	                    layer.refresh();
-	            }, min: 1})), React.createElement("label", null, "Max. height", React.createElement("input", {type: "number", value: sym.maxBlockRows, onChange: function (e) {
-	                layer.symbolOptions.maxBlockRows = e.currentTarget.valueAsNumber;
-	                if (_this.props.state.autoRefresh)
-	                    layer.refresh();
+	            React.createElement("div", null, React.createElement("label", null, "Single block value", React.createElement("input", {type: 'number', value: sym.blockValue, onChange: function (e) {
+	                var val = e.currentTarget.valueAsNumber;
+	                if (sym.blockValue != val) {
+	                    sym.blockValue = val;
+	                    if (autoRefresh)
+	                        layer.refresh();
+	                }
+	            }, min: 1})), React.createElement("label", null, "Single block width", React.createElement("input", {type: 'number', value: sym.blockWidth, onChange: function (e) {
+	                var val = e.currentTarget.valueAsNumber;
+	                if (sym.blockWidth != val) {
+	                    sym.blockWidth = val;
+	                    if (autoRefresh)
+	                        layer.refresh();
+	                }
+	            }, min: 1})), React.createElement("label", null, "Max. width", React.createElement("input", {type: 'number', value: sym.maxBlockColumns, onChange: function (e) {
+	                var val = e.currentTarget.valueAsNumber;
+	                if (sym.maxBlockColumns != val) {
+	                    sym.maxBlockColumns = val;
+	                    if (autoRefresh)
+	                        layer.refresh();
+	                }
+	            }, min: 1})), React.createElement("label", null, "Max. height", React.createElement("input", {type: 'number', value: sym.maxBlockRows, onChange: function (e) {
+	                var val = e.currentTarget.valueAsNumber;
+	                if (sym.maxBlockRows != val) {
+	                    sym.maxBlockRows = val;
+	                    if (autoRefresh)
+	                        layer.refresh();
+	                }
 	            }, min: 1})))
-	            : null, this.props.state.autoRefresh ? null :
+	            : null, autoRefresh ? null :
 	            React.createElement("button", {className: 'menuButton', onClick: function () { layer.refresh(); }}, "Refresh map"), React.createElement(Modal, {isOpen: state.iconSelectOpen, style: iconSelectStyle}, state.iconSelectOpen ? React.createElement("div", null, "Icon", this.renderIcons.call(this), "Or", React.createElement("br", null), React.createElement("label", null, "Use another ", React.createElement("a", {href: 'http://fontawesome.io/icons/'}, "Font Awesome"), " icon"), React.createElement("input", {type: "text", onChange: this.onFAIconChange, value: sym.icons[state.currentIconIndex].fa}), React.createElement("br", null), "Icon shape", React.createElement("br", null), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'circle')}, this.getIcon('circle', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'square')}, this.getIcon('square', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'star')}, this.getIcon('star', '', '#999999', 'transparent', null)), React.createElement("div", {style: { display: 'inline-block' }, onClick: this.onIconShapeChange.bind(this, 'penta')}, this.getIcon('penta', '', '#999999', 'transparent', null)), React.createElement("br", null), React.createElement("button", {className: 'primaryButton', onClick: this.toggleIconSelect.bind(this, state.currentIconIndex), style: { position: 'absolute', left: 80 }}, "OK"))
 	            : null)));
 	    };
@@ -87166,10 +87287,12 @@
 	            return td;
 	        }))));
 	    };
-	    SymbolMenu.prototype.renderSteps = function () {
+	    SymbolMenu.prototype.renderIconSteps = function () {
 	        var layer = this.props.state.editingLayer;
 	        var rows = [];
 	        var steps = [];
+	        console.log(this.props.state.editingLayer.colorOptions.limits);
+	        console.log(this.props.state.editingLayer.symbolOptions.iconLimits);
 	        for (var i in layer.symbolOptions.iconLimits.slice()) {
 	            if (+i !== layer.symbolOptions.iconLimits.slice().length - 1) {
 	                var step = layer.symbolOptions.iconLimits[i];
@@ -87179,7 +87302,7 @@
 	        var row = 0;
 	        for (var _i = 0, steps_1 = steps; _i < steps_1.length; _i++) {
 	            var i = steps_1[_i];
-	            rows.push(React.createElement("li", {key: i, style: { lineHeight: 0 }}, React.createElement("input", {id: row + 'min', type: 'number', defaultValue: i.toFixed(2), style: {
+	            rows.push(React.createElement("li", {key: i, style: { lineHeight: 0 }}, React.createElement("input", {id: row + 'min', type: 'number', defaultValue: i.toFixed(layer.symbolOptions.iconField.decimalAccuracy), style: {
 	                width: 100,
 	            }, onChange: this.onStepLimitChange.bind(this, row), step: 1 * Math.pow(10, (-layer.symbolOptions.iconField.decimalAccuracy))}), this.getIcon(layer.symbolOptions.icons[row].shape, layer.symbolOptions.icons[row].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, row))));
 	            row++;
@@ -87541,7 +87664,7 @@
 	};
 	var React = __webpack_require__(1);
 	var mobx_react_1 = __webpack_require__(159);
-	var Modal = __webpack_require__(452);
+	var Select = __webpack_require__(257);
 	var ClusterMenu = (function (_super) {
 	    __extends(ClusterMenu, _super);
 	    function ClusterMenu() {
@@ -87549,11 +87672,16 @@
 	    }
 	    ClusterMenu.prototype.render = function () {
 	        var layer = this.props.state.editingLayer;
+	        var menuState = this.props.state.clusterMenuState;
 	        var options = layer.clusterOptions;
+	        var hoverHeader = menuState.selectedHeader ? options.hoverHeaders.filter(function (f) { return f.header.value == menuState.selectedHeader.value; })[0] : undefined;
 	        return (React.createElement("div", {className: 'makeMaps-options'}, React.createElement("label", {htmlFor: 'useClustering'}, "Use clustering", React.createElement("input", {id: 'useClustering', type: 'checkbox', checked: options.useClustering, onChange: function (e) {
 	            options.useClustering = e.currentTarget.checked;
 	            layer.toggleRedraw = true;
 	            layer.refresh();
+	        }})), React.createElement("label", {htmlFor: 'useDefaultStyle'}, "Use symbol style", React.createElement("input", {id: 'useDefaultStyle', type: 'checkbox', checked: options.useSymbolStyle, onChange: function (e) {
+	            options.useSymbolStyle = e.currentTarget.checked;
+	            layer.refreshCluster();
 	        }})), React.createElement("label", {htmlFor: 'showCount'}, "Show point count on hover", React.createElement("input", {id: 'showCount', type: 'checkbox', checked: options.showCount, onChange: function (e) {
 	            options.showCount = e.currentTarget.checked;
 	            layer.refreshCluster();
@@ -87562,23 +87690,43 @@
 	                options.countText = e.target.value;
 	                layer.refreshCluster();
 	            }}))
-	            : null, React.createElement("label", {htmlFor: 'showAvg'}, "Show average on hover", React.createElement("input", {id: 'showAvg', type: 'checkbox', checked: options.showAvg, onChange: function (e) {
-	            options.showAvg = e.currentTarget.checked;
-	            layer.refreshCluster();
-	        }})), options.showAvg ?
-	            React.createElement("div", null, React.createElement("span", null, "Text"), React.createElement("input", {type: 'text', style: { width: '100%' }, value: options.avgText, onChange: function (e) {
-	                options.avgText = e.target.value;
+	            : null, "Cluster info", React.createElement(Select, {options: layer.numberHeaders, onChange: function (e) { menuState.selectedHeader = e; }, value: menuState.selectedHeader, clearable: true}), menuState.selectedHeader ?
+	            React.createElement("div", null, React.createElement("label", {htmlFor: 'showAvg'}, "Show average on hover", React.createElement("input", {id: 'showAvg', type: 'checkbox', checked: hoverHeader ? hoverHeader.showAvg : false, onChange: function (e) {
+	                var val = e.currentTarget.checked;
+	                if (hoverHeader && val)
+	                    hoverHeader.showAvg = val;
+	                else if (hoverHeader && !val) {
+	                    if (!hoverHeader.showSum)
+	                        options.hoverHeaders = options.hoverHeaders.filter(function (f) { return f.header != menuState.selectedHeader; });
+	                }
+	                else if (val && !hoverHeader) {
+	                    options.hoverHeaders.push({ header: menuState.selectedHeader, showAvg: val, showSum: false, avgText: menuState.selectedHeader.label + ' avg: ', sumText: menuState.selectedHeader.label + ' sum: ' });
+	                }
 	                layer.refreshCluster();
-	            }}))
-	            : null, React.createElement("label", {htmlFor: 'showSum'}, "Show sum on hover", React.createElement("input", {id: 'showSum', type: 'checkbox', checked: options.showSum, onChange: function (e) {
-	            options.showSum = e.currentTarget.checked;
-	            layer.refreshCluster();
-	        }})), options.showSum ?
-	            React.createElement("div", null, React.createElement("span", null, "Text"), React.createElement("input", {type: 'text', style: { width: '100%' }, value: options.sumText, onChange: function (e) {
-	                options.sumText = e.target.value;
+	            }})), hoverHeader && hoverHeader.showAvg ?
+	                React.createElement("div", null, React.createElement("span", null, "Text"), React.createElement("input", {type: 'text', style: { width: '100%' }, value: hoverHeader.avgText, onChange: function (e) {
+	                    hoverHeader.avgText = e.target.value;
+	                    layer.refreshCluster();
+	                }}))
+	                : null, React.createElement("label", {htmlFor: 'showSum'}, "Show sum on hover", React.createElement("input", {id: 'showSum', type: 'checkbox', checked: hoverHeader ? hoverHeader.showSum : false, onChange: function (e) {
+	                var val = e.currentTarget.checked;
+	                if (hoverHeader && val)
+	                    hoverHeader.showSum = val;
+	                else if (hoverHeader && !val) {
+	                    if (!hoverHeader.showAvg)
+	                        options.hoverHeaders = options.hoverHeaders.filter(function (f) { return f.header != menuState.selectedHeader; });
+	                }
+	                else if (val && !hoverHeader) {
+	                    options.hoverHeaders.push({ header: menuState.selectedHeader, showSum: val, showAvg: false, avgText: menuState.selectedHeader.label + ' avg: ', sumText: menuState.selectedHeader.label + ' sum: ' });
+	                }
 	                layer.refreshCluster();
-	            }}))
-	            : null));
+	            }})), hoverHeader && hoverHeader.showSum ?
+	                React.createElement("div", null, React.createElement("span", null, "Text"), React.createElement("input", {type: 'text', style: { width: '100%' }, value: hoverHeader.sumText, onChange: function (e) {
+	                    hoverHeader.sumText = e.target.value;
+	                    layer.refreshCluster();
+	                }}))
+	                : null)
+	            : React.createElement("i", null, "Select a header from the list and choose what kind of information about it is displayed when the cluster is hovered")));
 	    };
 	    ClusterMenu = __decorate([
 	        mobx_react_1.observer, 
@@ -87639,7 +87787,7 @@
 	            layer.showPopUpOnHover = false;
 	            if (_this.props.state.autoRefresh)
 	                layer.refreshPopUps();
-	        }, checked: !layer.showPopUpOnHover, name: 'openMethod', id: 'click'})), React.createElement("br", null), "Or", React.createElement("br", null), React.createElement("label", {forHTML: 'hover', style: { marginTop: 0 }}, "Open on mouse over", React.createElement("input", {type: 'radio', onChange: function () {
+	        }, checked: !layer.showPopUpOnHover, name: 'openMethod', id: 'click'})), React.createElement("br", null), "Or", React.createElement("br", null), React.createElement("label", {forHTML: 'hover', style: { marginTop: 0 }}, "Open on hover", React.createElement("input", {type: 'radio', onChange: function () {
 	            layer.showPopUpOnHover = true;
 	            if (_this.props.state.autoRefresh)
 	                layer.refreshPopUps();
@@ -103321,7 +103469,7 @@
 	        if (!isHeat && sym.symbolType === Layer_1.SymbolTypes.Chart && col.chartColors) {
 	            chartLegend = this.createChartSymbolLegend(col, sym);
 	        }
-	        if (!isHeat && sym.sizeXVar || sym.sizeYVar) {
+	        if (!isHeat && sym.symbolType === Layer_1.SymbolTypes.Simple) {
 	            scaledLegend = this.createScaledSizeLegend(options);
 	        }
 	        if (!isHeat && sym.symbolType === Layer_1.SymbolTypes.Icon) {
@@ -103359,15 +103507,10 @@
 	            margin: 5,
 	            clear: this.props.state.legend.horizontal ? 'both' : ''
 	        };
-	        if (symbolType === Layer_1.SymbolTypes.Circle) {
-	            return circleLegend.call(this);
-	        }
-	        else if (symbolType === Layer_1.SymbolTypes.Rectangle) {
-	            if (square)
-	                return (React.createElement("div", {style: style}, rectangleLegend.call(this, false)));
-	            else {
-	                return (React.createElement("div", {style: style}, xVar ? rectangleLegend.call(this, false) : null, yVar ? rectangleLegend.call(this, true) : null));
-	            }
+	        if (square)
+	            return (React.createElement("div", {style: style}, rectangleLegend.call(this, false)));
+	        else {
+	            return (React.createElement("div", {style: style}, xVar ? rectangleLegend.call(this, false) : null, yVar ? rectangleLegend.call(this, true) : null));
 	        }
 	        function rectangleLegend(y) {
 	            var divs = [], sides = [], values = [];
@@ -103388,6 +103531,7 @@
 	                    backgroundColor: layer.colorOptions.fillColor,
 	                    display: this.props.state.legend.horizontal ? '' : 'inline-block',
 	                    border: '1px solid gray',
+	                    borderRadius: opt.borderRadius,
 	                    marginLeft: this.props.state.legend.horizontal || y ? 'auto' : margin,
 	                    marginRight: this.props.state.legend.horizontal || y ? 'auto' : margin,
 	                    marginTop: this.props.state.legend.horizontal && y ? margin : 'auto',
@@ -103671,10 +103815,7 @@
 	            var contents = e.target;
 	            var ext = fileName.split('.').pop().toLowerCase();
 	            if (ext === 'mmap') {
-	                this.setState({
-	                    savedJSON: JSON.parse(contents.result),
-	                    fileName: fileName,
-	                });
+	                this.props.appState.welcomeScreenState = { loadedMap: JSON.parse(contents.result), fileName: fileName };
 	            }
 	            else {
 	                common_1.ShowNotification('Select a .mmap file!');
@@ -103686,21 +103827,20 @@
 	        e.preventDefault();
 	        e.stopPropagation();
 	        var load = this.props.loadMap;
-	        var json = this.state.savedJSON;
-	        setTimeout(function () { load(json); }, 10);
+	        setTimeout(function () { load(); }, 10);
 	    };
 	    WelcomeScreen.prototype.render = function () {
 	        var dropStyle = {
 	            height: 150,
-	            border: this.state.fileName ? '1px solid #549341' : '1px dotted #549341',
+	            border: this.props.appState.welcomeScreenState.fileName ? '1px solid #549341' : '1px dotted #549341',
 	            borderRadius: 15,
 	            margin: 5,
 	            textAlign: 'center',
 	            color: 'grey',
 	            fontWeight: 'bold'
 	        };
-	        return (React.createElement("div", {style: { textAlign: 'center' }}, React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps"}, React.createElement("i", {className: 'fa fa-github', style: { position: 'absolute', right: 5, fontSize: '40px' }})), React.createElement("div", {style: { display: 'block', margin: '0 auto', padding: 5 }}, React.createElement("img", {src: 'app/images/favicon.png', style: { display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }}), React.createElement("img", {src: 'app/images/logo_pre.png', style: { display: 'inline-block', verticalAlign: 'middle' }}), React.createElement("img", {src: 'app/images/favicon.png', style: { display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }})), "MakeMaps is an open source map creation tool that lets you make powerful visualizations from your spatial data", React.createElement("br", null), "Guides and feedback channels can be found in the ", React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps/wiki"}, "Project Wiki"), ". Contributions and feature requests welcome!", React.createElement("hr", null), React.createElement("h3", null, "Here's a few demos: "), React.createElement("div", {style: { overflowX: 'visible', overflowY: 'hidden', height: 440, whiteSpace: 'nowrap' }}, React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/chorodemo.png', description: 'This demo shows the choropleth map type by mapping the United States by population density.', loadDemo: this.loadDemo.bind(this, 'chorodemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/symboldemo.png', description: 'This demo demonstrates the different symbol options of MakeMaps. Data random generated for demo purposes.', loadDemo: this.loadDemo.bind(this, 'symboldemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_chartdemo.png', description: 'This demo shows the chart-as-a-symbol map by visualizing distribution between different traffic types in Helsinki using a pie chart. Data acquired from hri.fi', loadDemo: this.loadDemo.bind(this, 'hki_chartdemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_heatdemo.png', description: 'This demo showcases the heat map by visualizing the daily public transportation boardings by HSL', loadDemo: this.loadDemo.bind(this, 'hki_heatdemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/clusterdemo.png', description: 'This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently', loadDemo: this.loadDemo.bind(this, 'clusterdemo')})), React.createElement("hr", {style: { color: '#cecece', width: '75%' }}), React.createElement("div", {style: { display: 'inline' }}, React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, React.createElement("h3", null, "Load a previously made map"), React.createElement(Dropzone, {style: dropStyle, onDrop: this.onDrop.bind(this), accept: '.mmap'}, this.state.fileName ?
-	            React.createElement("span", null, React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), this.state.fileName, React.createElement("div", {style: { margin: '0 auto' }}, React.createElement("button", {className: 'primaryButton', onClick: this.loadMap.bind(this)}, "Show me")))
+	        return (React.createElement("div", {style: { textAlign: 'center' }}, React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps"}, React.createElement("i", {className: 'fa fa-github', style: { position: 'absolute', right: 5, fontSize: '40px' }})), React.createElement("div", {style: { display: 'block', margin: '0 auto', padding: 5 }}, React.createElement("img", {src: 'app/images/favicon.png', style: { display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }}), React.createElement("img", {src: 'app/images/logo_pre.png', style: { display: 'inline-block', verticalAlign: 'middle' }}), React.createElement("img", {src: 'app/images/favicon.png', style: { display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }})), "MakeMaps is an open source map creation tool that lets you make powerful visualizations from your spatial data", React.createElement("br", null), "Guides and feedback channels can be found in the ", React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps/wiki"}, "Project Wiki"), ". Contributions and feature requests welcome!", React.createElement("hr", null), React.createElement("h3", null, "Here's a few demos: "), React.createElement("div", {style: { overflowX: 'visible', overflowY: 'hidden', height: 440, whiteSpace: 'nowrap' }}, React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/chorodemo.png', description: 'This demo shows the choropleth map type by mapping the United States by population density.', loadDemo: this.loadDemo.bind(this, 'chorodemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/symboldemo.png', description: 'This demo demonstrates the different symbol options of MakeMaps. Data random generated for demo purposes.', loadDemo: this.loadDemo.bind(this, 'symboldemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_chartdemo.png', description: 'This demo shows the chart-as-a-symbol map by visualizing distribution between different traffic types in Helsinki using a pie chart. Data acquired from hri.fi', loadDemo: this.loadDemo.bind(this, 'hki_chartdemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_heatdemo.png', description: 'This demo showcases the heat map by visualizing the daily public transportation boardings by HSL', loadDemo: this.loadDemo.bind(this, 'hki_heatdemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/clusterdemo.png', description: 'This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently', loadDemo: this.loadDemo.bind(this, 'clusterdemo')})), React.createElement("hr", {style: { color: '#cecece', width: '75%' }}), React.createElement("div", {style: { display: 'inline' }}, React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, React.createElement("h3", null, "Load a previously made map"), React.createElement(Dropzone, {style: dropStyle, onDrop: this.onDrop.bind(this), accept: '.mmap'}, this.props.appState.welcomeScreenState.fileName ?
+	            React.createElement("span", null, React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), this.props.appState.welcomeScreenState.fileName, React.createElement("div", {style: { margin: '0 auto' }}, React.createElement("button", {className: 'primaryButton', onClick: this.loadMap.bind(this)}, "Show me")))
 	            :
 	                React.createElement("div", {style: { margin: '0 auto' }}, "Have a map you worked on previously? Someone sent you a cool map to see for yourself? Upload it here!", React.createElement("br", null), "Drop a map here or click to upload"))), React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, React.createElement("h3", null, "Create a new map"), "Start creating your own map from here. Upload your file and get visualizin' in seconds!", React.createElement("br", null), React.createElement("button", {className: 'primaryButton', onClick: this.createNewMap.bind(this)}, "Create a map")))));
 	    };
