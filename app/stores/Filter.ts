@@ -1,5 +1,5 @@
 import { observable, computed } from 'mobx';
-import { Layer, LayerTypes } from './Layer';
+import { Layer, LayerTypes, IHeader } from './Layer';
 import { AppState } from './States';
 let mobx = require('mobx');
 
@@ -12,9 +12,9 @@ export class Filter {
     /** Layer Id to filter*/
     @observable layerId: number;
     /** The name of the field to filter*/
-    @observable fieldToFilter: string;
+    @observable fieldToFilter: IHeader;
     /** Dictionary containing lists of layer ids by the value being filtered*/
-    @observable filterValues: { [value: number]: number[] };
+    @observable filterValues: { [value: string]: number[] };
     /** Current maximum value */
     @observable currentMax: number;
     /** Current min value */
@@ -23,7 +23,7 @@ export class Filter {
     @observable totalMax: number;
     /** Original min value */
     @observable totalMin: number;
-    /** User defined steps*/
+    /** User defined number steps*/
     @observable steps: [number, number][];
     /** Filter categories for string values*/
     @observable categories: string[];
@@ -31,7 +31,11 @@ export class Filter {
     @observable remove: boolean;
     /** The storage of already filtered indices */
     @observable filteredIndices: number[];
-    @observable step: number;
+    /** Currently selected number step in the UI*/
+    @observable selectedStep: number;
+    /** Array of currently selected string categories in the UI*/
+    @observable selectedCategories: string[];
+
     /** Keep the distance between the min and max the same when the slider is being moved.
      * Useful for keeping a locked range to filter
      */
@@ -58,7 +62,8 @@ export class Filter {
         this.categories = prev && prev.categories || [];
         this.remove = prev && prev.remove || false;
         this.filteredIndices = prev && prev.filteredIndices || [];
-        this.step = prev && prev.step || -1;
+        this.selectedStep = prev && prev.selectedStep || -1;
+        this.selectedCategories = prev && prev.selectedCategories || [];
         this.lockDistance = prev && prev.lockDistance || false;
         this.show = prev && prev.show || false;
         this.appState = prev && prev.appState || appState;
@@ -75,7 +80,7 @@ export class Filter {
         let layer = this.appState.layers.filter(function(l) { return l.id == id })[0];
         if (layer.layerType !== LayerTypes.HeatMap) {
             layer.displayLayer.eachLayer(function(lyr: any) {
-                let val = lyr.feature.properties[this.fieldToFilter];
+                let val = lyr.feature.properties[this.fieldToFilter.value];
                 if (this.filterValues[val]) {
                     this.filterValues[val].push(lyr);
                 }
@@ -102,62 +107,20 @@ export class Filter {
             let layer = this.appState.layers.filter(function(l) { return l.id === id })[0];
             if (layer.layerType !== LayerTypes.HeatMap) {
                 for (let val in this.filterValues) {
-                    if ((this.previousLower <= +val && +val < this.currentMin) || (this.currentMin <= +val && +val < this.previousLower) ||
-                        (this.previousUpper < +val && +val <= this.currentMax) || (this.currentMax < +val && +val <= this.previousUpper)) {
-                        let filteredIndex = this.filteredIndices.indexOf(+val); //is filtered?
-                        if (filteredIndex === -1 && (+val < this.currentMin || +val > this.currentMax)) { //If not yet filtered and values over thresholds
-                            this.filterValues[val].map(function(lyr: any) {
-                                if (lyr.setOpacity)
-                                    lyr.setOpacity(0.2);
-                                else
-                                    lyr.setStyle({ fillOpacity: 0.2, opacity: 0.2 })
-
-                                if (lyr._icon) {
-                                    lyr._icon.style.display = this.remove ? 'none' : '';
-                                    if (lyr._shadow) {
-                                        lyr._shadow.style.display = this.remove ? 'none' : '';
-                                    }
-                                }
-                                else if (lyr.setStyle) {
-                                    lyr._path.style.display = this.remove ? 'none' : '';
-                                }
-                                else //clustered markers don't have _icon
-                                    if (lyr.options.icon) {
-                                        lyr.options.icon.options.className += ' marker-hidden';
-                                        lyr.setIcon(lyr.options.icon);
-                                    }
-
-
-
-                            }, this);
-                            this.filteredIndices.push(+val); //mark as filtered
+                    if (this.fieldToFilter.type == 'number') {
+                        filterByNumber.call(this, +val, layer);
+                    }
+                    else {
+                        if (this.selectedCategories.length > 0) {
+                            if (this.selectedCategories.indexOf(val) > -1) {
+                                show.call(this, val, layer);
+                            }
+                            else {
+                                hide.call(this, val);
+                            }
                         }
-                        else if (filteredIndex > -1 && (+val >= this.currentMin && +val <= this.currentMax)) { //If filtered and within thresholds
-                            this.filterValues[val].map(function(lyr: any) {
-                                if (shouldLayerBeAdded.call(this, lyr)) {
-                                    if (lyr.setOpacity)
-                                        lyr.setOpacity(layer.colorOptions.fillOpacity);
-                                    else
-                                        lyr.setStyle({ fillOpacity: layer.colorOptions.fillOpacity, opacity: layer.colorOptions.opacity })
-
-                                    if (lyr._icon) {
-                                        lyr._icon.style.display = '';
-                                        if (lyr._shadow) {
-                                            lyr._shadow.style.display = '';
-                                        }
-                                    }
-
-                                    else if (lyr._path) {
-                                        lyr._path.style.display = '';
-                                    }
-                                    else
-                                        if (lyr.options.icon) {
-                                            lyr.options.icon.options.className = lyr.options.icon.options.className.replace(' marker-hidden', '');
-                                            lyr.setIcon(lyr.options.icon);
-                                        }
-                                }
-                            }, this);
-                            this.filteredIndices.splice(filteredIndex, 1);
+                        else {
+                            show.call(this, val, layer);
                         }
                     }
                 }
@@ -190,6 +153,71 @@ export class Filter {
             this.previousUpper = this.currentMax;
         }
 
+        function filterByNumber(val: number, layer: Layer) {
+            if ((this.previousLower <= +val && +val < this.currentMin) || (this.currentMin <= +val && +val < this.previousLower) ||
+                (this.previousUpper < +val && +val <= this.currentMax) || (this.currentMax < +val && +val <= this.previousUpper)) {
+                let filteredIndex = this.filteredIndices.indexOf(+val); //is filtered?
+                if (filteredIndex === -1 && (+val < this.currentMin || +val > this.currentMax)) { //If not yet filtered and values over thresholds
+                    hide.call(this, val);
+                    this.filteredIndices.push(+val); //mark as filtered
+                }
+                else if (filteredIndex > -1 && (+val >= this.currentMin && +val <= this.currentMax)) { //If filtered and within thresholds
+                    show.call(this, val, layer);
+                    this.filteredIndices.splice(filteredIndex, 1);
+                }
+            }
+        }
+
+        function hide(val: any) {
+            this.filterValues[val].map(function(lyr: any) {
+                if (lyr.setOpacity)
+                    lyr.setOpacity(0.2);
+                else
+                    lyr.setStyle({ fillOpacity: 0.2, opacity: 0.2 })
+
+                if (lyr._icon) {
+                    lyr._icon.style.display = this.remove ? 'none' : '';
+                    if (lyr._shadow) {
+                        lyr._shadow.style.display = this.remove ? 'none' : '';
+                    }
+                }
+                else if (lyr._path) {
+                    lyr._path.style.display = this.remove ? 'none' : '';
+                }
+                else //clustered markers don't have _icon
+                    if (lyr.options.icon) {
+                        lyr.options.icon.options.className += ' marker-hidden';
+                        lyr.setIcon(lyr.options.icon);
+                    }
+            }, this);
+        }
+
+        function show(val: any, layer) {
+            this.filterValues[val].map(function(lyr: any) {
+                if (shouldLayerBeAdded.call(this, lyr)) {
+                    if (lyr.setOpacity)
+                        lyr.setOpacity(layer.colorOptions.fillOpacity);
+                    else
+                        lyr.setStyle({ fillOpacity: layer.colorOptions.fillOpacity, opacity: layer.colorOptions.opacity })
+
+                    if (lyr._icon) {
+                        lyr._icon.style.display = '';
+                        if (lyr._shadow) {
+                            lyr._shadow.style.display = '';
+                        }
+                    }
+
+                    else if (lyr._path) {
+                        lyr._path.style.display = '';
+                    }
+                    else
+                        if (lyr.options.icon) {
+                            lyr.options.icon.options.className = lyr.options.icon.options.className.replace(' marker-hidden', '');
+                            lyr.setIcon(lyr.options.icon);
+                        }
+                }
+            }, this);
+        }
         /**
          * shouldLayerBeAdded - Checks every active filter to see if a layer can be un-filtered
          *
@@ -200,7 +228,7 @@ export class Filter {
             let canUnFilter = true;
             for (let i in filters) {
                 let filter = filters[i];
-                let val = layer.feature.properties[filter.fieldToFilter];
+                let val = layer.feature.properties[filter.fieldToFilter.value];
                 canUnFilter = val <= filter.currentMax && val >= filter.currentMin;
             }
             return canUnFilter;

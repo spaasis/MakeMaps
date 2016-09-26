@@ -178,7 +178,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             for (let key in this.props.state.filters.slice()) {
                 if (this.props.state.filters[key].show) { //if filter has been properly initialized
                     arr.push(<OnScreenFilter
-                        state={this.props.state.filters[key]}
+                        filter={this.props.state.filters[key]}
                         key={key} />);
                 }
             }

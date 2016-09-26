@@ -6,93 +6,108 @@ let Draggable = require('react-draggable');
 import { observer } from 'mobx-react';
 
 @observer
-export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
+export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
     advanceSliderWhenLocked = (lower, upper) => {
-        let minValDiff = this.props.state.currentMin - lower;
-        let maxValDiff = this.props.state.currentMax - upper;
+        let minValDiff = this.props.filter.currentMin - lower;
+        let maxValDiff = this.props.filter.currentMax - upper;
         if (minValDiff != 0) {
-            if (this.props.state.currentMin - minValDiff > this.props.state.totalMin &&
-                this.props.state.currentMax - minValDiff < this.props.state.totalMax) {
+            if (this.props.filter.currentMin - minValDiff > this.props.filter.totalMin &&
+                this.props.filter.currentMax - minValDiff < this.props.filter.totalMax) {
 
-                this.props.state.currentMin -= minValDiff;
-                this.props.state.currentMax -= minValDiff;
+                this.props.filter.currentMin -= minValDiff;
+                this.props.filter.currentMax -= minValDiff;
             }
         }
         else if (maxValDiff != 0) {
-            if (this.props.state.currentMin - maxValDiff > this.props.state.totalMin &&
-                this.props.state.currentMax - maxValDiff < this.props.state.totalMax) {
+            if (this.props.filter.currentMin - maxValDiff > this.props.filter.totalMin &&
+                this.props.filter.currentMax - maxValDiff < this.props.filter.totalMax) {
 
-                this.props.state.currentMin -= maxValDiff
-                this.props.state.currentMax -= maxValDiff;
+                this.props.filter.currentMin -= maxValDiff
+                this.props.filter.currentMax -= maxValDiff;
             }
         }
-        this.props.state.filterLayer();
+        this.props.filter.filterLayer();
     }
     onFilterScaleChange = (values) => {
-        if (this.props.state.lockDistance) {
+        if (this.props.filter.lockDistance) {
             this.advanceSliderWhenLocked(values[0], values[1]);
         }
         else {
-            this.props.state.currentMin = values[0];
-            this.props.state.currentMax = values[1];
+            this.props.filter.currentMin = values[0];
+            this.props.filter.currentMax = values[1];
         }
-        this.props.state.filterLayer();
+        this.props.filter.filterLayer();
 
     }
     onCurrentMinChange = (e) => {
         let val = e.currentTarget.valueAsNumber
-        this.props.state.step = -1;
-        if (this.props.state.lockDistance) {
-            this.advanceSliderWhenLocked(val, this.props.state.currentMax);
+        this.props.filter.selectedStep = -1;
+        if (this.props.filter.lockDistance) {
+            this.advanceSliderWhenLocked(val, this.props.filter.currentMax);
         }
         else {
-            this.props.state.currentMin = val;
+            this.props.filter.currentMin = val;
         }
-        this.props.state.filterLayer();
+        this.props.filter.filterLayer();
 
     }
     onCurrentMaxChange = (e) => {
         let val = e.currentTarget.valueAsNumber
-        this.props.state.step = -1;
-        if (this.props.state.lockDistance) {
-            this.advanceSliderWhenLocked(this.props.state.currentMin, val);
+        this.props.filter.selectedStep = -1;
+        if (this.props.filter.lockDistance) {
+            this.advanceSliderWhenLocked(this.props.filter.currentMin, val);
         }
         else {
-            this.props.state.currentMax = val;
+            this.props.filter.currentMax = val;
         }
-        this.props.state.filterLayer();
+        this.props.filter.filterLayer();
 
     }
     onCustomStepClick = (i: number) => {
-        let state = this.props.state;
-        if (state.step == i) {
-            state.step = -1;
-            state.currentMin = state.totalMin;
-            state.currentMax = state.totalMax;
+        let filter = this.props.filter;
+        if (filter.selectedStep == i) {
+            filter.selectedStep = -1;
+            filter.currentMin = filter.totalMin;
+            filter.currentMax = filter.totalMax;
         }
         else {
-            let minVal = state.steps[i][0];
-            let maxVal = state.steps[i][1];
-            state.currentMin = minVal;
-            state.currentMax = maxVal;
-            state.step = i;
+            let minVal = filter.steps[i][0];
+            let maxVal = filter.steps[i][1];
+            filter.currentMin = minVal;
+            filter.currentMax = maxVal;
+            filter.selectedStep = i;
         }
-        state.filterLayer();
+        filter.filterLayer();
+    }
+
+    onCustomCategoryClick = (i: number) => {
+        let filter = this.props.filter;
+        let categories = filter.selectedCategories;
+        let category = filter.categories[i];
+        let index = categories.indexOf(category);
+        if (index == -1)
+            categories.push(category);
+        else
+            categories.splice(index, 1);
+        filter.filterLayer();
 
     }
     renderSteps() {
         let rows = [];
-        if (this.props.state.steps) {
+        let filter = this.props.filter;
+        if (filter.steps) {
             let index = 0;
-            this.props.state.steps.forEach(function(step) {
+            filter.steps.forEach(function(step) {
                 rows.push(
                     <div
                         style={{
                             borderBottom: '1px solid #6891e2',
                             textAlign: 'center',
                             cursor: 'pointer',
-                            borderLeft: this.props.state.step === index ? '6px solid #6891e2' : '',
-                            borderRight: this.props.state.step === index ? '6px solid #6891e2' : ''
+                            height: 40,
+                            lineHeight: '40px',
+                            borderLeft: filter.selectedStep === index ? '6px solid #6891e2' : '',
+                            borderRight: filter.selectedStep === index ? '6px solid #6891e2' : ''
 
                         }}
                         key={step}
@@ -103,39 +118,74 @@ export class OnScreenFilter extends React.Component<{ state: Filter }, {}>{
             }, this);
 
         }
+        else if (filter.categories) {
+            let index = 0;
+            filter.categories.forEach(function(category) {
+                rows.push(
+                    <div
+                        style={{
+                            borderBottom: '1px solid #6891e2',
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            width: 200,
+                            height: 40,
+                            borderLeft: filter.selectedCategories.indexOf(category) > -1 ? '6px solid #6891e2' : '',
+                            borderRight: filter.selectedCategories.indexOf(category) > -1 ? '6px solid #6891e2' : '',
+                        }}
+
+                        key={category}
+                        onClick={this.onCustomCategoryClick.bind(this, index)}
+                        >
+                        <span style={{
+                            textOverflow: 'ellipsis',
+                            display: 'block',
+                            width: '100%',
+                            lineHeight: '40px',
+                        }}>
+                            {category}
+                        </span>
+                    </div>)
+                index++;
+            }, this);
+
+        }
         return <div> {rows.map(function(e) { return e })} </div>
     }
 
 
     render() {
+        let filter = this.props.filter;
         return <Draggable
             handle={'.filterhead'}
             onDrag={(e) => { e.preventDefault(); e.stopPropagation(); return; } }
             >
             <div className='filter'
-                onMouseEnter={(e) => { this.props.state.appState.map.dragging.disable() } }
-                onMouseLeave={(e) => { this.props.state.appState.map.dragging.enable() } }
+                onMouseEnter={(e) => { filter.appState.map.dragging.disable(); } }
+                onMouseLeave={(e) => { filter.appState.map.dragging.enable(); } }
+                onWheel={(e) => { e.stopPropagation(); } }
                 >
-                <h3 className='filterhead'>{this.props.state.title}</h3>
+                <h3 className='filterhead'>{filter.title}</h3>
                 {this.renderSteps.call(this)}
-                <div style={{ display: 'inline-flex' }}                    >
-                    <input type='number' style={{ width: '70px' }} value={this.props.state.currentMin.toFixed(0)} onChange={this.onCurrentMinChange}/>
-                    <Slider className='horizontal-slider'
-                        onAfterChange={(e) => { this.onFilterScaleChange(e); this.props.state.step = -1; } }
-                        value={[this.props.state.currentMin, this.props.state.currentMax]}
-                        min={this.props.state.totalMin - 1}
-                        max={this.props.state.totalMax + 1}
-                        withBars>
-                        <div className='minHandle'></div>
-                        <div className='maxHandle'></div>
-                    </Slider>
-                    <input type='number' style={{ width: '70px' }} value={this.props.state.currentMax.toFixed(0)} onChange={this.onCurrentMaxChange}/>
-                    <div style={{ display: 'inline-block', cursor: 'pointer' }} onClick={() => {
-                        this.props.state.lockDistance = !this.props.state.lockDistance;
-                    } }>
-                        <i style={{ color: 'cecece', fontSize: 20, padding: 4 }} className={!this.props.state.lockDistance ? 'fa fa-unlock-alt' : 'fa fa-lock'}/>
+                {filter.fieldToFilter.type == 'number' ?
+                    <div style={{ display: 'inline-flex' }}                    >
+                        <input type='number' style={{ width: '70px' }} value={filter.currentMin.toFixed(0)} onChange={this.onCurrentMinChange}/>
+                        <Slider className='horizontal-slider'
+                            onAfterChange={(e) => { this.onFilterScaleChange(e); filter.selectedStep = -1; } }
+                            value={[filter.currentMin, filter.currentMax]}
+                            min={filter.totalMin - 1}
+                            max={filter.totalMax + 1}
+                            withBars>
+                            <div className='minHandle'></div>
+                            <div className='maxHandle'></div>
+                        </Slider>
+                        <input type='number' style={{ width: '70px' }} value={filter.currentMax.toFixed(0)} onChange={this.onCurrentMaxChange}/>
+                        <div style={{ display: 'inline-block', cursor: 'pointer' }} onClick={() => {
+                            filter.lockDistance = !filter.lockDistance;
+                        } }>
+                            <i style={{ color: 'cecece', fontSize: 20, padding: 4 }} className={!filter.lockDistance ? 'fa fa-unlock-alt' : 'fa fa-lock'}/>
+                        </div>
                     </div>
-                </div>
+                    : null}
             </div>
         </Draggable>
     }

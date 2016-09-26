@@ -25,6 +25,10 @@ export class Layer {
         return this.headers.filter(function(val) { return val.type === 'number' });
     }
 
+    @computed get categories() {
+        return this.headers.filter(function(val) { return val.type === 'strings' });
+    }
+
     @observable popupHeaders: IHeader[] = [];
     @observable showPopUpOnHover: boolean;
     /** The Leaflet layer. Will be modified by changing options*/
@@ -146,7 +150,6 @@ export class Layer {
                 console.timeEnd("LayerRender")
                 this.refreshFilters();
                 if (!this.values) {
-                    this.values = {};
                     this.getValues();
                 }
                 this.toggleRedraw = false;
