@@ -73,7 +73,7 @@ export class AppState {
 
 export class WelcomeScreenState {
     loadedMap: SaveState;
-    fileName: string;
+    @observable    fileName: string;
 }
 
 /** The state to be saved when exporting a map to a file*/

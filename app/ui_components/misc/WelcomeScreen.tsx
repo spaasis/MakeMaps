@@ -2,13 +2,12 @@ import * as React from 'react';
 import { DemoPreview } from './DemoPreview';
 let Dropzone = require('react-dropzone');
 import { LoadExternalMap, ShowLoading, ShowNotification } from '../../common_items/common';
-import {AppState} from '../../stores/States';
 
 
-export class WelcomeScreen extends React.Component<{ appState: AppState, loadMap: ()=>void, openLayerImport:()=>void}, {}>{
+export class WelcomeScreen extends React.Component<{loadMap:(json)=>void, openLayerImport:()=>void}, {fileName:string, savedJSON}>{
     constructor() {
         super();
-        this.state = { fileName: null };
+        this.state ={fileName:null, savedJSON:null};
     }
 
     /**
@@ -38,12 +37,11 @@ export class WelcomeScreen extends React.Component<{ appState: AppState, loadMap
             let contents: any = e.target;
             let ext: string = fileName.split('.').pop().toLowerCase();
             if (ext === 'mmap') {
-              this.props.appState.welcomeScreenState ={ loadedMap : JSON.parse(contents.result), fileName : fileName };
-                // this.setState({
-                //     savedJSON: JSON.parse(contents.result),
-                //     fileName: fileName,
-                //
-                // });
+                this.setState({
+                    savedJSON: JSON.parse(contents.result),
+                    fileName: fileName,
+
+                });
             }
             else {
                 ShowNotification('Select a .mmap file!');
@@ -56,13 +54,14 @@ export class WelcomeScreen extends React.Component<{ appState: AppState, loadMap
       e.preventDefault();
       e.stopPropagation();
       let load = this.props.loadMap;
+      let json  =this.state.savedJSON;
 
-      setTimeout(function(){load()}, 10);
+      setTimeout(function(){load(json)}, 10);
     }
     render() {
         let dropStyle = {
             height: 150,
-            border: this.props.appState.welcomeScreenState.fileName ? '1px solid #549341' : '1px dotted #549341',
+            border: this.state.fileName ? '1px solid #549341' : '1px dotted #549341',
             borderRadius: 15,
             margin: 5,
             textAlign: 'center',
@@ -120,10 +119,10 @@ export class WelcomeScreen extends React.Component<{ appState: AppState, loadMap
                             onDrop={this.onDrop.bind(this)}
                             accept={'.mmap'}
                             >
-                            {this.props.appState.welcomeScreenState.fileName ?
+                            {this.state.fileName ?
                                 <span>
                                     <i className='fa fa-check' style={{ color: '#549341', fontSize: 17 }}/>
-                                    {this.props.appState.welcomeScreenState.fileName}
+                                    {this.state.fileName}
                                     <div style={{ margin: '0 auto' }}>
                                     <button  className='primaryButton' onClick={this.loadMap.bind(this)}>Show me</button>
                                     </div>

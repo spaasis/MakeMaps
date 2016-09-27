@@ -215,7 +215,7 @@ export class FilterMenu extends React.Component<{
                                         />
                                     <br/>
                                 </label>
-                                {renderSteps.call(this)}
+                                {this.renderSteps.call(this)}
                             </div>
                             : null
                         }
@@ -270,55 +270,57 @@ export class FilterMenu extends React.Component<{
             </div >
         );
 
-        function renderSteps() {
 
-            let rows = [];
-            let inputStyle = {
-                display: 'inline',
-                width: 100
-            }
-            let row = 0;
+    }
 
-            if (filter.fieldToFilter.type == 'number') {
-                filter.steps.map(function(s) {
-                    rows.push(
-                        <li key={row}>
-                            <input
-                                id={row + 'min'}
-                                type='number'
-                                value={s[0]}
-                                onChange={(e) => { s[0] = (e.currentTarget as any).valueAsNumber } }
-                                style={inputStyle}
-                                step='any'/>
-                            -
-                            <input
-                                id={row + 'max'}
-                                type='number'
-                                value={s[1]}
-                                onChange={(e) => { s[1] = (e.currentTarget as any).valueAsNumber } }
-                                style={inputStyle}
-                                step='any'/>
-                        </li>);
-                    row++;
-                });
-            }
-            else {
-                filter.categories.map(function(s) {
-                    rows.push(
-                        <li key={row}>
-                            <span
-                                style={inputStyle}
-                                step='any'>{s}</span>
-                        </li>);
-                    row++;
-                });
-
-            }
-            return <div>
-                <button onClick={this.changeStepsCount.bind(this, -1)}>-</button>
-                <button onClick={this.changeStepsCount.bind(this, 1)}>+</button>
-                <ul id='customSteps' style={{ listStyle: 'none', padding: 0 }}>{rows.map(function(r) { return r })}</ul>
-            </div>
+    renderSteps() {
+        let filter = this.props.state.editingFilter;
+        let rows = [];
+        let inputStyle = {
+            display: 'inline',
+            width: 100
         }
+        let row = 0;
+
+        if (filter.fieldToFilter.type == 'number') {
+            filter.steps.map(function(s) {
+                rows.push(
+                    <li key={row}>
+                        <input
+                            id={row + 'min'}
+                            type='number'
+                            value={s[0]}
+                            onChange={(e) => { s[0] = (e.currentTarget as any).valueAsNumber } }
+                            style={inputStyle}
+                            step='any'/>
+                        -
+                        <input
+                            id={row + 'max'}
+                            type='number'
+                            value={s[1]}
+                            onChange={(e) => { s[1] = (e.currentTarget as any).valueAsNumber } }
+                            style={inputStyle}
+                            step='any'/>
+                    </li>);
+                row++;
+            });
+        }
+        else {
+            filter.categories.map(function(s) {
+                rows.push(
+                    <li key={row}>
+                        <span
+                            style={inputStyle}
+                            step='any'>{s}</span>
+                    </li>);
+                row++;
+            });
+
+        }
+        return <div>
+            <button onClick={this.changeStepsCount.bind(this, -1)}>-</button>
+            <button onClick={this.changeStepsCount.bind(this, 1)}>+</button>
+            <ul id='customSteps' style={{ listStyle: 'none', padding: 0 }}>{rows.map(function(r) { return r })}</ul>
+        </div>
     }
 }

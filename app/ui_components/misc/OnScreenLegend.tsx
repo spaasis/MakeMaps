@@ -10,7 +10,7 @@ import { observer } from 'mobx-react';
 
 @observer
 export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
-    createLegend(layer: Layer) {
+    createLegend(layer: Layer, showLayerName: boolean) {
         let choroLegend, scaledLegend, chartLegend, iconLegend, blockLegend;
         let options = layer;
         let col = options.colorOptions;
@@ -18,7 +18,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         let isHeat = layer.layerType === LayerTypes.HeatMap;
 
         if (col.colors && col.colors.length !== 0 && col.useMultipleFillColors && sym.symbolType !== SymbolTypes.Chart && (isHeat || sym.symbolType !== SymbolTypes.Icon || sym.iconField !== col.colorField)) {
-            let percentages = this.props.state.legend.showPercentages ? this.getStepPercentages(layer.values[col.colorField.value], col.limits) : {};
+            let percentages: number[] = this.props.state.legend.showPercentages ? this.getStepPercentages(layer.values[col.colorField.value], col.limits) : [];
             choroLegend = this.createMultiColorLegend(options, percentages);
         }
         if (!isHeat && sym.symbolType === SymbolTypes.Chart && col.chartColors) {
@@ -28,14 +28,17 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             scaledLegend = this.createScaledSizeLegend(options);
         }
         if (!isHeat && sym.symbolType === SymbolTypes.Icon) {
-            let percentages = this.props.state.legend.showPercentages && sym.iconLimits.length > 1 ? this.getStepPercentages(layer.values[sym.iconField.value], sym.iconLimits) : {};
+            let percentages: number[] = this.props.state.legend.showPercentages && sym.iconLimits.length > 1 ? this.getStepPercentages(layer.values[sym.iconField.value], sym.iconLimits) : [];
             iconLegend = this.createIconLegend(options, percentages, layer.name);
         }
         if (!isHeat && sym.symbolType === SymbolTypes.Blocks) {
             blockLegend = this.createBlockLegend(options);
         }
 
-        return <div key={layer.id}>
+        return <div key={layer.id} style={{ clear: 'both' }}>
+            <div>
+                {showLayerName ? layer.name : null}
+            </div>
             {choroLegend}
             {scaledLegend}
             {chartLegend}
@@ -43,13 +46,14 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             {blockLegend}
         </div>
     }
-    createMultiColorLegend(layer: Layer, percentages) {
+    createMultiColorLegend(layer: Layer, percentages: number[]) {
         let divs = [];
         let limits = layer.colorOptions.limits;
         let colors = layer.colorOptions.colors;
-        for (let i = 0; i < limits.length - 1; i++) {
+        for (let i of limits) {
+            let index = limits.indexOf(i);
             let colorStyle = {
-                background: colors[i],
+                background: colors[index],
                 opacity: layer.layerType === LayerTypes.HeatMap ? 1 : layer.colorOptions.fillOpacity,
                 minWidth: '20px',
                 minHeight: '20px',
@@ -60,7 +64,9 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
 
                 <span style={{ marginLeft: '3px', marginRight: '3px' }}>
 
-                    {limits[i].toFixed(layer.colorOptions.colorField.decimalAccuracy) + (i < (limits.length - 2) ? '-' : '+')} {this.props.state.legend.horizontal ? <br/> : ''} {i < (limits.length - 2) ? limits[i + 1].toFixed(layer.colorOptions.colorField.decimalAccuracy) : ''}
+                    {i.toFixed(layer.colorOptions.colorField.decimalAccuracy) + (index < (limits.length - 1) ? '-' : '+')}
+                    {this.props.state.legend.horizontal ? <br/> : ''}
+                    {index < (limits.length - 1) ? limits[index + 1].toFixed(layer.colorOptions.colorField.decimalAccuracy) : ''}
                     {this.props.state.legend.showPercentages ? <br/> : null}
                     {this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null}
                 </span>
@@ -220,24 +226,29 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         </div >;
     }
 
-    createIconLegend(layer: Layer, percentages, layerName: string) {
+    createIconLegend(layer: Layer, percentages: number[], layerName: string) {
         let divs = [];
-        let limits = layer.symbolOptions.iconCount > 1 ? this.combineLimits(layer) : layer.symbolOptions.iconLimits.slice();
-        let icons: IIcon[] = layer.symbolOptions.icons;
         let col = layer.colorOptions;
         let sym = layer.symbolOptions;
+        let icons: IIcon[] = sym.icons.slice();
+        let limits = icons.length > 1 && sym.iconField == col.colorField ? this.combineLimits(layer) : sym.iconLimits.slice();
+        let isNumber = sym.iconField.type == 'number';
         if (limits && limits.length > 0) {
-            for (let i = 0; i < limits.length - 1; i++) {
+            for (let i of limits) {
+
+                let index = limits.indexOf(i);
                 let fillColor: string = col.colorField === layer.symbolOptions.iconField && col.useMultipleFillColors ?
-                    GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), (limits[i] + limits[i + 1]) / 2) //if can be fitted into the same legend, show colors and symbols together. Get fill color by average of icon limits
-                    : '000';
-                let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), (limits[i] + limits[i + 1]) / 2);
+                    GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), (limits[index] + limits[index]) / 2) //if can be fitted into the same legend, show colors and symbols together. Get fill color by average of icon limits
+                    : col.fillColor;
+                let icon = isNumber ? GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), (i + limits[index]) / 2) : icons[index];
 
                 divs.push(<div key={i} style={{ display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}>
                     {!icon ? '' : getIcon(icon.shape, icon.fa, col.color, fillColor, fillColor != '000' ? layer.colorOptions.iconTextColor : 'FFF')}
                     <span style={{ marginLeft: '3px', marginRight: '3px' }}>
-                        {limits[i].toFixed(sym.iconField.decimalAccuracy) + (i < (limits.length - 2) ? '-' : '+')} {this.props.state.legend.horizontal ? <br/> : ''} {i < (limits.length - 2) ? limits[i + 1].toFixed(sym.iconField.decimalAccuracy) : ''}
 
+                        {isNumber ? (i.toFixed(sym.iconField.decimalAccuracy) + (index < (limits.length - 1) ? '-' : '+')) : i}
+                        {isNumber ? (this.props.state.legend.horizontal ? <br/> : '') : null}
+                        {isNumber ? (index < (limits.length - 1) ? limits[index + 1].toFixed(sym.iconField.decimalAccuracy) : '') : null}
                         {this.props.state.legend.showPercentages ? <br/> : null}
                         {this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null}
                     </span>
@@ -365,7 +376,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
     combineLimits(layer: Layer) {
         return layer.symbolOptions.iconLimits.concat(layer.colorOptions.limits.filter(function(item) {
             return layer.symbolOptions.iconLimits.indexOf(item) < 0;
-        })).sort(function(a, b) { return a - b });
+        })).sort(function(a, b) { return a == b ? 0 : a < b ? -1 : 1 });
     }
 
     onMetaChange = (e) => {
@@ -394,7 +405,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 <div>
                     {
                         layers.map(function(m) {
-                            return this.createLegend(m);
+                            return this.createLegend(m, layers.length > 1);
                         }, this)
                     }
                 </div>

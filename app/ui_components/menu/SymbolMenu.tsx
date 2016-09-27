@@ -101,7 +101,7 @@ export class SymbolMenu extends React.Component<{
         sym.icons = use ? sym.icons : [sym.icons.slice()[0]];
         sym.iconLimits = use ? sym.iconLimits : [];
         if (use && sym.iconField) {
-            this.calculateIconValues(sym.iconField.value, sym.iconCount, sym.iconField.decimalAccuracy)
+            this.calculateIconValues(sym.iconField, sym.iconCount, sym.iconField.decimalAccuracy)
         }
         if (this.props.state.autoRefresh)
             this.props.state.editingLayer.refresh();
@@ -111,7 +111,7 @@ export class SymbolMenu extends React.Component<{
     onIconFieldChange = (val: IHeader) => {
         let layer = this.props.state.editingLayer;
         layer.symbolOptions.iconField = val;
-        this.calculateIconValues(val.value, layer.symbolOptions.iconCount, val.decimalAccuracy);
+        this.calculateIconValues(val, layer.symbolOptions.iconCount, val.decimalAccuracy);
         if (this.props.state.autoRefresh)
             layer.refresh();
 
@@ -119,24 +119,30 @@ export class SymbolMenu extends React.Component<{
     onIconStepCountChange = (amount: number) => {
 
         let layer = this.props.state.editingLayer;
-        let opt = layer.symbolOptions
+        let sym = layer.symbolOptions
         if (amount == 1) {
-            opt.icons.push({ shape: 'circle', fa: faIcons[Math.floor(Math.random() * faIcons.length)] }); //add random icon
+            this.addRandomIcon()
         }
-        else if (amount == -1 && opt.iconCount > 1) {
-            opt.icons.pop();
+        else if (amount == -1 && sym.iconCount > 1) {
+            sym.icons.pop();
         }
-        if (opt.iconCount > 0) {
-            this.calculateIconValues(opt.iconField.value, opt.iconCount, opt.iconField.decimalAccuracy)
+        if (sym.iconCount > 0) {
+            this.calculateIconValues(sym.iconField, sym.iconCount, sym.iconField.decimalAccuracy)
         }
         if (this.props.state.autoRefresh)
             layer.refresh();
 
     }
 
+    addRandomIcon() {
+        let shapes = ['circle', 'square', 'star', 'penta'];
+        let shape: 'circle' | 'square' | 'star' | 'penta' = shapes[Math.floor(Math.random() * shapes.length)] as any;
+        this.props.state.editingLayer.symbolOptions.icons.push({ shape: shape, fa: faIcons[Math.floor(Math.random() * faIcons.length)] });
+    }
+
     onStepLimitChange = (step: number, e) => {
         let layer = this.props.state.editingLayer;
-        let limits = layer.symbolOptions.iconLimits;
+        let limits: number[] = layer.symbolOptions.iconLimits;
         let val = e.currentTarget.valueAsNumber;
         if (limits[step + 1] && limits[step + 1] <= val) { //if collides with the next limit
             let index = step + 1;
@@ -222,15 +228,23 @@ export class SymbolMenu extends React.Component<{
 
     }
 
-    calculateIconValues(field: string, steps: number, accuracy: number) {
-        let values = this.props.state.editingLayer.values;
-        let uniqueValues = this.props.state.editingLayer.uniqueValues;
-
-        if (steps >= uniqueValues[field].length - 1) {
-            this.props.state.editingLayer.symbolOptions.iconLimits = uniqueValues[field];
+    calculateIconValues(field: IHeader, steps: number, accuracy: number) {
+        let layer = this.props.state.editingLayer;
+        let values = layer.values;
+        let uniqueValues = layer.uniqueValues;
+        if (field.type == 'number') {
+            if (steps >= uniqueValues[field.value].length) {
+                layer.symbolOptions.iconLimits = uniqueValues[field.value];
+            }
+            else
+                layer.symbolOptions.iconLimits = CalculateLimits(values[field.value][0], values[field.value][values[field.value].length - 1], steps, accuracy); //get limits by min and max value
         }
-        else
-            this.props.state.editingLayer.symbolOptions.iconLimits = CalculateLimits(values[field][0], values[field][values[field].length - 1], steps, accuracy); //get limits by min and max value
+        else {
+            layer.symbolOptions.iconLimits = uniqueValues[field.value];
+        }
+        while (layer.symbolOptions.iconCount < layer.symbolOptions.iconLimits.slice().length) {
+            this.addRandomIcon();
+        }
     }
 
     render() {
@@ -263,6 +277,52 @@ export class SymbolMenu extends React.Component<{
                 lineHeight: 1.5
             }
         }
+
+        let iconSelect = (
+            <Modal
+                isOpen={state.iconSelectOpen}
+                style={iconSelectStyle}
+                >
+                {state.iconSelectOpen ? <div>
+                    Icon
+                    {this.renderIcons.call(this)}
+                    Or
+                    <br/>
+                    <label>Use another <a href='http://fontawesome.io/icons/'>Font Awesome</a> icon</label>
+                    <input type="text" onChange={this.onFAIconChange} value={sym.icons[state.currentIconIndex].fa}/>
+
+                    <br/>
+                    Icon shape
+                    <br/>
+                    <div
+                        style ={{ display: 'inline-block' }}
+                        onClick={this.onIconShapeChange.bind(this, 'circle')}>
+                        {this.getIcon('circle', '', '#999999', 'transparent', null)}
+                    </div>
+                    <div
+                        style ={{ display: 'inline-block' }}
+                        onClick={this.onIconShapeChange.bind(this, 'square')}>
+                        {this.getIcon('square', '', '#999999', 'transparent', null)}
+                    </div>
+                    <div
+                        style ={{ display: 'inline-block' }}
+                        onClick={this.onIconShapeChange.bind(this, 'star')}>
+                        {this.getIcon('star', '', '#999999', 'transparent', null)}
+                    </div>
+                    <div
+                        style ={{ display: 'inline-block' }}
+                        onClick={this.onIconShapeChange.bind(this, 'penta')}>
+                        {this.getIcon('penta', '', '#999999', 'transparent', null)}
+                    </div>
+                    <br/>
+                    <button
+                        className='primaryButton'
+                        onClick={this.toggleIconSelect.bind(this, state.currentIconIndex)}
+                        style={{ position: 'absolute', left: 80 }}>OK</button>
+                </div>
+                    : null}
+            </Modal>
+        );
         return (
 
             <div className="makeMaps-options">
@@ -393,18 +453,20 @@ export class SymbolMenu extends React.Component<{
                                 <div>
                                     <label>Field to change icon by</label>
                                     <Select
-                                        options={layer.numberHeaders}
+                                        options={layer.headers.slice()}
                                         onChange={this.onIconFieldChange}
                                         value={sym.iconField}
                                         clearable={false}
                                         />
-                                    {sym.iconField ?
+                                    {sym.iconField && sym.iconField.type == 'number' ?
                                         <div>Set the <i>lower limit</i> and icon
                                             <br/>
                                             <button onClick={this.onIconStepCountChange.bind(this, -1)}>-</button>
                                             <button onClick={this.onIconStepCountChange.bind(this, 1)}>+</button>
-                                            {this.renderIconSteps.call(this)}
+
                                         </div> : null}
+                                    {sym.iconField ? this.renderIconSteps.call(this) : null}
+
                                 </div>
                                 :
                                 <div>
@@ -522,51 +584,10 @@ export class SymbolMenu extends React.Component<{
                 {autoRefresh ? null :
                     <button className='menuButton' onClick={() => { layer.refresh() } }>Refresh map</button>
                 }
-                <Modal
-                    isOpen={state.iconSelectOpen}
-                    style={iconSelectStyle}
-                    >
-                    {state.iconSelectOpen ? <div>
-                        Icon
-                        {this.renderIcons.call(this)}
-                        Or
-                        <br/>
-                        <label>Use another <a href='http://fontawesome.io/icons/'>Font Awesome</a> icon</label>
-                        <input type="text" onChange={this.onFAIconChange} value={sym.icons[state.currentIconIndex].fa}/>
-
-                        <br/>
-                        Icon shape
-                        <br/>
-                        <div
-                            style ={{ display: 'inline-block' }}
-                            onClick={this.onIconShapeChange.bind(this, 'circle')}>
-                            {this.getIcon('circle', '', '#999999', 'transparent', null)}
-                        </div>
-                        <div
-                            style ={{ display: 'inline-block' }}
-                            onClick={this.onIconShapeChange.bind(this, 'square')}>
-                            {this.getIcon('square', '', '#999999', 'transparent', null)}
-                        </div>
-                        <div
-                            style ={{ display: 'inline-block' }}
-                            onClick={this.onIconShapeChange.bind(this, 'star')}>
-                            {this.getIcon('star', '', '#999999', 'transparent', null)}
-                        </div>
-                        <div
-                            style ={{ display: 'inline-block' }}
-                            onClick={this.onIconShapeChange.bind(this, 'penta')}>
-                            {this.getIcon('penta', '', '#999999', 'transparent', null)}
-                        </div>
-                        <br/>
-                        <button
-                            className='primaryButton'
-                            onClick={this.toggleIconSelect.bind(this, state.currentIconIndex)}
-                            style={{ position: 'absolute', left: 80 }}>OK</button>
-                    </div>
-                        : null}
-                </Modal>
+                {iconSelect}
             </div >
         );
+
 
     }
 
@@ -617,44 +638,44 @@ export class SymbolMenu extends React.Component<{
 
     }
 
-
     /**
      * renderIconSteps - Renders custom icon steps
      */
     renderIconSteps() {
         let layer = this.props.state.editingLayer;
+        let limits = layer.symbolOptions.iconLimits.slice();
         let rows = [];
-        let steps: number[] = [];
-        console.log(this.props.state.editingLayer.colorOptions.limits)
-        console.log(this.props.state.editingLayer.symbolOptions.iconLimits)
-        for (let i in layer.symbolOptions.iconLimits.slice()) {
-            if (+i !== layer.symbolOptions.iconLimits.slice().length - 1) {
-                let step: number = layer.symbolOptions.iconLimits[i];
-                steps.push(step);
+        let row = 0;
+        if (layer.symbolOptions.iconField.type == 'number') {
+            for (let i of limits) {
+
+                rows.push(
+                    <li key={i} style={{ lineHeight: 0 }}>
+                        <input
+                            id={row + 'min'}
+                            type='number'
+                            defaultValue={i.toFixed(layer.symbolOptions.iconField.decimalAccuracy)}
+                            style={{
+                                width: 100,
+                            }}
+                            onChange={this.onStepLimitChange.bind(this, row)}
+                            step={1 * 10 ** (-layer.symbolOptions.iconField.decimalAccuracy)}
+                            />
+                        {this.getIcon(layer.symbolOptions.icons[row].shape, layer.symbolOptions.icons[row].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, row))}
+                    </li>);
+                row++;
             }
         }
-        let row = 0;
-
-        for (let i of steps) {
-
-            rows.push(
-                <li key={i} style={{ lineHeight: 0 }}>
-                    <input
-                        id={row + 'min'}
-                        type='number'
-                        defaultValue={i.toFixed(layer.symbolOptions.iconField.decimalAccuracy)}
-                        style={{
-                            width: 100,
-                        }}
-                        onChange={this.onStepLimitChange.bind(this, row)}
-                        step={1 * 10 ** (-layer.symbolOptions.iconField.decimalAccuracy)}
-                        />
-                    {this.getIcon(layer.symbolOptions.icons[row].shape, layer.symbolOptions.icons[row].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, row))}
-                </li>);
-            row++;
+        else {
+            for (let i of layer.uniqueValues[layer.symbolOptions.iconField.value]) {
+                rows.push(
+                    <li key={i} style={{ lineHeight: '30px' }}>
+                        {i}
+                        {this.getIcon(layer.symbolOptions.icons[row].shape, layer.symbolOptions.icons[row].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, row))}
+                    </li>);
+                row++;
+            }
         }
-
-
         return <ul id='customSteps' style={{ listStyle: 'none', padding: 0 }}>{rows.map(function(r) { return r })}</ul>
     }
 

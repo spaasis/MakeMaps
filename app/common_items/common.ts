@@ -37,8 +37,8 @@ function CalculateLimits(min: number, max: number, count: number, accuracy: numb
         if (limits.indexOf(val) === -1)
             limits.push(val);
     }
-    if (limits.indexOf(+max.toFixed(accuracy)) === -1)
-        limits.push(+max.toFixed(accuracy))
+    // if (limits.indexOf(+max.toFixed(accuracy)) === -1)
+    //     limits.push(+max.toFixed(accuracy))
     return limits;
 }
 

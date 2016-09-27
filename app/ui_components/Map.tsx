@@ -219,20 +219,20 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             legend: this.props.state.legend,
             filters: this.props.state.filters,
         };
+
         saveData.layers = saveData.layers.slice();
 
-        saveData.layers.forEach(function(e) { delete e.appState; delete e.displayLayer; delete e.values; });
+        saveData.layers.forEach(function(e) { delete e.appState; delete e.displayLayer; delete e.values; delete e.uniqueValues; delete e.pointFeatureCount; delete e.toggleRedraw; });
         saveData.filters.forEach(function(e) { delete e.filterValues; delete e.filteredIndices; delete e.appState; });
+        let string = JSON.stringify(saveData);
 
-        let blob = new Blob([JSON.stringify(saveData)], { type: "text/plain;charset=utf-8" });
+        let blob = new Blob([string], { type: "text/plain;charset=utf-8" });
         (window as any).saveAs(blob, 'map.mmap');
     }
 
     loadSavedMap(saved?: SaveState) {
         console.time("LoadSavedMap")
         let headers: IHeader[];
-        if (!saved)
-            saved = this.props.state.welcomeScreenState.loadedMap;
         if (saved.baseLayerId) {
             let oldBase = this.props.state.activeBaseLayer;
             let newBase: L.TileLayer;
@@ -268,6 +268,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             newLayer.name = lyr.name
             newLayer.headers = headers;
             newLayer.popupHeaders = popupHeaders;
+            newLayer.showPopUpOnHover = lyr.showPopUpOnHover;
             newLayer.layerType = lyr.layerType;
             newLayer.geoJSON = lyr.geoJSON;
             newLayer.colorOptions = new ColorOptions(lyr.colorOptions);
@@ -326,7 +327,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                             isOpen={this.props.state.welcomeShown}
                             style = {modalStyle}>
                             <WelcomeScreen
-                                appState= {this.props.state}
                                 loadMap={this.loadSavedMap.bind(this)}
                                 openLayerImport={this.startLayerImport.bind(this)}
                                 />

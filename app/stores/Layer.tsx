@@ -55,7 +55,6 @@ export class Layer {
 
     /** Update layer based on changed options and properties. */
     refresh() {
-        console.time("LayerCreate")
         let col: ColorOptions = this.colorOptions;
         let sym: SymbolOptions = this.symbolOptions;
         let style = function(opts: ColorOptions, feature) {
@@ -95,7 +94,6 @@ export class Layer {
                     this.appState.autoRefresh = false;
                 }
             }
-            console.timeEnd("LayerCreate")
         }
         else if (this.geoJSON) {
 
@@ -104,7 +102,6 @@ export class Layer {
                     this.displayLayer = (createHeatLayer(this) as any);
             }
             else {
-                console.time('geojsonlayer')
                 let options: L.GeoJSONOptions = {}
                 this.displayLayer = L.geoJson([], {
                     onEachFeature: this.onEachFeature,
@@ -113,7 +110,6 @@ export class Layer {
                 });
 
                 this.batchAdd(0, 500, this.geoJSON, this.displayLayer);
-                console.timeEnd('geojsonlayer')
 
             }
             if (this.displayLayer) {
@@ -122,7 +118,6 @@ export class Layer {
                     this.clusterOptions.useClustering = true;
                 }
                 if (this.layerType !== LayerTypes.HeatMap && this.clusterOptions.useClustering) {
-                    console.time("LayerCluster")
 
                     let markers = L.markerClusterGroup({
                         iconCreateFunction: this.createClusteredIcon.bind(this),
@@ -139,21 +134,17 @@ export class Layer {
                     this.batchAdd(0, 500, this.displayLayer.getLayers(), markers);
                     // markers.addLayer(this.displayLayer);
                     this.displayLayer = markers as any;
-                    console.timeEnd("LayerCluster")
 
 
                 }
-                console.time("LayerRender");
 
                 this.appState.map.addLayer(this.displayLayer);
 
-                console.timeEnd("LayerRender")
                 this.refreshFilters();
                 if (!this.values) {
                     this.getValues();
                 }
                 this.toggleRedraw = false;
-                console.timeEnd("LayerCreate");
 
             }
 
@@ -188,11 +179,9 @@ export class Layer {
 
     /** Manually trigger cluster update*/
     refreshCluster() {
-        console.time('refreshCluster');
         if ((this.displayLayer as any).refreshClusters) {
             (this.displayLayer as any).refreshClusters();
         }
-        console.timeEnd('refreshCluster');
     }
 
     /** GetColors - calculates the color values based on a field name (colorOptions.colorField)  */
@@ -201,12 +190,11 @@ export class Layer {
         if (!opts.colorField) {
             return;
         }
-
-
         let values = this.values[opts.colorField.value]
         let colors = [];
         opts.limits = chroma.limits(values, opts.mode, opts.steps);
-        colors = chroma.scale(opts.colorScheme).colors(opts.limits.length - 1);
+        opts.limits.splice(opts.limits.length - 1, 1); //remove maximum value
+        colors = chroma.scale(opts.colorScheme).colors(opts.limits.length);
         opts.colors = opts.revert ? colors.reverse() : colors;
     }
 
@@ -234,9 +222,7 @@ export class Layer {
             for (let i in feat.properties) {
                 if (!this.values[i])
                     this.values[i] = [];
-
                 this.values[i].push(feat.properties[i]);
-
             }
         }, this);
 
@@ -244,11 +230,10 @@ export class Layer {
             let header = this.headers[i].value;
 
             if (this.values[header]) {
-                this.values[header].sort(function(a, b) { return a - b })
+                this.values[header].sort(function(a, b) { return a == b ? 0 : a < b ? -1 : 1 })
                 this.uniqueValues[header] = this.values[header].filter(function(e, i, arr) {
                     return arr.lastIndexOf(e) === i;
                 });
-                this.uniqueValues[header].push(this.uniqueValues[header][this.uniqueValues[header].length - 1] + 1)//add 'extra' item to the list
             }
         }
         this.pointFeatureCount = pointCount;
@@ -504,8 +489,11 @@ function getScaleSymbolMaxValues() {
     sym.actualMaxYRadius = maxYradius;
 }
 
-function getFaIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, value: number) {
-    let icon = GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), sym.iconField ? value : 0);
+function getFaIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, value: any) {
+
+    let icon: IIcon = sym.iconField.type == 'number' ?
+        GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), sym.iconField ? value : 0)
+        : sym.icons[sym.iconLimits.slice().indexOf(value)];
     return L.ExtraMarkers.icon({
         icon: icon ? icon.fa : sym.icons[0].fa,
         prefix: 'fa',
@@ -767,8 +755,6 @@ export class ColorOptions implements L.PathOptions {
     /** Chart symbol colors*/
     @observable chartColors: { [field: string]: string; };
 
-
-
     /**
      * @param  prev   previous options to copy
      */
@@ -810,7 +796,7 @@ export class SymbolOptions {
     /** Field by which to calculate icon values*/
     @observable iconField: IHeader;
     /** The steps of the field values by which to choose the icons */
-    @observable iconLimits: number[];
+    @observable iconLimits: any[];
     /** The field to scale size x-axis by*/
     @observable sizeXVar: IHeader;
     /** The field to scale size y-axis by*/

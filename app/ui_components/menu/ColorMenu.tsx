@@ -122,9 +122,10 @@ export class ColorMenu extends React.Component<{
         let limits: number[] = [];
         if (!lyr.colorOptions.useCustomScheme) {
             limits = chroma.limits(lyr.values[field], lyr.colorOptions.mode, steps);
+            limits.splice(limits.length - 1, 1); //remove maximum value from limits
         }
         else {
-            if (steps >= lyr.uniqueValues[field].length - 1) {
+            if (steps >= lyr.uniqueValues[field].length) {
                 limits = lyr.uniqueValues[field];
             }
             else
@@ -133,7 +134,7 @@ export class ColorMenu extends React.Component<{
 
         let colors: string[];
         if (!lyr.colorOptions.useCustomScheme) {
-            colors = chroma.scale(lyr.colorOptions.colorScheme).colors(limits.length - 1);
+            colors = chroma.scale(lyr.colorOptions.colorScheme).colors(limits.length);
         }
         else {
             colors = lyr.colorOptions.colors;
@@ -340,7 +341,6 @@ export class ColorMenu extends React.Component<{
                 checked={col.revert}/>
         </div>
 
-
         return (
             <div className="makeMaps-options">
                 {isHeat || isChart ? null :
@@ -410,7 +410,7 @@ export class ColorMenu extends React.Component<{
                                     <label>Steps</label>
                                     <input
                                         type='number'
-                                        max={layer.uniqueValues[col.colorField.value].length - 1}
+                                        max={layer.uniqueValues[col.colorField.value].length}
                                         min={2}
                                         step={1}
                                         onChange={(e) => {
@@ -483,14 +483,7 @@ export class ColorMenu extends React.Component<{
             }
         }
         else {
-            let steps: number[] = [];
-            for (let i in limits) {
-                if (+i !== limits.length - 1) {
-                    let step: number = limits[i];
-                    steps.push(step);
-                }
-            }
-            for (let i of steps) {
+            for (let i of limits) {
                 rows.push(
                     <li key={row}
                         style={{ background: layer.colorOptions.colors[row] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer', height: 32 }}
