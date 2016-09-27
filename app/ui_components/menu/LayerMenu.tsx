@@ -67,11 +67,11 @@ export class LayerMenu extends React.Component<{
                 <Select
                     options={this.props.state.obsBaseLayers}
                     onChange={(e: ISelectData) => {
-                        this.props.state.map.removeLayer(this.props.state.activeBaseLayer);
+                        this.props.state.map.removeLayer(this.props.state.activeBaseLayer.layer);
                         this.props.state.activeBaseLayer = e.value;
-                        this.props.state.map.addLayer(this.props.state.activeBaseLayer);
+                        this.props.state.map.addLayer(this.props.state.activeBaseLayer.layer);
                     } }
-                    value={{ value: this.props.state.activeBaseLayer, label: this.props.state.activeBaseLayer.options.id }}
+                    value={{ value: this.props.state.activeBaseLayer, label: this.props.state.activeBaseLayer.id }}
                     clearable={false}
                     />
                 <hr/>

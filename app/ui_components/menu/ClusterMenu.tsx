@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { AppState } from '../../stores/States';
 import { observer } from 'mobx-react';
-import { IHeader } from '../../stores/Layer';
+import { Header } from '../../stores/Layer';
 let Select = require('react-select');
 
 @observer
@@ -12,7 +12,7 @@ export class ClusterMenu extends React.Component<{
         let layer = this.props.state.editingLayer;
         let menuState = this.props.state.clusterMenuState;
         let options = layer.clusterOptions;
-        let hoverHeader = menuState.selectedHeader ? options.hoverHeaders.filter(function(f) { return f.header.value == menuState.selectedHeader.value })[0] : undefined;
+        let hoverHeader = menuState.selectedHeader ? options.hoverHeaders.filter(function(f) { return f.headerId == menuState.selectedHeader.id })[0] : undefined;
         return (
             <div className='makeMaps-options'>
                 <label htmlFor='useClustering'>Use clustering
@@ -46,7 +46,7 @@ export class ClusterMenu extends React.Component<{
                 Cluster info
                 <Select
                     options={layer.numberHeaders}
-                    onChange={(e: IHeader) => { menuState.selectedHeader = e; } }
+                    onChange={(e: Header) => { menuState.selectedHeader = e; } }
                     value={menuState.selectedHeader}
                     clearable={true}
                     />
@@ -61,10 +61,10 @@ export class ClusterMenu extends React.Component<{
                                         hoverHeader.showAvg = val;
                                     else if (hoverHeader && !val) {
                                         if (!hoverHeader.showSum)
-                                            options.hoverHeaders = options.hoverHeaders.filter(function(f) { return f.header != menuState.selectedHeader }); //remove from hoverHeaders
+                                            options.hoverHeaders = options.hoverHeaders.filter(function(f) { return f.headerId != menuState.selectedHeader.id }); //remove from hoverHeaders
                                     }
                                     else if (val && !hoverHeader) {
-                                        options.hoverHeaders.push({ header: menuState.selectedHeader, showAvg: val, showSum: false, avgText: menuState.selectedHeader.label + ' avg: ', sumText: menuState.selectedHeader.label + ' sum: ' });
+                                        options.hoverHeaders.push({ headerId: menuState.selectedHeader.id, showAvg: val, showSum: false, avgText: menuState.selectedHeader.label + ' avg: ', sumText: menuState.selectedHeader.label + ' sum: ' });
                                     }
                                     layer.refreshCluster();
                                 } }/>
@@ -88,9 +88,9 @@ export class ClusterMenu extends React.Component<{
                                         hoverHeader.showSum = val;
                                     else if (hoverHeader && !val) {
                                         if (!hoverHeader.showAvg)
-                                            options.hoverHeaders = options.hoverHeaders.filter(function(f) { return f.header != menuState.selectedHeader }); //remove from hoverHeaders
+                                            options.hoverHeaders = options.hoverHeaders.filter(function(f) { return f.headerId != menuState.selectedHeader.id }); //remove from hoverHeaders
                                     } else if (val && !hoverHeader) {
-                                        options.hoverHeaders.push({ header: menuState.selectedHeader, showSum: val, showAvg: false, avgText: menuState.selectedHeader.label + ' avg: ', sumText: menuState.selectedHeader.label + ' sum: ' });
+                                        options.hoverHeaders.push({ headerId: menuState.selectedHeader.id, showSum: val, showAvg: false, avgText: menuState.selectedHeader.label + ' avg: ', sumText: menuState.selectedHeader.label + ' sum: ' });
                                     }
 
                                     layer.refreshCluster();

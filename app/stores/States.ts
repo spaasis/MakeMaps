@@ -1,5 +1,5 @@
 import { observable, computed, autorun } from 'mobx';
-import { Layer, LayerTypes, IHeader } from './Layer';
+import { Layer, LayerTypes, Header } from './Layer';
 import { Filter } from './Filter';
 import { Legend } from './Legend';
 let mobx = require('mobx');
@@ -13,17 +13,17 @@ export class AppState {
     /** Is the options menu icon visible*/
     @observable menuShown: boolean = false;
     /** Array of all the available base layers*/
-    baseLayers: L.TileLayer[];
+    baseLayers: { id: string, layer: L.TileLayer }[];
 
     @computed get obsBaseLayers() {
         let arr: ISelectData[] = [];
         this.baseLayers.map(function(lyr) {
-            arr.push({ value: lyr, label: (lyr as any).options.id })
+            arr.push({ value: lyr.layer, label: lyr.id })
         })
         return arr;
     }
     /** Currently visible base map*/
-    @observable activeBaseLayer;
+    @observable activeBaseLayer: { id: string, layer: L.TileLayer };
     /** The layers of the map.*/
     @observable layers: Layer[] = [];
     /** The data filters of the map.*/
@@ -73,7 +73,7 @@ export class AppState {
 
 export class WelcomeScreenState {
     loadedMap: SaveState;
-    @observable    fileName: string;
+    @observable fileName: string;
 }
 
 /** The state to be saved when exporting a map to a file*/
@@ -172,5 +172,5 @@ export class ExportMenuState {
 }
 
 export class ClusterMenuState {
-    @observable selectedHeader: IHeader;
+    @observable selectedHeader: Header;
 }

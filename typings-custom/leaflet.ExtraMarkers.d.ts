@@ -4,21 +4,6 @@ declare module L {
 
         function icon(options: ExtraMarkers.IconOptions): ExtraMarkers.Icon;
 
-        interface IconStatic extends L.IconStatic {
-            /**
-              * Creates an icon instance with the given options.
-              */
-            new (options: IconOptions): Icon;
-
-            Default: {
-                /**
-                  * Creates a default icon instance with the given options.
-                  */
-                new (options?: IconOptions): Icon.Default;
-
-                imagePath: string;
-            };
-        }
 
         interface Icon extends L.Icon {
             options: ExtraMarkers.IconOptions;
@@ -61,6 +46,5 @@ declare module L {
             svgOpacity: number,
         }
 
-        var Icon: ExtraMarkers.IconStatic;
     }
 }

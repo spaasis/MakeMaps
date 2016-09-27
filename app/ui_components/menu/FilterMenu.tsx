@@ -2,7 +2,7 @@ import * as React from 'react';
 let Select = require('react-select');
 import { AppState } from '../../stores/States';
 import { Filter } from '../../stores/Filter';
-import { Layer, IHeader } from '../../stores/Layer';
+import { Layer, Header } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 import { LayerTypes } from '../../stores/Layer';
 
@@ -11,7 +11,7 @@ export class FilterMenu extends React.Component<{
     state: AppState,
 }, {}>{
 
-    onFilterVariableChange = (val: IHeader) => {
+    onFilterVariableChange = (val: Header) => {
 
         if (val) {
             this.props.state.editingFilter.fieldToFilter = val;

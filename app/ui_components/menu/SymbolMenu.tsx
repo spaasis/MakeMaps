@@ -3,7 +3,7 @@ let Modal = require('react-modal');
 let Select = require('react-select');
 import { CalculateLimits } from '../../common_items/common';
 import { AppState, SymbolMenuState } from '../../stores/States';
-import { Layer, SymbolOptions, IHeader, SymbolTypes } from '../../stores/Layer';
+import { Layer, SymbolOptions, Header, SymbolTypes } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 
 @observer
@@ -26,6 +26,10 @@ export class SymbolMenu extends React.Component<{
         if (type === SymbolTypes.Icon) {
             if (!sym.iconField)
                 sym.iconField = layer.numberHeaders[0];
+            if (!sym.icons || sym.icons.length == 0) {
+                sym.icons = [];
+                this.addRandomIcon();
+            }
         }
         if (this.props.state.autoRefresh)
             layer.refresh();
@@ -72,8 +76,8 @@ export class SymbolMenu extends React.Component<{
 
     }
 
-    onChartFieldsChange = (e: IHeader[]) => {
-        let headers: IHeader[] = this.props.state.editingLayer.symbolOptions.chartFields;
+    onChartFieldsChange = (e: Header[]) => {
+        let headers: Header[] = this.props.state.editingLayer.symbolOptions.chartFields;
         let colors = this.props.state.editingLayer.colorOptions.chartColors;
         if (e === null)
             e = [];
@@ -108,7 +112,7 @@ export class SymbolMenu extends React.Component<{
 
     }
 
-    onIconFieldChange = (val: IHeader) => {
+    onIconFieldChange = (val: Header) => {
         let layer = this.props.state.editingLayer;
         layer.symbolOptions.iconField = val;
         this.calculateIconValues(val, layer.symbolOptions.iconCount, val.decimalAccuracy);
@@ -121,6 +125,8 @@ export class SymbolMenu extends React.Component<{
         let layer = this.props.state.editingLayer;
         let sym = layer.symbolOptions
         if (amount == 1) {
+            if (sym.iconCount >= layer.uniqueValues[sym.iconField.value].length)
+                return;
             this.addRandomIcon()
         }
         else if (amount == -1 && sym.iconCount > 1) {
@@ -228,7 +234,7 @@ export class SymbolMenu extends React.Component<{
 
     }
 
-    calculateIconValues(field: IHeader, steps: number, accuracy: number) {
+    calculateIconValues(field: Header, steps: number, accuracy: number) {
         let layer = this.props.state.editingLayer;
         let values = layer.values;
         let uniqueValues = layer.uniqueValues;
@@ -499,8 +505,9 @@ export class SymbolMenu extends React.Component<{
                                 type='radio'
                                 onChange={() => {
                                     sym.chartType = 'pie';
+                                    if (autoRefresh) layer.refresh();
                                 } }
-                                checked={() => { sym.chartType === 'pie'; if (autoRefresh) layer.refresh() } }
+                                checked={sym.chartType === 'pie'}
                                 name='charttype'
                                 id='pie'
                                 />
@@ -513,8 +520,9 @@ export class SymbolMenu extends React.Component<{
                                 type='radio'
                                 onChange={() => {
                                     sym.chartType = 'donut';
+                                    if (autoRefresh) layer.refresh()
                                 } }
-                                checked={() => { sym.chartType === 'donut'; if (autoRefresh) layer.refresh() } }
+                                checked={sym.chartType === 'donut'}
                                 name='charttype'
                                 id='donut'
                                 />

@@ -19,7 +19,7 @@ export class Layer {
     /** The type of the layer. Will affect the options available.*/
     @observable layerType: LayerTypes;
     /** The data property names.*/
-    @observable headers: IHeader[] = [];
+    @observable headers: Header[] = [];
 
     @computed get numberHeaders() {
         return this.headers.filter(function(val) { return val.type === 'number' });
@@ -29,7 +29,11 @@ export class Layer {
         return this.headers.filter(function(val) { return val.type === 'strings' });
     }
 
-    @observable popupHeaders: IHeader[] = [];
+    getHeaderById(id: number) {
+        return this.headers.filter(function(val) { return val.id === id })[0];
+    }
+
+    @observable popupHeaders: Header[] = [];
     @observable showPopUpOnHover: boolean;
     /** The Leaflet layer. Will be modified by changing options*/
     displayLayer: L.GeoJSON;
@@ -57,13 +61,17 @@ export class Layer {
     refresh() {
         let col: ColorOptions = this.colorOptions;
         let sym: SymbolOptions = this.symbolOptions;
-        let style = function(opts: ColorOptions, feature) {
+        let style = function(col: ColorOptions, feature) {
             return {
-                fillOpacity: opts.fillOpacity,
-                opacity: opts.opacity,
-                fillColor: opts.colors.slice().length == 0 || !opts.useMultipleFillColors ? opts.fillColor : GetItemBetweenLimits(opts.limits.slice(), opts.colors.slice(), feature.properties[opts.colorField.value]),
-                color: opts.color,
-                weight: opts.weight,
+                fillOpacity: col.fillOpacity,
+                opacity: col.opacity,
+                fillColor: col.colors.slice().length == 0 || !col.useMultipleFillColors ?
+                    col.fillColor :
+                    col.colorField.type == 'number' ?
+                        GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value])
+                        : col.colors[col.limits.indexOf(feature.properties[col.colorField.value])],
+                color: col.color,
+                weight: col.weight,
             }
         }
         if (this.displayLayer && (this.toggleRedraw || this.layerType === LayerTypes.HeatMap)) {
@@ -103,7 +111,7 @@ export class Layer {
             }
             else {
                 let options: L.GeoJSONOptions = {}
-                this.displayLayer = L.geoJson([], {
+                this.displayLayer = L.geoJSON([], {
                     onEachFeature: this.onEachFeature,
                     pointToLayer: getMarker.bind(this, col, sym),
                     style: style.bind(this, col),
@@ -119,11 +127,10 @@ export class Layer {
                 }
                 if (this.layerType !== LayerTypes.HeatMap && this.clusterOptions.useClustering) {
 
-                    let markers = L.markerClusterGroup({
+                    let markers = (L as any).markerClusterGroup({
                         iconCreateFunction: this.createClusteredIcon.bind(this),
                         // chunkedLoading: true,
                     });
-
                     markers.on('clustermouseover', function(c: any) {
                         c.layer.openPopup();
                     });
@@ -137,7 +144,6 @@ export class Layer {
 
 
                 }
-
                 this.appState.map.addLayer(this.displayLayer);
 
                 this.refreshFilters();
@@ -194,6 +200,9 @@ export class Layer {
         let colors = [];
         opts.limits = chroma.limits(values, opts.mode, opts.steps);
         opts.limits.splice(opts.limits.length - 1, 1); //remove maximum value
+        opts.limits = opts.limits.filter(function(e, i, arr) {
+            return arr.lastIndexOf(e) === i;
+        }); //only unique values in limits
         colors = chroma.scale(opts.colorScheme).colors(opts.limits.length);
         opts.colors = opts.revert ? colors.reverse() : colors;
     }
@@ -225,19 +234,27 @@ export class Layer {
                 this.values[i].push(feat.properties[i]);
             }
         }, this);
-
         for (let i in this.headers.slice()) {
             let header = this.headers[i].value;
 
             if (this.values[header]) {
                 this.values[header].sort(function(a, b) { return a == b ? 0 : a < b ? -1 : 1 })
-                this.uniqueValues[header] = this.values[header].filter(function(e, i, arr) {
-                    return arr.lastIndexOf(e) === i;
-                });
+                this.uniqueValues[header] = unique(this.values[header]);
             }
         }
-        this.pointFeatureCount = pointCount;
 
+        this.pointFeatureCount = pointCount;
+        function unique(arr: any[]) { //http://stackoverflow.com/questions/1960473/unique-values-in-an-array/1961068#1961068
+            var u = {}, a = [];
+            for (var i = 0, l = arr.length; i < l; ++i) {
+                if (u.hasOwnProperty(arr[i])) {
+                    continue;
+                }
+                a.push(arr[i]);
+                u[arr[i]] = 1;
+            }
+            return a;
+        }
     }
 
     createClusteredIcon(cluster) {
@@ -250,7 +267,7 @@ export class Layer {
         let count = 0;
         let markers = cluster.getAllChildMarkers();
 
-        let relevantHeaders: IHeader[] = [];
+        let relevantHeaders: Header[] = [];
         if (col.colorField)
             relevantHeaders.push(col.colorField);
         switch (sym.symbolType) {
@@ -270,8 +287,9 @@ export class Layer {
                 sym.chartFields.map(function(f) { relevantHeaders.push(f) });
         }
         for (let h of clu.hoverHeaders) {
-            if (relevantHeaders.indexOf(h.header) == -1 && (h.showAvg || h.showSum)) {
-                relevantHeaders.push(h.header);
+            let header = this.getHeaderById(h.headerId)
+            if (relevantHeaders.indexOf(header) == -1 && (h.showAvg || h.showSum)) {
+                relevantHeaders.push(header);
             }
         }
 
@@ -309,6 +327,7 @@ export class Layer {
             switch (sym.symbolType) {
                 case SymbolTypes.Icon:
                     icon = getFaIcon(sym, col, 0, avg[sym.iconField.value]);
+                    break;
                 case SymbolTypes.Chart:
                     let vals = [];
                     sym.chartFields.map(function(e) {
@@ -317,12 +336,15 @@ export class Layer {
                     });
                     let sizeVal = sym.sizeXVar ? avg[sym.sizeXVar.value] : undefined;
                     icon = getChartIcon(sym, col, 20, vals, sizeVal);
+                    break;
                 case SymbolTypes.Blocks:
                     icon = getBlockIcon(sym, col, 10, avg[sym.blockSizeVar.value]);
+                    break;
                 default:
                     let yVal = sym.sizeYVar ? avg[sym.sizeYVar.value] : undefined;
                     let xVal = sym.sizeXVar ? avg[sym.sizeXVar.value] : undefined;
                     icon = getSimpleIcon(sym, col, 20, yVal, xVal);
+                    break;
             }
         }
         else {
@@ -359,9 +381,10 @@ export class Layer {
         if (count > 0) {
             let popupContent = (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '');
             clu.hoverHeaders.map(function(h) {
-                popupContent += h.showSum ? h.sumText + ' ' + sum[h.header.value].toFixed(h.header.decimalAccuracy) + '<br/>' : '';
-                popupContent += h.showAvg ? h.avgText + ' ' + avg[h.header.value].toFixed(h.header.decimalAccuracy) + '<br/>' : ''
-            })
+                let header = this.getHeaderById(h.headerId);
+                popupContent += h.showSum ? h.sumText + ' ' + sum[header.value].toFixed(header.decimalAccuracy) + '<br/>' : '';
+                popupContent += h.showAvg ? h.avgText + ' ' + avg[header.value].toFixed(header.decimalAccuracy) + '<br/>' : ''
+            }, this)
             popupContent += 'Click or zoom to expand';
             cluster.bindPopup(popupContent);
         }
@@ -395,7 +418,9 @@ export class Layer {
 /** Function to run on every point-type data to visualize it according to the settings*/
 function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.LatLng): L.Marker {
     if (col.colors.slice().length > 0 && col.limits.slice().length > 0 && col.useMultipleFillColors)
-        col.fillColor = GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value]);
+        col.fillColor = col.colorField.type == 'number' ?
+            GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value])
+            : col.colors[col.limits.indexOf(feature.properties[col.colorField.value])];
     let x, y;
     switch (sym.symbolType) {
         case SymbolTypes.Icon:
@@ -503,6 +528,7 @@ function getFaIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, 
         svgOpacity: 1,
         shape: icon ? icon.shape : sym.icons[0].shape,
         iconColor: col.iconTextColor,
+        iconUrl: ''
     });
 }
 
@@ -692,7 +718,7 @@ function createHeatLayer(l: Layer) {
 function addPopups(feature, layer: L.GeoJSON) {
     let popupContent = '';
 
-    let headers: IHeader[] = this.popupHeaders.slice();
+    let headers: Header[] = this.popupHeaders.slice();
 
     for (let h in headers) {
         let header = headers[h];
@@ -721,7 +747,7 @@ function addPopups(feature, layer: L.GeoJSON) {
 
 export class ColorOptions implements L.PathOptions {
     /** Field to color layers by*/
-    @observable colorField: IHeader;
+    @observable colorField: Header;
     /** Is the scale user-made?*/
     @observable useCustomScheme: boolean;
     /** Color name array to use in choropleth*/
@@ -794,15 +820,15 @@ export class SymbolOptions {
     }
 
     /** Field by which to calculate icon values*/
-    @observable iconField: IHeader;
+    @observable iconField: Header;
     /** The steps of the field values by which to choose the icons */
     @observable iconLimits: any[];
     /** The field to scale size x-axis by*/
-    @observable sizeXVar: IHeader;
+    @observable sizeXVar: Header;
     /** The field to scale size y-axis by*/
-    @observable sizeYVar: IHeader;
+    @observable sizeYVar: Header;
     /** The name of the field to scale block size by*/
-    @observable blockSizeVar: IHeader;
+    @observable blockSizeVar: Header;
     /** Simple icon CSS border radius in px*/
     @observable borderRadius: number;
     /** The minimum allowed size when scaling*/
@@ -812,7 +838,7 @@ export class SymbolOptions {
     /** The multiplier to scale the value by*/
     @observable sizeMultiplier: number;
     /** Currently selected chart fields*/
-    @observable chartFields: IHeader[];
+    @observable chartFields: Header[];
     /** The type of chart to draw*/
     @observable chartType: 'pie' | 'donut';
     /** How many units does a single block represent*/
@@ -844,7 +870,7 @@ export class SymbolOptions {
 
         this.symbolType = prev && prev.symbolType || SymbolTypes.Simple;
         this.useMultipleIcons = prev && prev.useMultipleIcons || false;
-        this.icons = prev && prev.icons || [{ shape: 'circle', fa: 'fa-anchor' }];
+        this.icons = prev && prev.icons || [];
         this.iconField = prev && prev.iconField || undefined;
         this.iconLimits = prev && prev.iconLimits || [];
         this.sizeXVar = prev && prev.sizeXVar || undefined;
@@ -876,7 +902,7 @@ export class ClusterOptions {
     /** Show count on clustered marker hover*/
     @observable showCount: boolean;
     @observable countText: string;
-    @observable hoverHeaders: { header: IHeader, showAvg: boolean, showSum: boolean, avgText: string, sumText: string }[];
+    @observable hoverHeaders: { headerId: number, showAvg: boolean, showSum: boolean, avgText: string, sumText: string }[];
     @observable useSymbolStyle: boolean;
 
     constructor(prev?: ClusterOptions) {
@@ -889,7 +915,8 @@ export class ClusterOptions {
 }
 
 /** The interface for imported data columns/headers/property names */
-export class IHeader {
+export class Header {
+    id: number;
     /** Actual data value. Used to, for example, get properties from GeoJSON layers*/
     @observable value: string = '';
     /** Display text. Can be modified by the user*/
@@ -898,7 +925,8 @@ export class IHeader {
     @observable type: 'string' | 'number';
     @observable decimalAccuracy: number;
 
-    constructor(prev?: IHeader) {
+    constructor(prev?: Header) {
+        this.id = prev && prev.id !== undefined ? prev.id : undefined;
         this.value = prev && prev.value || '';
         this.label = prev && prev.label || this.value && this.value[0].toUpperCase() + this.value.slice(1);;
         this.type = prev && prev.type || 'string';

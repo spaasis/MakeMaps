@@ -4,7 +4,7 @@ import { GetItemBetweenLimits } from '../../common_items/common';
 import { AppState } from '../../stores/States';
 import { Layer, SymbolOptions, ColorOptions, LayerTypes, SymbolTypes } from '../../stores/Layer';
 import { TextEditor } from './TextEditor';
-import { IHeader } from '../../stores/Layer';
+import { Header } from '../../stores/Layer';
 
 import { observer } from 'mobx-react';
 
@@ -50,6 +50,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         let divs = [];
         let limits = layer.colorOptions.limits;
         let colors = layer.colorOptions.colors;
+        let isNumber = layer.colorOptions.colorField.type == 'number';
         for (let i of limits) {
             let index = limits.indexOf(i);
             let colorStyle = {
@@ -59,21 +60,21 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 minHeight: '20px',
             }
 
-            divs.push(<div key={i} style={{ display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}>
+            divs.push(<div key={i} style={{ display: this.props.state.legend.horizontal ? 'initial' : 'flex', width: '100%' }}>
                 <div style={colorStyle} />
 
                 <span style={{ marginLeft: '3px', marginRight: '3px' }}>
 
-                    {i.toFixed(layer.colorOptions.colorField.decimalAccuracy) + (index < (limits.length - 1) ? '-' : '+')}
+                    {isNumber ? i.toFixed(layer.colorOptions.colorField.decimalAccuracy) + (index < (limits.length - 1) ? '-' : '+') : i}
                     {this.props.state.legend.horizontal ? <br/> : ''}
-                    {index < (limits.length - 1) ? limits[index + 1].toFixed(layer.colorOptions.colorField.decimalAccuracy) : ''}
-                    {this.props.state.legend.showPercentages ? <br/> : null}
-                    {this.props.state.legend.showPercentages ? percentages[i] ? percentages[i] + '%' : '0%' : null}
+                    {isNumber && index < (limits.length - 1) ? limits[index + 1].toFixed(layer.colorOptions.colorField.decimalAccuracy) : ''}
+                    {isNumber && this.props.state.legend.showPercentages ? <br/> : null}
+                    {isNumber && this.props.state.legend.showPercentages ? percentages[index] ? percentages[index] + '%' : '0%' : null}
                 </span>
 
             </div >);
         }
-        return <div style={{ margin: '5px', float: 'left', textAlign: 'center' }}>
+        return <div style={{ margin: '5px', float: '', textAlign: 'center' }}>
             {layer.colorOptions.colorField.label}
             <div style= {{ display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}>
                 {divs.map(function(d) { return d })}
@@ -354,23 +355,24 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
 
     getStepPercentages(values: number[], limits: number[]) {
         let counts: number[] = [];
-        let totalCount = values.length;
         let step = 0;
-        let currentLimit = limits[step + 1];
-        for (let i = 0; i < totalCount; i++) {
-            if (values[i] > currentLimit) {
+        let upperLimit = limits[step + 1];
+        for (let i of values) {
+            if (i >= upperLimit) {
                 step++;
-                currentLimit = limits[step + 1];
+                if (step < limits.length - 1)
+                    upperLimit = limits[step + 1];
+                else upperLimit = Infinity
             }
             if (!counts[step])
                 counts[step] = 0;
             counts[step]++;
         }
-
+        let percentages = [];
         for (let i in counts) {
-            counts[i] = +(counts[i] / totalCount * 100).toFixed(2);
+            percentages[i] = +(counts[i] / values.length * 100).toFixed(2);
         }
-        return counts;
+        return percentages;
     }
 
     combineLimits(layer: Layer) {
@@ -389,18 +391,19 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         let legend = this.props.state.legend;
 
         return (
-            <div className='legend' style={{
-                width: 'auto',
-                textAlign: 'center',
-                position: 'absolute',
-                left: legend.left ? 0 : '',
-                right: legend.right ? 0 : '',
-                bottom: legend.bottom ? 15 : '', //15 to keep the legend above map attributions
-                top: legend.top ? 0 : '',
-                background: "#FFF",
-                borderRadius: 15,
-                zIndex: 600
-            }}>
+            <div className='legend'
+                style={{
+                    width: 'auto',
+                    textAlign: 'center',
+                    position: 'absolute',
+                    left: legend.left ? 0 : '',
+                    right: legend.right ? 0 : '',
+                    bottom: legend.bottom ? 15 : '', //15 to keep the legend above map attributions
+                    top: legend.top ? 0 : '',
+                    background: "#FFF",
+                    borderRadius: 15,
+                    zIndex: 600
+                }}>
                 <h2 className='legendHeader'>{legend.title}</h2>
                 <div>
                     {
@@ -409,7 +412,9 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                         }, this)
                     }
                 </div>
-                <div style={{ clear: 'both', }}>
+                <div style={{ clear: 'both' }}
+                    onMouseEnter={(e) => { this.props.state.map.dragging.disable(); } }
+                    onMouseLeave={(e) => { this.props.state.map.dragging.enable(); } }>
                     <TextEditor
                         style={{ width: '100%', minHeight: legend.edit ? '40px' : '' }}
                         content={legend.meta}

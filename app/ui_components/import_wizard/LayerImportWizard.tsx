@@ -5,7 +5,7 @@ import { ShowLoading, HideLoading, ShowNotification, HideNotification } from '..
 import { FilePreProcessModel } from '../../models/FilePreProcessModel';
 let _fileModel = new FilePreProcessModel();
 import { ImportWizardState, AppState } from '../../stores/States';
-import { Layer, IHeader, LayerTypes } from '../../stores/Layer';
+import { Layer, Header, LayerTypes } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 
 @observer
@@ -44,6 +44,7 @@ export class LayerImportWizard extends React.Component<{
 
     setGeoJSONTypes(geoJSON) {
         let state = this.props.state.importWizardState;
+        let headerId = 0;
         state.layer.geoJSON = geoJSON;
         for (let i of state.layer.geoJSON.features) {
             let props = state.layer.geoJSON.features ? i.properties : {};
@@ -54,7 +55,8 @@ export class LayerImportWizard extends React.Component<{
                 let header = state.layer.headers.slice().filter(function(e) { return e.value === h })[0];
 
                 if (!header) {
-                    state.layer.headers.push(new IHeader({ value: h, type: isnumber ? 'number' : 'string', label: undefined, decimalAccuracy: undefined }));
+                    state.layer.headers.push(new Header({ id: headerId, value: h, type: isnumber ? 'number' : 'string', label: undefined, decimalAccuracy: undefined }));
+                    headerId++;
                 }
                 else {
                     if (header.type === 'number' && !isnumber) { //previously marked as number but new value is text => mark as string
@@ -75,13 +77,13 @@ export class LayerImportWizard extends React.Component<{
 
         if (!layer.geoJSON && state.fileExtension === 'csv') {
 
-                  _fileModel.ParseCSVToGeoJSON(
-                    state.content,
-                      state.latitudeField,
-                      state.longitudeField,
-                      state.delimiter,
-                      state.layer.headers,
-                       this.setGeoJSONTypes.bind(this));
+            _fileModel.ParseCSVToGeoJSON(
+                state.content,
+                state.latitudeField,
+                state.longitudeField,
+                state.delimiter,
+                state.layer.headers,
+                this.setGeoJSONTypes.bind(this));
 
         }
         else
@@ -107,10 +109,11 @@ export class LayerImportWizard extends React.Component<{
             case 0:
                 return <FileUploadView
                     state={this.props.state.importWizardState}
-                    saveValues={()=>{
-                      ShowLoading();
-                      let setInfo = this.setFileInfo.bind(this);
-                      setTimeout(setInfo, 10)}}
+                    saveValues={() => {
+                        ShowLoading();
+                        let setInfo = this.setFileInfo.bind(this);
+                        setTimeout(setInfo, 10)
+                    } }
                     cancel = {() => {
                         this.props.cancel();
                     } }
@@ -118,10 +121,11 @@ export class LayerImportWizard extends React.Component<{
             case 1:
                 return <FileDetailsView
                     state={this.props.state.importWizardState}
-                    saveValues={()=>{
-                      ShowLoading();
-                      let setDetails = this.setFileDetails.bind(this);
-                      setTimeout(setDetails, 10)}}
+                    saveValues={() => {
+                        ShowLoading();
+                        let setDetails = this.setFileDetails.bind(this);
+                        setTimeout(setDetails, 10)
+                    } }
                     goBack = {this.previousStep.bind(this)}
                     />
         }

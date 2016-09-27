@@ -4,7 +4,7 @@ import * as ReactDOM from 'react-dom';
 import { observer } from 'mobx-react';
 import { AppState, ImportWizardState, SaveState } from '../stores/States';
 import { Filter } from '../stores/Filter';
-import { Layer, ColorOptions, SymbolOptions, ClusterOptions, IHeader, LayerTypes } from '../stores/Layer';
+import { Layer, ColorOptions, SymbolOptions, ClusterOptions, Header, LayerTypes } from '../stores/Layer';
 import { Legend } from '../stores/Legend';
 import { LayerImportWizard } from './import_wizard/LayerImportWizard';
 import { MakeMapsMenu } from './menu/Menu';
@@ -29,7 +29,6 @@ let _currentLayerId: number = 0;
 
 let _parameters: string[];
 
-L.Icon.Default.imagePath = 'app/images/leaflet-images';
 @observer
 export class MapMain extends React.Component<{ state: AppState }, {}>{
 
@@ -93,16 +92,19 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     initMap() {
         this.props.state.baseLayers = _mapInitModel.InitBaseMaps();
         this.props.state.activeBaseLayer = this.props.state.baseLayers[0];
-        let props = {
-            layers: this.props.state.activeBaseLayer,
-            fullscreenControl: true,
+        let props: L.MapOptions = {
+            layers: (this.props.state.activeBaseLayer.layer as any),
+            doubleClickZoom: false,
+            // fullscreenControl: true,
         };
-        this.props.state.map = L.map('map', props).setView([0, 0], 2);
+        let map = L.map('map', props).setView([0, 0], 2);
 
-        this.props.state.map.doubleClickZoom.disable();
-        this.props.state.map.on('contextmenu', function(e) { //disable context menu opening on right-click
+        map.doubleClickZoom.disable();
+        map.on('contextmenu', function(e) { //disable context menu opening on right-click
+            map.openTooltip('asd', (e as any).latlng, );
             return;
         });
+        this.props.state.map = map;
     }
 
     startLayerImport() {
@@ -135,7 +137,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         l.colorOptions.useMultipleFillColors = true;
         l.getColors();
         setTimeout(l.refresh(), 10);
-        this.props.state.map.fitBounds(l.layerType === LayerTypes.HeatMap ? (l.displayLayer as any)._latlngs : l.displayLayer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
+        this.props.state.map.fitBounds(l.layerType === LayerTypes.HeatMap ? ((l.displayLayer as any)._latlngs as L.LatLngBounds) : l.displayLayer.getBounds(), {}); //leaflet.heat doesn't utilize getBounds, so get it directly
         this.props.state.layers.push(l);
         if (l.layerType === LayerTypes.HeatMap)
             this.props.state.layerMenuState.heatLayerOrder.push({ id: l.id });
@@ -214,7 +216,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
     saveFile() {
         let saveData: SaveState = {
-            baseLayerId: this.props.state.activeBaseLayer.options.id,
+            baseLayerId: this.props.state.activeBaseLayer.id,
             layers: this.props.state.layers,
             legend: this.props.state.legend,
             filters: this.props.state.filters,
@@ -222,8 +224,52 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
         saveData.layers = saveData.layers.slice();
 
-        saveData.layers.forEach(function(e) { delete e.appState; delete e.displayLayer; delete e.values; delete e.uniqueValues; delete e.pointFeatureCount; delete e.toggleRedraw; });
-        saveData.filters.forEach(function(e) { delete e.filterValues; delete e.filteredIndices; delete e.appState; });
+        saveData.layers.forEach(function(e) {
+            e['popupHeaderIds'] = [];
+            e.popupHeaders.map(function(h) { e['popupHeaderIds'].push(h.id) });
+            delete e.popupHeaders;
+            if (e.colorOptions.colorField) {
+                e.colorOptions['colorHeaderId'] = e.colorOptions.colorField.id;
+                delete e.colorOptions.colorField;
+            }
+            if (e.symbolOptions.iconField) {
+                e.symbolOptions['iconHeaderId'] = e.symbolOptions.iconField.id;
+                delete e.symbolOptions.iconField;
+            }
+            if (e.symbolOptions.chartFields !== undefined) {
+                e.symbolOptions['chartHeaderIds'] = [];
+                e.symbolOptions.chartFields.map(function(h) { e['chartHeaderIds'].push(h.id) });
+                delete e.symbolOptions.chartFields;
+            }
+            if (e.symbolOptions.sizeXVar) {
+                e.symbolOptions['xHeaderId'] = e.symbolOptions.sizeXVar.id;
+                delete e.symbolOptions.sizeXVar;
+            }
+            if (e.symbolOptions.sizeYVar) {
+                e.symbolOptions['yHeaderId'] = e.symbolOptions.sizeYVar.id;
+                delete e.symbolOptions.sizeYVar;
+            }
+            if (e.symbolOptions.blockSizeVar) {
+                e.symbolOptions['blockHeaderId'] = e.symbolOptions.blockSizeVar.id;
+                delete e.symbolOptions.blockSizeVar;
+            }
+            if (e.symbolOptions.icons.length == 0) {
+                delete e.symbolOptions.icons;
+                delete e.symbolOptions.iconLimits;
+            }
+            if (e.colorOptions.colors.length == 0) {
+                delete e.colorOptions.colors;
+                delete e.colorOptions.steps;
+            }
+            delete e.appState; delete e.displayLayer; delete e.values; delete e.uniqueValues; delete e.pointFeatureCount; delete e.toggleRedraw;
+        });
+        saveData.filters.forEach(function(e) {
+            if (e.fieldToFilter) {
+                e['filterHeaderId'] = e.fieldToFilter.id;
+                delete e.fieldToFilter;
+            }
+            delete e.filterValues; delete e.filteredIndices; delete e.appState;
+        });
         let string = JSON.stringify(saveData);
 
         let blob = new Blob([string], { type: "text/plain;charset=utf-8" });
@@ -232,16 +278,15 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
     loadSavedMap(saved?: SaveState) {
         console.time("LoadSavedMap")
-        let headers: IHeader[];
+        let headers: Header[];
         if (saved.baseLayerId) {
             let oldBase = this.props.state.activeBaseLayer;
-            let newBase: L.TileLayer;
 
-            if (saved.baseLayerId !== oldBase.options.id) {
-                newBase = this.props.state.baseLayers.filter(l => (l as any).options.id === saved.baseLayerId)[0];
+            if (saved.baseLayerId !== oldBase.id) {
+                let newBase = { id: saved.baseLayerId, layer: this.props.state.baseLayers.filter(l => l.id === saved.baseLayerId)[0].layer };
                 if (newBase) {
-                    this.props.state.map.removeLayer(oldBase);
-                    this.props.state.map.addLayer(newBase);
+                    this.props.state.map.removeLayer(oldBase.layer);
+                    this.props.state.map.addLayer(newBase.layer);
                     this.props.state.activeBaseLayer = newBase;
                 }
             }
@@ -252,45 +297,52 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
             let lyr = saved.layers[i];
             let newLayer = new Layer(this.props.state);
-            headers = [];
+            newLayer.headers = [];
             for (let j of lyr.headers) {
-                headers.push(new IHeader(j));
+                newLayer.headers.push(new Header(j));
             }
-            let popupHeaders: IHeader[] = [];
-            for (let k of lyr.popupHeaders) {
-                popupHeaders.push(getHeaderByValue(k.value));
-            }
-            let chartFields: IHeader[] = [];
-            for (let k of lyr.symbolOptions.chartFields) {
-                chartFields.push(getHeaderByValue(k.value));
-            }
-            newLayer.id = _currentLayerId++;
+            newLayer.popupHeaders = [];
+            if (lyr['popupHeaderIds'])
+                for (let k of lyr['popupHeaderIds']) {
+                    newLayer.popupHeaders.push(newLayer.getHeaderById(k));
+                }
+            let chartFields: Header[] = [];
+            if (lyr.symbolOptions['chartHeaderIds'])
+                for (let k of lyr.symbolOptions['chartHeaderIds']) {
+                    chartFields.push(newLayer.getHeaderById(k));
+                }
+            newLayer.id = lyr.id;
             newLayer.name = lyr.name
-            newLayer.headers = headers;
-            newLayer.popupHeaders = popupHeaders;
             newLayer.showPopUpOnHover = lyr.showPopUpOnHover;
             newLayer.layerType = lyr.layerType;
             newLayer.geoJSON = lyr.geoJSON;
             newLayer.colorOptions = new ColorOptions(lyr.colorOptions);
-            newLayer.colorOptions.colorField = lyr.colorOptions.colorField ? getHeaderByValue(lyr.colorOptions.colorField.value) : undefined;
+            newLayer.colorOptions.colorField = newLayer.getHeaderById(lyr.colorOptions['colorHeaderId']);
             newLayer.symbolOptions = new SymbolOptions(lyr.symbolOptions);
-            newLayer.symbolOptions.iconField = lyr.symbolOptions.iconField ? getHeaderByValue(lyr.symbolOptions.iconField.value) : undefined;
-            newLayer.symbolOptions.sizeXVar = lyr.symbolOptions.sizeXVar ? getHeaderByValue(lyr.symbolOptions.sizeXVar.value) : undefined;
-            newLayer.symbolOptions.sizeYVar = lyr.symbolOptions.sizeYVar ? getHeaderByValue(lyr.symbolOptions.sizeYVar.value) : undefined;
+            newLayer.symbolOptions.iconField = newLayer.getHeaderById(lyr.symbolOptions['iconHeaderId']);
+            newLayer.symbolOptions.blockSizeVar = newLayer.getHeaderById(lyr.symbolOptions['blockHeaderId']);
+            newLayer.symbolOptions.sizeXVar = newLayer.getHeaderById(lyr.symbolOptions['xHeaderId']);
+            newLayer.symbolOptions.sizeYVar = newLayer.getHeaderById(lyr.symbolOptions['yHeaderId']);
             newLayer.symbolOptions.chartFields = chartFields;
+
             newLayer.clusterOptions = new ClusterOptions(lyr.clusterOptions);
             this.props.state.layers.push(newLayer);
             if (newLayer.layerType === LayerTypes.HeatMap)
                 this.props.state.layerMenuState.heatLayerOrder.push({ id: newLayer.id });
             else
                 this.props.state.layerMenuState.standardLayerOrder.push({ id: newLayer.id });
-
+            _currentLayerId = Math.max(_currentLayerId, lyr.id);
         }
-        saved.filters.map(function(f) { this.props.state.filters.push(new Filter(this.props.state, f)) }, this)
+        let layers = this.props.state.layers;
+        saved.filters.map(function(f) {
+            let filter = new Filter(this.props.state, f);
+            filter.fieldToFilter = layers.filter(function(f) { return f.id == filter.layerId })[0].getHeaderById(f['filterHeaderId']); //fetch correct header to refer
+            this.props.state.filters.push(filter);
+        }, this)
         for (let i in this.props.state.layers.slice()) {
             let lyr = this.props.state.layers[i];
             lyr.refresh();
-            this.props.state.map.fitBounds(lyr.layerType === LayerTypes.HeatMap ? (lyr.displayLayer as any)._latlngs : lyr.displayLayer.getBounds()); //leaflet.heat doesn't utilize getBounds, so get it directly
+            this.props.state.map.fitBounds(lyr.layerType === LayerTypes.HeatMap ? ((lyr.displayLayer as any)._latlngs as L.LatLngBounds) : lyr.displayLayer.getBounds(), {}); //leaflet.heat doesn't utilize getBounds, so get it directly
         }
         this.props.state.legend = new Legend(saved.legend);
 
@@ -299,10 +351,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         this.props.state.menuShown = !this.props.state.embed;
         HideLoading();
         console.timeEnd("LoadSavedMap")
-
-        function getHeaderByValue(value: string) {
-            return headers.filter(function(h) { return h.value == value })[0]
-        }
     }
 
 

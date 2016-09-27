@@ -1,5 +1,5 @@
 import { observable, computed } from 'mobx';
-import { Layer, LayerTypes, IHeader } from './Layer';
+import { Layer, LayerTypes, Header } from './Layer';
 import { AppState } from './States';
 let mobx = require('mobx');
 
@@ -12,7 +12,7 @@ export class Filter {
     /** Layer Id to filter*/
     @observable layerId: number;
     /** The name of the field to filter*/
-    @observable fieldToFilter: IHeader;
+    @observable fieldToFilter: Header;
     /** Dictionary containing lists of layer ids by the value being filtered*/
     @observable filterValues: { [value: string]: number[] };
     /** Current maximum value */

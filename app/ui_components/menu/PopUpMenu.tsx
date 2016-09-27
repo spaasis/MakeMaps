@@ -2,7 +2,7 @@ import * as React from 'react';
 let Select = require('react-select');
 import { AppState } from '../../stores/States';
 import { observer } from 'mobx-react';
-import { IHeader } from '../../stores/Layer';
+import { Header } from '../../stores/Layer';
 
 @observer
 export class PopUpMenu extends React.Component<{
@@ -13,7 +13,7 @@ export class PopUpMenu extends React.Component<{
         this.props.state.editingLayer.refreshPopUps();
     }
 
-    onSelectionChange = (e: IHeader[]) => {
+    onSelectionChange = (e: Header[]) => {
         let layer = this.props.state.editingLayer;
         let headers = layer.popupHeaders;
         if (e === null)

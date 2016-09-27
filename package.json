@@ -14,7 +14,7 @@
     "d3": "^3.5.17",
     "dom-to-image": "^2.4.0",
     "impromptu-react-sidemenu": "^0.1.1",
-    "leaflet": "^1.0.0-rc.3",
+    "leaflet": "^1.0.0",
     "leaflet-fullscreen": "^1.0.1",
     "leaflet.heat": "git+https://github.com/DuGuille/Leaflet.heat.git#relative-heatmap",
     "leaflet.markercluster": "^1.0.0-rc.1.0",

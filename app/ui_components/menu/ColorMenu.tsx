@@ -5,7 +5,7 @@ import { ColorScheme } from './ColorScheme';
 let Modal = require('react-modal');
 let chroma = require('chroma-js');
 import { AppState } from '../../stores/States';
-import { Layer, ColorOptions, IHeader, LayerTypes, SymbolTypes } from '../../stores/Layer';
+import { Layer, ColorOptions, Header, LayerTypes, SymbolTypes } from '../../stores/Layer';
 import { CalculateLimits } from "../../common_items/common";
 import { observer } from 'mobx-react';
 
@@ -108,7 +108,7 @@ export class ColorMenu extends React.Component<{
         state.editing = property;
     }
 
-    renderScheme = (option: IHeader) => {
+    renderScheme = (option: Header) => {
         return <ColorScheme gradientName={option.value} revert={this.props.state.editingLayer.colorOptions.revert} width='109%'/>;
     }
 
@@ -117,21 +117,28 @@ export class ColorMenu extends React.Component<{
      */
     calculateValues = () => {
         let lyr: Layer = this.props.state.editingLayer;
-        let field: string = lyr.colorOptions.colorField.value;
-        let steps: number = Math.min(lyr.uniqueValues[field].length, lyr.colorOptions.steps);
-        let limits: number[] = [];
-        if (!lyr.colorOptions.useCustomScheme) {
-            limits = chroma.limits(lyr.values[field], lyr.colorOptions.mode, steps);
-            limits.splice(limits.length - 1, 1); //remove maximum value from limits
+        let field: Header = lyr.colorOptions.colorField;
+        let limits: any[] = [];
+        if (field.type == 'number') {
+            let steps: number = Math.min(lyr.uniqueValues[field.value].length, lyr.colorOptions.steps);
+            if (!lyr.colorOptions.useCustomScheme) {
+                limits = chroma.limits(lyr.values[field.value], lyr.colorOptions.mode, steps);
+                limits.splice(limits.length - 1, 1); //remove maximum value from limits
+                limits = limits.filter(function(e, i, arr) {
+                    return arr.lastIndexOf(e) === i;
+                }); //only unique values in limits
+            }
+            else {
+                if (steps >= lyr.uniqueValues[field.value].length) {
+                    limits = lyr.uniqueValues[field.value];
+                }
+                else
+                    limits = CalculateLimits(lyr.values[field.value][0], lyr.values[field.value][lyr.values[field.value].length - 1], steps, field.decimalAccuracy);
+            }
         }
         else {
-            if (steps >= lyr.uniqueValues[field].length) {
-                limits = lyr.uniqueValues[field];
-            }
-            else
-                limits = CalculateLimits(lyr.values[field][0], lyr.values[field][lyr.values[field].length - 1], steps, lyr.colorOptions.colorField.decimalAccuracy);
+            limits = lyr.uniqueValues[field.value];
         }
-
         let colors: string[];
         if (!lyr.colorOptions.useCustomScheme) {
             colors = chroma.scale(lyr.colorOptions.colorScheme).colors(limits.length);
@@ -159,7 +166,7 @@ export class ColorMenu extends React.Component<{
      * @return  Opposite color code(hex)
      */
     getOppositeColor = (color: string) => {
-        if (color.toLowerCase() === '#fff' || color === '#ffffff' || color === 'white') {
+        if (!color || color.toLowerCase() === '#fff' || color === '#ffffff' || color === 'white') {
             return '#000';
         }
         else if (color.toLowerCase() === '#000' || color === '#000000' || color === 'black') {
@@ -227,6 +234,7 @@ export class ColorMenu extends React.Component<{
         }
         let isChart = layer.symbolOptions.symbolType === SymbolTypes.Chart;
         let isHeat = layer.layerType === LayerTypes.HeatMap;
+        let fieldIsString = col.colorField ? col.colorField.type == 'string' : false;
 
         //separated some components for readability
         let colorPicker = <Modal
@@ -372,17 +380,15 @@ export class ColorMenu extends React.Component<{
                         value={col.opacity}/>
                 </label>
                 {colorPicker}
-                {isChart ? <div>
-                    {this.renderSteps()}
-                </div> : null}
+
                 {
                     (col.useMultipleFillColors || isHeat) && !isChart ?
                         <div>
                             <div>
-                                <label>Select the color variable</label>
+                                <label>Select color variable</label>
                                 <Select
-                                    options={layer.numberHeaders}
-                                    onChange={(e: IHeader) => {
+                                    options={layer.headers.slice()}
+                                    onChange={(e: Header) => {
                                         if (col.colorField != e) {
                                             col.colorField = e;
                                             this.calculateValues();
@@ -393,7 +399,7 @@ export class ColorMenu extends React.Component<{
                                     />
                             </div>
 
-                            {col.colorField ?
+                            {col.colorField && !fieldIsString ?
                                 <div>
                                     <label htmlFor='customScale'>Set custom scheme</label>
                                     <input
@@ -455,6 +461,9 @@ export class ColorMenu extends React.Component<{
                         </div>
                         : null
                 }
+                {isChart || (fieldIsString && col.useMultipleFillColors) ? <div>
+                    {this.renderSteps()}
+                </div> : null}
                 {autoRefresh ? null :
                     <button className='menuButton' onClick={() => {
                         this.props.state.editingLayer.refresh();
@@ -466,17 +475,31 @@ export class ColorMenu extends React.Component<{
 
     renderSteps() {
         let layer = this.props.state.editingLayer;
-        let limits = layer.colorOptions.limits.slice();
+        let col = layer.colorOptions;
+        let limits = col.limits.slice();
         let rows = [];
         let row = 0;
         if (layer.symbolOptions.symbolType === SymbolTypes.Chart) {
             for (let i of layer.symbolOptions.chartFields) {
                 rows.push(
                     <li key={i.label}
-                        style={{ background: layer.colorOptions.chartColors[i.value] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer' }}
+                        style={{ background: col.chartColors[i.value] || '#FFF', borderRadius: '5px', border: '1px solid ' + col.color, cursor: 'pointer' }}
                         onClick={this.toggleColorPick.bind(this, 'chartfield' + i.value)}>
                         <i style={{ background: 'white', borderRadius: 5 }}>
                             {i.label}
+                        </i>
+                    </li>);
+                row++;
+            }
+        }
+        else if (col.colorField.type == 'string') {
+            for (let i of limits) {
+                rows.push(
+                    <li key={row}
+                        style={{ background: col.colors[row] || '#FFF', borderRadius: '5px', border: '1px solid ' + col.color, cursor: 'pointer', height: 32 }}
+                        onClick={this.toggleColorPick.bind(this, 'step' + row)}>
+                        <i style={{ background: 'white', borderRadius: 5 }}>
+                            {i}
                         </i>
                     </li>);
                 row++;
@@ -486,7 +509,7 @@ export class ColorMenu extends React.Component<{
             for (let i of limits) {
                 rows.push(
                     <li key={row}
-                        style={{ background: layer.colorOptions.colors[row] || '#FFF', borderRadius: '5px', border: '1px solid ' + layer.colorOptions.color, cursor: 'pointer', height: 32 }}
+                        style={{ background: col.colors[row] || '#FFF', borderRadius: '5px', border: '1px solid ' + col.color, cursor: 'pointer', height: 32 }}
                         onClick={this.toggleColorPick.bind(this, 'step' + row)}>
 
                         <input
@@ -499,7 +522,7 @@ export class ColorMenu extends React.Component<{
                                 width: 100,
                             }}
                             onClick={function(e) { e.stopPropagation(); } }
-                            step={1 * 10 ** (-layer.colorOptions.colorField.decimalAccuracy)}/>
+                            step={1 * 10 ** (-col.colorField.decimalAccuracy)}/>
 
                     </li>);
                 row++;

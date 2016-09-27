@@ -60,16 +60,16 @@ export class FileUploadView extends React.Component<{
             ext = 'csv';
         }
         if (ext === 'csv') {
-            let head, delim;
-            [head, delim] = _fileModel.ParseHeadersFromCSV(this.props.state.content);
+            let headers, delim;
+            [headers, delim] = _fileModel.ParseHeadersFromCSV(this.props.state.content);
             this.props.state.layer.headers = [];
-            if (head.length == 0) {
+            if (headers.length == 0) {
                 ShowNotification('No headers found! Make sure that the file you uploaded contains appropriate headers. Consult the wiki for more information');
                 HideLoading();
                 return;
             }
-            for (let i of head) {
-                this.props.state.layer.headers.push({ value: i.name, label: i.name, type: i.type, decimalAccuracy: 0 });
+            for (let header of headers) {
+                this.props.state.layer.headers.push({ id: headers.indexOf(header), value: header.name, label: header.name, type: header.type, decimalAccuracy: 0 });
             }
             this.props.state.delimiter = delim;
         }

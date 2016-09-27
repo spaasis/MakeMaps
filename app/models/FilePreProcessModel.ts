@@ -4,7 +4,7 @@ let proj4 = require('proj4');
 let togeojson = require('togeojson');
 let wkt = require('wellknown');
 let osmtogeojson = require('osmtogeojson');
-import { IHeader } from '../stores/Layer';
+import { Header } from '../stores/Layer';
 // declare function shp(any): { any }
 export class FilePreProcessModel {
 
@@ -22,19 +22,19 @@ export class FilePreProcessModel {
         let parse = Papa.parse(input, { preview: 1, header: true });
         delim = parse.meta.delimiter;
         for (let field of parse.meta.fields) {
-          if (this.isNumber(field)){
-            headers = [];
-            return  [headers, delim];
-          }
-            headers.push({ name: field, type:this.isNumber(parse.data[0][field])?'number' :'string'});
+            if (this.isNumber(field)) {
+                headers = [];
+                return [headers, delim];
+            }
+            headers.push({ name: field, type: this.isNumber(parse.data[0][field]) ? 'number' : 'string' });
         }
 
 
         return [headers, delim];
     }
 
-    private isNumber(val:string){
-      return val == '' || !isNaN(+val)
+    private isNumber(val: string) {
+        return val == '' || !isNaN(+val)
     }
 
     /**
@@ -47,7 +47,7 @@ export class FilePreProcessModel {
      * @param  headers  layer headers
      * @return           GeoJSON object
      */
-    public ParseCSVToGeoJSON(input: string, latField: string, lonField: string, delim: string, headers: IHeader[], onComplete:(geoJSON)=>void) {
+    public ParseCSVToGeoJSON(input: string, latField: string, lonField: string, delim: string, headers: Header[], onComplete: (geoJSON) => void) {
         let geoJSON: { features: any[], type: string } = null;
         csv2geojson.csv2geojson(input, {
             latfield: latField,
