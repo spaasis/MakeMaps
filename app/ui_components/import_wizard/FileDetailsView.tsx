@@ -50,7 +50,7 @@ export class FileDetailsView extends React.Component<
     }
     render() {
 
-        return <div style={{ height: '100%' }}>
+        return <div style={{ padding:20 }}>
             <div>
                 <h2>Just a few more details</h2>
                 <hr/>

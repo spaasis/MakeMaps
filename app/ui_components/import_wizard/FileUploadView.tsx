@@ -88,7 +88,6 @@ export class FileUploadView extends React.Component<{
         let layer = this.props.state.layer;
         let dropStyle = {
             height: 100,
-            border: this.props.state.fileName ? '1px solid #549341' : '1px dotted #549341',
             borderRadius: 15,
             margin: 5,
             textAlign: 'center',
@@ -97,7 +96,7 @@ export class FileUploadView extends React.Component<{
             fontWeight: 'bold'
         }
         return (
-            <div>
+            <div style={{padding:20}}>
                 <div>
                     <h2> Upload the file containing the data </h2>
                     <hr/>
@@ -106,6 +105,7 @@ export class FileUploadView extends React.Component<{
                     <a target="_blank" rel="noopener noreferrer" href='https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'>More info about supported file types</a>
                     <Dropzone
                         style={dropStyle}
+                        className='dropZone'
                         onDrop={this.onDrop.bind(this)}
                         accept={_allowedFileTypes.map(function(type) { return '.' + type }).join(', ')}>
 

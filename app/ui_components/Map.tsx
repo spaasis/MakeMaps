@@ -2,7 +2,7 @@ declare var require: any;
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { observer } from 'mobx-react';
-import { AppState, ImportWizardState, SaveState } from '../stores/States';
+import { AppState, ImportWizardState,WelcomeScreenState,ColorMenuState,SymbolMenuState,FilterMenuState,LegendMenuState,LayerMenuState,ExportMenuState,ClusterMenuState, SaveState } from '../stores/States';
 import { Filter } from '../stores/Filter';
 import { Layer, ColorOptions, SymbolOptions, ClusterOptions, Header, LayerTypes } from '../stores/Layer';
 import { Legend } from '../stores/Legend';
@@ -42,13 +42,19 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
 
     componentDidMount() {
+        window.onpopstate = this.onBackButtonEvent;
         _mapInitModel.InitCustomProjections();
         this.initMap();
         if (this.props.state.embed)
             this.embed();
 
     }
-
+    onBackButtonEvent = (e) => {
+        if (!this.props.state.welcomeShown && !this.props.state.importWizardShown) {
+            e.preventDefault();
+            this.reset();
+        }
+    }
     /** Parse URL parameters and act accordingly */
     embed() {
         //Pure GeoJSON without styling as string
@@ -101,7 +107,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
         map.doubleClickZoom.disable();
         map.on('contextmenu', function(e) { //disable context menu opening on right-click
-            map.openTooltip('asd', (e as any).latlng, );
+            // map.openTooltip('asd', (e as any).latlng );
             return;
         });
         this.props.state.map = map;
@@ -129,6 +135,8 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
      * layerImportSubmit - Layer importing was completed -> draw to map
      */
     layerImportSubmit(l: Layer) {
+        window.location.hash = 'edit';
+        console.log(window.location)
 
         l.getValues()
         l.appState = this.props.state;
@@ -197,13 +205,15 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
 
     saveImage() {
+
         let options = this.props.state.exportMenuState;
         function filter(node) {
             if (!node.className || !node.className.indexOf)
                 return true;
             else
-                return (node.className.indexOf('impromptu') === -1
-                    && node.className.indexOf('leaflet-control') === -1
+                return (node.className.indexOf('menu') === -1
+                    && node.className.indexOf('leaflet-control-fullscreen') === -1
+                    && node.className.indexOf('leaflet-control-zoom') === -1
                     && (options.showLegend || (!options.showLegend && node.className.indexOf('legend') === -1))
                     && (options.showFilters || (!options.showFilters && node.className.indexOf('filter') === -1))
                 );
@@ -238,7 +248,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             }
             if (e.symbolOptions.chartFields !== undefined) {
                 e.symbolOptions['chartHeaderIds'] = [];
-                e.symbolOptions.chartFields.map(function(h) { e['chartHeaderIds'].push(h.id) });
+                e.symbolOptions.chartFields.map(function(h) { e.symbolOptions['chartHeaderIds'].push(h.id) });
                 delete e.symbolOptions.chartFields;
             }
             if (e.symbolOptions.sizeXVar) {
@@ -277,6 +287,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
 
     loadSavedMap(saved?: SaveState) {
+      window.location.hash = 'edit';
         console.time("LoadSavedMap")
         let headers: Header[];
         if (saved.baseLayerId) {
@@ -291,7 +302,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                 }
             }
         }
-
 
         for (let i in saved.layers) {
 
@@ -333,6 +343,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                 this.props.state.layerMenuState.standardLayerOrder.push({ id: newLayer.id });
             _currentLayerId = Math.max(_currentLayerId, lyr.id);
         }
+        _currentLayerId++;
         let layers = this.props.state.layers;
         saved.filters.map(function(f) {
             let filter = new Filter(this.props.state, f);
@@ -353,6 +364,30 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         console.timeEnd("LoadSavedMap")
     }
 
+
+    reset() {
+
+        let state = this.props.state;
+        for (let l of state.layers) {
+            state.map.removeLayer(l.displayLayer);
+        }
+        state.menuShown = false;
+        state.layers = [];
+        state.filters = [];
+        state.legend.visible=false;
+        state.legend = null;
+        state.welcomeScreenState = new WelcomeScreenState();
+        state.colorMenuState = new ColorMenuState();
+        state.symbolMenuState= new SymbolMenuState();
+        state.filterMenuState= new FilterMenuState();
+        state.legendMenuState= new LegendMenuState();
+        state.layerMenuState= new LayerMenuState();
+        state.exportMenuState = new ExportMenuState();
+        state.clusterMenuState= new ClusterMenuState();
+        state.editingLayer = undefined;
+        state.importWizardShown = false;
+        state.welcomeShown = true;
+    }
 
 
     render() {
@@ -395,7 +430,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                                 state = {this.props.state}
                                 addLayer = {this.startLayerImport.bind(this)}
                                 changeLayerOrder ={this.changeLayerOrder.bind(this)}
-                                saveImage ={this.saveImage}
+                                saveImage ={this.saveImage.bind(this)}
                                 saveFile = {this.saveFile.bind(this)}
                                 />
                             : null}

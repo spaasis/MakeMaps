@@ -68,7 +68,7 @@ export class LayerMenu extends React.Component<{
                     options={this.props.state.obsBaseLayers}
                     onChange={(e: ISelectData) => {
                         this.props.state.map.removeLayer(this.props.state.activeBaseLayer.layer);
-                        this.props.state.activeBaseLayer = e.value;
+                        console.log(this.props.state.activeBaseLayer)
                         this.props.state.map.addLayer(this.props.state.activeBaseLayer.layer);
                     } }
                     value={{ value: this.props.state.activeBaseLayer, label: this.props.state.activeBaseLayer.id }}
@@ -109,6 +109,7 @@ export class LayerMenu extends React.Component<{
                 } }>Add new layer</button>
 
                 <hr/>
+                <label>Edit layer properties</label>
                 <Select
                     options={layers}
                     onChange = {(val: { label: string, value: Layer }) => {
@@ -119,6 +120,7 @@ export class LayerMenu extends React.Component<{
                         return option ? option.name : '';
                     } }
                     clearable={false}
+                    placeholder='Select layer...'
                     />
 
                 {layer ?

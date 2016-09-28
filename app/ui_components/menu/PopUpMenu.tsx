@@ -15,12 +15,11 @@ export class PopUpMenu extends React.Component<{
 
     onSelectionChange = (e: Header[]) => {
         let layer = this.props.state.editingLayer;
-        let headers = layer.popupHeaders;
         if (e === null)
             e = [];
-        headers.splice(0, headers.length) //empty headers
-        for (let i in e) { //add new headers
-            headers.push(e[i]);
+        layer.popupHeaders=[] //empty headers
+        for (let i of e) { //add new headers
+            layer.popupHeaders.push(i);
         }
         if (this.props.state.autoRefresh)
             layer.refreshPopUps();
@@ -78,6 +77,8 @@ export class PopUpMenu extends React.Component<{
                     this.saveValues();
                 } }>Refresh map</button>
             }
+            <br/>
+            <i>Pop-ups show information about map features, such as points and areas. Select the data you wish to show, and the method by which the pop-up is opened.</i>
         </div >
         );
     }

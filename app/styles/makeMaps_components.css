@@ -103,7 +103,6 @@ hr{
   border: 2px solid gray;
   overflow-x: hidden;
   overflow-y: auto;
-  max-height: 600;
 }
 
 .primaryButton {
@@ -153,6 +152,19 @@ hr{
 	border: 1px solid #c1c1c1;
 }
 
+.dropZone{
+  border : 1px solid #54b4ce;
+  height: 150px;
+  line-height: 150px;
+  border-radius: 15px;
+}
+
+.dropZone:hover {
+  color: #3f3f3f;
+  border: 3px solid #54b4ce;
+  line-height: 146px;
+}
+
 .menuButton {
   background-color: #ffffff;
    border: 1px solid #54b4ce;
@@ -186,11 +198,16 @@ hr{
 }
 
 .legend{
+  max-height: 95%;
+  max-height: calc(100% - 15px);
   z-index: 600;
+  overflow-y: auto;
 }
 
 .filter{
+  max-height: 100%;
   z-index: 600;
+  overflow-y: auto;
 }
 
 .marker-hidden{

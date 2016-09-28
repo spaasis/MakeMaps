@@ -10,7 +10,7 @@ import { observer } from 'mobx-react';
 
 @observer
 export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
-    createLegend(layer: Layer, showLayerName: boolean) {
+    createLegend(layer: Layer, showLayerName: boolean, showSeparator) {
         let choroLegend, scaledLegend, chartLegend, iconLegend, blockLegend;
         let options = layer;
         let col = options.colorOptions;
@@ -44,6 +44,8 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             {chartLegend}
             {iconLegend}
             {blockLegend}
+            {showSeparator ? <hr style ={{ clear: 'both' }}/> : null}
+
         </div>
     }
     createMultiColorLegend(layer: Layer, percentages: number[]) {
@@ -213,14 +215,14 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 minWidth: '20px',
                 minHeight: '20px',
             }
-            divs.push(<div key={i} style={{ display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}>
+            divs.push(<div key={i} style={{ display: this.props.state.legend.horizontal ? 'initial' : 'flex', width: '100%' }}>
                 <div style={colorStyle} />
                 <span style={{ marginLeft: '3px', marginRight: '3px' }}>
                     {headers[i].label}
                 </span>
             </div >);
         }
-        return <div style={{ margin: '5px', float: 'left' }}>
+        return <div style={{ margin: '5px', float: '' }}>
             <div style= {{ display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}>
                 {divs.map(function(d) { return d })}
             </div >
@@ -232,18 +234,21 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         let col = layer.colorOptions;
         let sym = layer.symbolOptions;
         let icons: IIcon[] = sym.icons.slice();
-        let limits = icons.length > 1 && sym.iconField == col.colorField ? this.combineLimits(layer) : sym.iconLimits.slice();
+        let limits = sym.iconField == col.colorField ? this.combineLimits(layer) : sym.iconLimits.slice();
         let isNumber = sym.iconField.type == 'number';
         if (limits && limits.length > 0) {
             for (let i of limits) {
 
                 let index = limits.indexOf(i);
-                let fillColor: string = col.colorField === layer.symbolOptions.iconField && col.useMultipleFillColors ?
-                    GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), (limits[index] + limits[index]) / 2) //if can be fitted into the same legend, show colors and symbols together. Get fill color by average of icon limits
-                    : col.fillColor;
-                let icon = isNumber ? GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), (i + limits[index]) / 2) : icons[index];
 
-                divs.push(<div key={i} style={{ display: this.props.state.legend.horizontal ? 'initial' : 'flex' }}>
+                let fillColor: string = col.colorField === layer.symbolOptions.iconField && col.useMultipleFillColors ?
+                    isNumber ?
+                        GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), (limits[index] + limits[index]) / 2) ://if can be fitted into the same legend, show colors and symbols together. Get fill color by average of icon limits
+                        col.colors[index]
+                    : col.fillColor;
+                let icon = icons.length == 1 ? icons[0] : isNumber ? GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), (i + limits[index]) / 2) : icons[index];
+
+                divs.push(<div key={i} style={{ display: this.props.state.legend.horizontal ? 'initial' : 'flex', width: '100%' }}>
                     {!icon ? '' : getIcon(icon.shape, icon.fa, col.color, fillColor, fillColor != '000' ? layer.colorOptions.iconTextColor : 'FFF')}
                     <span style={{ marginLeft: '3px', marginRight: '3px' }}>
 
@@ -255,7 +260,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                     </span>
                 </div >);
             }
-            return <div style={{ margin: '5px', float: 'left', textAlign: 'center' }}>
+            return <div style={{ margin: '5px', float: '', textAlign: 'center' }}>
                 {layer.symbolOptions.iconField.label}
                 <div style= {{ display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}>
                     {divs.map(function(d) { return d })}
@@ -389,9 +394,11 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
     render() {
         let layers = this.props.state.layers;
         let legend = this.props.state.legend;
-
+        let layerCount = 0;
         return (
             <div className='legend'
+                onMouseEnter={(e) => { this.props.state.map.dragging.disable(); } }
+                onMouseLeave={(e) => { this.props.state.map.dragging.enable(); } }
                 style={{
                     width: 'auto',
                     textAlign: 'center',
@@ -408,13 +415,13 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 <div>
                     {
                         layers.map(function(m) {
-                            return this.createLegend(m, layers.length > 1);
+                            layerCount++;
+                            return this.createLegend(m, layers.length > 1, layerCount < layers.length);
                         }, this)
                     }
+
                 </div>
-                <div style={{ clear: 'both' }}
-                    onMouseEnter={(e) => { this.props.state.map.dragging.disable(); } }
-                    onMouseLeave={(e) => { this.props.state.map.dragging.enable(); } }>
+                <div style={{ clear: 'both' }}>
                     <TextEditor
                         style={{ width: '100%', minHeight: legend.edit ? '40px' : '' }}
                         content={legend.meta}

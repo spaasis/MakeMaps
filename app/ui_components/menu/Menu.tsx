@@ -101,22 +101,50 @@ export class MakeMapsMenu extends React.Component<{
             bottom: 0,
             zIndex: 999
         };
+        let visibleMenu = this.props.state.visibleMenu;
+        let visibleMenuName: string;
+        switch(visibleMenu){
+          case 1:
+          visibleMenuName="Layers";
+          break;
+          case 2:
+          visibleMenuName="Colors";
+          break;
+          case 3:
+          visibleMenuName="Symbols";
+          break;
+          case 4:
+          visibleMenuName="Filters";
+          break;
+          case 5:
+          visibleMenuName="Legend";
+          break;
+          case 6:
+          visibleMenuName="Cluster";
+          break;
+          case 7:
+          visibleMenuName="Pop-ups";
+          break;
+          case 8:
+          visibleMenuName="Download";
+          break;
+        }
         return (
             !this.props.state.menuShown ? null :
                 <div style = {menuStyle} className='menu'>
                     <div style={{ float: 'left', display: 'flex', flexFlow: 'column', height: '100%' }}>
-                        <MenuEntry text="Layers" id={1} active={this.props.state.visibleMenu === 1} fa='bars' onClick = {this.onActiveMenuChange}/>
-                        <MenuEntry text="Colors" id={2} active={this.props.state.visibleMenu == 2} fa='paint-brush' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer}/>
-                        <MenuEntry text="Symbols" id={3} active={this.props.state.visibleMenu == 3} fa='map-marker' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.pointFeatureCount == 0 || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
-                        <MenuEntry text="Filters" id={4} active={this.props.state.visibleMenu == 4} fa='sliders' onClick = {this.onActiveMenuChange} />
-                        <MenuEntry text="Legend" id={5} active={this.props.state.visibleMenu == 5} fa='map-o' onClick = {this.onActiveMenuChange}/>
-                        <MenuEntry text="Cluster" id={6} active={this.props.state.visibleMenu == 6} fa='asterisk' onClick = {this.onActiveMenuChange} hide = {this.props.state.editingLayer.pointFeatureCount == 0 || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
-                        <MenuEntry text="Pop-ups" id={7} active={this.props.state.visibleMenu == 7} fa='newspaper-o' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
-                        <MenuEntry text="Download" id={8} active={this.props.state.visibleMenu == 8} fa='download' onClick = {this.onActiveMenuChange}/>
+                        <MenuEntry text="Layers" id={1} active={visibleMenu == 1} fa='bars' onClick = {this.onActiveMenuChange}/>
+                        <MenuEntry text="Colors" id={2} active={visibleMenu == 2} fa='paint-brush' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer}/>
+                        <MenuEntry text="Symbols" id={3} active={visibleMenu == 3} fa='map-marker' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.pointFeatureCount == 0 || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
+                        <MenuEntry text="Filters" id={4} active={visibleMenu == 4} fa='sliders' onClick = {this.onActiveMenuChange} />
+                        <MenuEntry text="Legend" id={5} active={visibleMenu == 5} fa='map-o' onClick = {this.onActiveMenuChange}/>
+                        <MenuEntry text="Cluster" id={6} active={visibleMenu == 6} fa='asterisk' onClick = {this.onActiveMenuChange} hide = {this.props.state.editingLayer.pointFeatureCount == 0 || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
+                        <MenuEntry text="Pop-ups" id={7} active={visibleMenu == 7} fa='newspaper-o' onClick = {this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.layerType === LayerTypes.HeatMap}/>
+                        <MenuEntry text="Download" id={8} active={visibleMenu == 8} fa='download' onClick = {this.onActiveMenuChange}/>
                     </div >
                     <div className={this.props.state.visibleMenu > 0 ? 'menuOpen' : document.getElementsByClassName('menuOpen').length > 0 ? 'menuClose' : ''}
                         style ={{ float: 'right', width: this.props.state.visibleMenu > 0 ? 250 : 0, height: '100%', overflowY: 'auto', background: '#ededed' }}>
-
+                        <h3>{visibleMenuName}</h3>
                         {
                             this.props.state.visibleMenu !== 0 && this.props.state.visibleMenu !== 1 && this.props.state.visibleMenu !== 4 && this.props.state.visibleMenu !== 5 && this.props.state.visibleMenu !== 8 ?
                                 <div>

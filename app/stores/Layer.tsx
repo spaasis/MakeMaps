@@ -175,7 +175,7 @@ export class Layer {
 
     /**  Manually trigger popup update without refreshing the layer*/
     refreshPopUps() {
-        if (this.displayLayer && this.popupHeaders.slice().length > 0) {
+        if (this.displayLayer && this.popupHeaders) {
             this.displayLayer.eachLayer(function(l: any) {
                 addPopups.call(this, l.feature, l);
             }, this)
@@ -719,7 +719,6 @@ function addPopups(feature, layer: L.GeoJSON) {
     let popupContent = '';
 
     let headers: Header[] = this.popupHeaders.slice();
-
     for (let h in headers) {
         let header = headers[h];
         let prop = feature.properties[header.value];
@@ -731,6 +730,8 @@ function addPopups(feature, layer: L.GeoJSON) {
 
     if (popupContent != '')
         layer.bindPopup(popupContent);
+    else
+        layer.unbindPopup();
 
     if (this.showPopUpOnHover) {
         layer.off('click')

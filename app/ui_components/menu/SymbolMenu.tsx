@@ -25,7 +25,7 @@ export class SymbolMenu extends React.Component<{
         }
         if (type === SymbolTypes.Icon) {
             if (!sym.iconField)
-                sym.iconField = layer.numberHeaders[0];
+                sym.iconField = layer.numberHeaders[0] ? layer.numberHeaders[0] : layer.headers[0];
             if (!sym.icons || sym.icons.length == 0) {
                 sym.icons = [];
                 this.addRandomIcon();

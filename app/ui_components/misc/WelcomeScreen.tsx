@@ -60,13 +60,11 @@ export class WelcomeScreen extends React.Component<{loadMap:(json)=>void, openLa
     }
     render() {
         let dropStyle = {
-            height: 150,
-            border: this.state.fileName ? '1px solid #549341' : '1px dotted #549341',
-            borderRadius: 15,
             margin: 5,
             textAlign: 'center',
             color: 'grey',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            lineHeight: this.state.fileName ? '60px': '150px', 
         }
         return (<div style={{ textAlign: 'center' }}>
             <a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps"><i className='fa fa-github' style={{position:'absolute', right:5, fontSize:'40px'}}/></a>
@@ -111,10 +109,11 @@ export class WelcomeScreen extends React.Component<{loadMap:(json)=>void, openLa
             </div>
             <hr style={{ color: '#cecece', width: '75%' }}/>
 
-            <div style={{display:'inline'}}>
+            <div style={{display:'inline-block', padding:20}}>
                     <div style={{ width: '50%', display: 'inline-block' }}>
                         <h3>Load a previously made map</h3>
                         <Dropzone
+                        className='dropZone'
                             style={dropStyle}
                             onDrop={this.onDrop.bind(this)}
                             accept={'.mmap'}
@@ -129,9 +128,7 @@ export class WelcomeScreen extends React.Component<{loadMap:(json)=>void, openLa
                                 </span>
                                 :
                                 <div style={{ margin: '0 auto' }}>
-                                    Have a map you worked on previously? Someone sent you a cool map to see for yourself? Upload it here!
-                                    <br/>
-                                    Drop a map here or click to upload
+                                    Drop a .mmap here or click to upload
                                 </div>
                             }
                         </Dropzone>
