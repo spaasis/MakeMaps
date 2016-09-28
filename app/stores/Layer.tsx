@@ -175,12 +175,13 @@ export class Layer {
 
     /**  Manually trigger popup update without refreshing the layer*/
     refreshPopUps() {
-        if (this.displayLayer && this.popupHeaders) {
-            this.displayLayer.eachLayer(function(l: any) {
-                addPopups.call(this, l.feature, l);
-            }, this)
+        if (this.layerType !== LayerTypes.HeatMap) {
+            if (this.displayLayer && this.popupHeaders) {
+                this.displayLayer.eachLayer(function(l: any) {
+                    addPopups.call(this, l.feature, l);
+                }, this)
+            }
         }
-
     }
 
     /** Manually trigger cluster update*/
@@ -208,6 +209,11 @@ export class Layer {
     }
 
     setOpacity() {
+        if (this.layerType === LayerTypes.HeatMap) {
+            this.toggleRedraw = true;
+            this.refresh();
+            return;
+        }
         for (let lyr of this.displayLayer.getLayers()) {
             if ((lyr as any).setOpacity)
                 (lyr as any).setOpacity(this.colorOptions.opacity);

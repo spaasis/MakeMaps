@@ -2,7 +2,7 @@ declare var require: any;
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { observer } from 'mobx-react';
-import { AppState, ImportWizardState,WelcomeScreenState,ColorMenuState,SymbolMenuState,FilterMenuState,LegendMenuState,LayerMenuState,ExportMenuState,ClusterMenuState, SaveState } from '../stores/States';
+import { AppState, ImportWizardState, WelcomeScreenState, ColorMenuState, SymbolMenuState, FilterMenuState, LegendMenuState, LayerMenuState, ExportMenuState, ClusterMenuState, SaveState } from '../stores/States';
 import { Filter } from '../stores/Filter';
 import { Layer, ColorOptions, SymbolOptions, ClusterOptions, Header, LayerTypes } from '../stores/Layer';
 import { Legend } from '../stores/Legend';
@@ -136,8 +136,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
      */
     layerImportSubmit(l: Layer) {
         window.location.hash = 'edit';
-        console.log(window.location)
-
         l.getValues()
         l.appState = this.props.state;
         l.id = _currentLayerId++;
@@ -287,7 +285,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
 
     loadSavedMap(saved?: SaveState) {
-      window.location.hash = 'edit';
+        window.location.hash = 'edit';
         console.time("LoadSavedMap")
         let headers: Header[];
         if (saved.baseLayerId) {
@@ -303,9 +301,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             }
         }
 
-        for (let i in saved.layers) {
-
-            let lyr = saved.layers[i];
+        for (let lyr of saved.layers) {
             let newLayer = new Layer(this.props.state);
             newLayer.headers = [];
             for (let j of lyr.headers) {
@@ -366,7 +362,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
 
     reset() {
-
         let state = this.props.state;
         for (let l of state.layers) {
             state.map.removeLayer(l.displayLayer);
@@ -374,16 +369,16 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         state.menuShown = false;
         state.layers = [];
         state.filters = [];
-        state.legend.visible=false;
+        state.legend.visible = false;
         state.legend = null;
         state.welcomeScreenState = new WelcomeScreenState();
         state.colorMenuState = new ColorMenuState();
-        state.symbolMenuState= new SymbolMenuState();
-        state.filterMenuState= new FilterMenuState();
-        state.legendMenuState= new LegendMenuState();
-        state.layerMenuState= new LayerMenuState();
+        state.symbolMenuState = new SymbolMenuState();
+        state.filterMenuState = new FilterMenuState();
+        state.legendMenuState = new LegendMenuState();
+        state.layerMenuState = new LayerMenuState();
         state.exportMenuState = new ExportMenuState();
-        state.clusterMenuState= new ClusterMenuState();
+        state.clusterMenuState = new ClusterMenuState();
         state.editingLayer = undefined;
         state.importWizardShown = false;
         state.welcomeShown = true;
