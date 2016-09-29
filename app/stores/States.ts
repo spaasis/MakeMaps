@@ -74,6 +74,8 @@ export class AppState {
 export class WelcomeScreenState {
     loadedMap: SaveState;
     @observable fileName: string;
+    @observable demoOrder:number[] = [];
+    @observable scroller:number;
 }
 
 /** The state to be saved when exporting a map to a file*/

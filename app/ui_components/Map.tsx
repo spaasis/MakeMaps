@@ -391,6 +391,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                 border: '1px solid #cecece',
                 borderRadius: '15px',
                 padding: '0px',
+                maxWidth: 1900,
             }
         }
         return (
@@ -405,6 +406,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                             isOpen={this.props.state.welcomeShown}
                             style = {modalStyle}>
                             <WelcomeScreen
+                                state={new WelcomeScreenState()}
                                 loadMap={this.loadSavedMap.bind(this)}
                                 openLayerImport={this.startLayerImport.bind(this)}
                                 />

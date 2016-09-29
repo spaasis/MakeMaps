@@ -14,12 +14,3 @@ interface IIcon {
     /** The Extra-Markers- shape. Used if symbolType == Icon*/
     shape?: 'circle' | 'square' | 'star' | 'penta',
 }
-
-interface IDemoPreviewProps {
-    imageURL: string,
-    description: string,
-    loadDemo: () => void,
-}
-interface IDemoPreviewStates {
-    overlayOpen?: boolean
-}
