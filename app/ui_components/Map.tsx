@@ -13,6 +13,8 @@ import { GetSymbolSize, LoadExternalMap, ShowLoading, HideLoading, ShowNotificat
 import { OnScreenFilter } from './misc/OnScreenFilter';
 import { OnScreenLegend } from './misc/OnScreenLegend';
 import { WelcomeScreen } from './misc/WelcomeScreen';
+import { Strings } from '../localizations/strings';
+import { locale } from '../localizations/locale';
 import 'leaflet';
 import 'Leaflet.extra-markers';
 import 'leaflet-fullscreen';
@@ -386,6 +388,8 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
 
     render() {
+        //Hack - get all the string options visible in the IDE
+        let strings: Strings = (locale as any);
         let modalStyle = {
             content: {
                 border: '1px solid #cecece',
@@ -394,6 +398,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                 maxWidth: 1900,
             }
         }
+        console.log(strings.layerMenuTitle)
         return (
             <div>
                 <div id='map'>

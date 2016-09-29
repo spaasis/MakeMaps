@@ -22,6 +22,7 @@
 "typings/index.d.ts",
 "typings-custom/leaflet.heat.d.ts",
 "typings-custom/leaflet.ExtraMarkers.d.ts",
+"typings-custom/react-localization.d.ts",
 "app/common_items/commonInterfaces.ts",
 "app/ui_components/Map.tsx",
 "app/stores/States.ts"
