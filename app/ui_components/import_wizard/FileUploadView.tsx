@@ -86,17 +86,8 @@ export class FileUploadView extends React.Component<{
     }
     render() {
         let layer = this.props.state.layer;
-        let dropStyle = {
-            height: 100,
-            borderRadius: 15,
-            margin: 5,
-            textAlign: 'center',
-            lineHeight: '100px',
-            color: 'grey',
-            fontWeight: 'bold'
-        }
         return (
-            <div style={{padding:20}}>
+            <div style={{ padding: 20 }}>
                 <div>
                     <h2> Upload the file containing the data </h2>
                     <hr/>
@@ -104,7 +95,6 @@ export class FileUploadView extends React.Component<{
                     <p> GeoJSON, Microsoft Office spreadsheets, OpenDocument spreadsheets, CSV, KML, GPX, WKT, OSM...</p>
                     <a target="_blank" rel="noopener noreferrer" href='https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'>More info about supported file types</a>
                     <Dropzone
-                        style={dropStyle}
                         className='dropZone'
                         onDrop={this.onDrop.bind(this)}
                         accept={_allowedFileTypes.map(function(type) { return '.' + type }).join(', ')}>

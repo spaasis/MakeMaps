@@ -9,12 +9,11 @@ import { observer } from 'mobx-react';
 export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, loadMap: (json) => void, openLayerImport: () => void }, {}>{
 
     componentDidMount() {
-        this.props.state.demoOrder = [0, 1, 2, 3, 4];
         this.startScrolling();
     }
 
     startScrolling() {
-        this.props.state.scroller = setInterval(this.moveDemosLeft.bind(this), 8000);
+        this.props.state.scroller = setInterval(this.moveDemosLeft.bind(this), 6000);
     }
 
     stopScrolling() {
@@ -36,19 +35,14 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
     }
 
     moveDemosLeft() {
-        this.stopScrolling();
         let order = this.props.state.demoOrder;
         let first = order.shift();
         order.push(first);
-        this.startScrolling();
-
     }
     moveDemosRight() {
-        this.stopScrolling();
         let order = this.props.state.demoOrder;
         let last = order.pop();
         order.unshift(last);
-        this.startScrolling();
     }
 
     highlightDemo(index: number) {
@@ -115,13 +109,18 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
                     MakeMaps offers a selection of color schemes
                     from
                     <a target="_blank" rel="noopener noreferrer" href="http://colorbrewer2.org/"> Color Brewer </a>
-                    that are easily visible to all kinds of users
+                    that are easily viewable to all kinds of users
                 </div>
                 <div style={infoDivStyle}>
                     <b style={{ display: 'block' }}>Ease of use</b>
                     <i className='fa fa-bolt' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/>
                     You can create powerful visualizations and easy-to-read maps with just a few clicks.
                     See the <a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps/wiki">Project Wiki</a> for user guides and more
+                </div>
+                <div style={infoDivStyle}>
+                    <b style={{ display: 'block' }}>File support</b>
+                    <i className='fa fa-file-text-o' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/>
+                    MakeMaps can create maps from XLSX,CSV,KML and GPX file formats, among others.<br/><a target="_blank" rel="noopener noreferrer"  href="https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements">Full list and details</a>
                 </div>
                 <div style={infoDivStyle}>
                     <b style={{ display: 'block' }}>Data filtering</b>
@@ -149,7 +148,7 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
                 onMouseLeave={() => { this.startScrolling() } }>
                 <button className='primaryButton' style={{ height: '100%', width: 40, position: 'absolute', left: 0, top: 0 }} onClick={() => this.moveDemosRight()}>{'<'}</button>
                 <div style={{ marginLeft: 25 }}>
-                    {this.getDemos().map(function(d) { return d; })}
+                    {this.getHighlightedDemo()}
                 </div>
                 <button className='primaryButton' style={{ height: '100%', width: 40, position: 'absolute', right: 0, top: 0 }} onClick={() => this.moveDemosLeft()}>{'>'}</button>
 
@@ -196,7 +195,7 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
         return buttons;
     }
 
-    getDemos() {
+    getHighlightedDemo() {
 
         let demos = [<DemoPreview
             key={0}
@@ -237,14 +236,8 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
             description='This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently'
             loadDemo={this.loadDemo.bind(this, 'clusterdemo')}
             onClick={() => { this.highlightDemo(4) } }
-            />]
-
-        let arr = [];
-        for (let i of this.props.state.demoOrder) {
-            arr.push(
-                demos[i]);
-        }
-        return arr;
+            />];
+        return demos[this.props.state.demoOrder[0]];
 
     }
 
