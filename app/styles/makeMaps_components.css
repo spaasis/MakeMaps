@@ -120,7 +120,9 @@ hr{
 	width:131px;
 	text-decoration:none;
 	text-align:center;
-}.primaryButton:hover {
+}
+
+.primaryButton:hover {
   color: #3f3f3f;
   border: 3px solid #54b4ce;
   line-height: 34px;
@@ -157,12 +159,18 @@ hr{
   height: 150px;
   line-height: 150px;
   border-radius: 15px;
+  margin: 5px;
+  text-align: center;
+  color: grey;
+  font-weight: bold;
 }
 
 .dropZone:hover {
   color: #3f3f3f;
   border: 3px solid #54b4ce;
   line-height: 146px;
+  margin: 3px;
+
 }
 
 .menuButton {
@@ -183,6 +191,20 @@ hr{
     color: #3f3f3f;
     border: 3px solid #54b4ce;
     line-height: 34px;
+}
+
+.welcomeDemoButton{
+  border: 1px solid #85cee2;
+  margin: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 15px;
+  background: #85cee2;
+  outline: none;
+
+}
+.welcomeDemoButton.active{
+  background: #fff;
 }
 
 .colorBlock{
@@ -237,6 +259,9 @@ hr{
   top: 40%;
   max-width: 500px;
 }
+
+:focus {outline:none;}
+::-moz-focus-inner {border:0;}
 
 @keyframes menuOpen {
    from {width:0}

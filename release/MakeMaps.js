@@ -404,10 +404,11 @@
 	                border: '1px solid #cecece',
 	                borderRadius: '15px',
 	                padding: '0px',
+	                maxWidth: 1900,
 	            }
 	        };
 	        return (React.createElement("div", null, React.createElement("div", {id: 'map'}, this.getFilters(), this.showLegend()), this.props.state.embed ? null :
-	            React.createElement("div", null, React.createElement(Modal, {isOpen: this.props.state.welcomeShown, style: modalStyle}, React.createElement(WelcomeScreen_1.WelcomeScreen, {loadMap: this.loadSavedMap.bind(this), openLayerImport: this.startLayerImport.bind(this)})), this.props.state.importWizardShown ?
+	            React.createElement("div", null, React.createElement(Modal, {isOpen: this.props.state.welcomeShown, style: modalStyle}, React.createElement(WelcomeScreen_1.WelcomeScreen, {state: new States_1.WelcomeScreenState(), loadMap: this.loadSavedMap.bind(this), openLayerImport: this.startLayerImport.bind(this)})), this.props.state.importWizardShown ?
 	                React.createElement(Modal, {isOpen: this.props.state.importWizardShown, style: modalStyle}, React.createElement(LayerImportWizard_1.LayerImportWizard, {state: this.props.state, submit: this.layerImportSubmit.bind(this), cancel: this.cancelLayerImport.bind(this)}))
 	                : null, this.props.state.menuShown ?
 	                React.createElement(Menu_1.MakeMapsMenu, {state: this.props.state, addLayer: this.startLayerImport.bind(this), changeLayerOrder: this.changeLayerOrder.bind(this), saveImage: this.saveImage.bind(this), saveFile: this.saveFile.bind(this)})
@@ -23006,11 +23007,20 @@
 	exports.AppState = AppState;
 	var WelcomeScreenState = (function () {
 	    function WelcomeScreenState() {
+	        this.demoOrder = [];
 	    }
 	    __decorate([
 	        mobx_1.observable, 
 	        __metadata('design:type', String)
 	    ], WelcomeScreenState.prototype, "fileName", void 0);
+	    __decorate([
+	        mobx_1.observable, 
+	        __metadata('design:type', Array)
+	    ], WelcomeScreenState.prototype, "demoOrder", void 0);
+	    __decorate([
+	        mobx_1.observable, 
+	        __metadata('design:type', Number)
+	    ], WelcomeScreenState.prototype, "scroller", void 0);
 	    return WelcomeScreenState;
 	}());
 	exports.WelcomeScreenState = WelcomeScreenState;
@@ -106586,16 +106596,35 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
 	var React = __webpack_require__(1);
 	var DemoPreview_1 = __webpack_require__(534);
 	var Dropzone = __webpack_require__(172);
 	var common_1 = __webpack_require__(163);
+	var mobx_react_1 = __webpack_require__(159);
 	var WelcomeScreen = (function (_super) {
 	    __extends(WelcomeScreen, _super);
 	    function WelcomeScreen() {
-	        _super.call(this);
-	        this.state = { fileName: null, savedJSON: null };
+	        _super.apply(this, arguments);
 	    }
+	    WelcomeScreen.prototype.componentDidMount = function () {
+	        this.props.state.demoOrder = [0, 1, 2, 3, 4];
+	        this.startScrolling();
+	    };
+	    WelcomeScreen.prototype.startScrolling = function () {
+	        this.props.state.scroller = setInterval(this.moveDemosLeft.bind(this), 8000);
+	    };
+	    WelcomeScreen.prototype.stopScrolling = function () {
+	        clearInterval(this.props.state.scroller);
+	    };
 	    WelcomeScreen.prototype.loadDemo = function (filename) {
 	        common_1.ShowLoading();
 	        var loadMap = this.props.loadMap;
@@ -106604,9 +106633,30 @@
 	    WelcomeScreen.prototype.createNewMap = function () {
 	        this.props.openLayerImport();
 	    };
+	    WelcomeScreen.prototype.moveDemosLeft = function () {
+	        this.stopScrolling();
+	        var order = this.props.state.demoOrder;
+	        var first = order.shift();
+	        order.push(first);
+	        this.startScrolling();
+	    };
+	    WelcomeScreen.prototype.moveDemosRight = function () {
+	        this.stopScrolling();
+	        var order = this.props.state.demoOrder;
+	        var last = order.pop();
+	        order.unshift(last);
+	        this.startScrolling();
+	    };
+	    WelcomeScreen.prototype.highlightDemo = function (index) {
+	        var order = this.props.state.demoOrder;
+	        while (order.indexOf(index) > 0) {
+	            this.moveDemosLeft();
+	        }
+	    };
 	    WelcomeScreen.prototype.onDrop = function (files) {
 	        var reader = new FileReader();
 	        var fileName, content;
+	        var state = this.props.state;
 	        reader.onload = contentUploaded.bind(this);
 	        files.forEach(function (file) {
 	            fileName = file.name;
@@ -106616,10 +106666,8 @@
 	            var contents = e.target;
 	            var ext = fileName.split('.').pop().toLowerCase();
 	            if (ext === 'mmap') {
-	                this.setState({
-	                    savedJSON: JSON.parse(contents.result),
-	                    fileName: fileName,
-	                });
+	                state.loadedMap = JSON.parse(contents.result);
+	                state.fileName = fileName;
 	            }
 	            else {
 	                common_1.ShowNotification('Select a .mmap file!');
@@ -106631,22 +106679,55 @@
 	        e.preventDefault();
 	        e.stopPropagation();
 	        var load = this.props.loadMap;
-	        var json = this.state.savedJSON;
+	        var json = this.props.state.loadedMap;
 	        setTimeout(function () { load(json); }, 10);
 	    };
 	    WelcomeScreen.prototype.render = function () {
+	        var _this = this;
 	        var dropStyle = {
-	            margin: 5,
-	            textAlign: 'center',
-	            color: 'grey',
-	            fontWeight: 'bold',
-	            lineHeight: this.state.fileName ? '60px' : '150px',
+	            lineHeight: this.props.state.fileName ? '60px' : '150px',
+	            width: 500,
 	        };
-	        return (React.createElement("div", {style: { textAlign: 'center' }}, React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps"}, React.createElement("i", {className: 'fa fa-github', style: { position: 'absolute', right: 5, fontSize: '40px' }})), React.createElement("div", {style: { display: 'block', margin: '0 auto', padding: 5 }}, React.createElement("img", {src: 'app/images/favicon.png', style: { display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }}), React.createElement("img", {src: 'app/images/logo_pre.png', style: { display: 'inline-block', verticalAlign: 'middle' }}), React.createElement("img", {src: 'app/images/favicon.png', style: { display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }})), "MakeMaps is an open source map creation tool that lets you make powerful visualizations from your spatial data", React.createElement("br", null), "Guides and feedback channels can be found in the ", React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps/wiki"}, "Project Wiki"), ". Contributions and feature requests welcome!", React.createElement("hr", null), React.createElement("h3", null, "Here's a few demos: "), React.createElement("div", {style: { overflowX: 'visible', overflowY: 'hidden', height: 440, whiteSpace: 'nowrap' }}, React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/chorodemo.png', description: 'This demo shows the choropleth map type by mapping the United States by population density.', loadDemo: this.loadDemo.bind(this, 'chorodemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/symboldemo.png', description: 'This demo demonstrates the different symbol options of MakeMaps. Data random generated for demo purposes.', loadDemo: this.loadDemo.bind(this, 'symboldemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_chartdemo.png', description: 'This demo shows the chart-as-a-symbol map by visualizing distribution between different traffic types in Helsinki using a pie chart. Data acquired from hri.fi', loadDemo: this.loadDemo.bind(this, 'hki_chartdemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/hki_heatdemo.png', description: 'This demo showcases the heat map by visualizing the daily public transportation boardings by HSL', loadDemo: this.loadDemo.bind(this, 'hki_heatdemo')}), React.createElement(DemoPreview_1.DemoPreview, {imageURL: 'demos/clusterdemo.png', description: 'This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently', loadDemo: this.loadDemo.bind(this, 'clusterdemo')})), React.createElement("hr", {style: { color: '#cecece', width: '75%' }}), React.createElement("div", {style: { display: 'inline-block', padding: 20 }}, React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, React.createElement("h3", null, "Load a previously made map"), React.createElement(Dropzone, {className: 'dropZone', style: dropStyle, onDrop: this.onDrop.bind(this), accept: '.mmap'}, this.state.fileName ?
-	            React.createElement("span", null, React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), this.state.fileName, React.createElement("div", {style: { margin: '0 auto' }}, React.createElement("button", {className: 'primaryButton', onClick: this.loadMap.bind(this)}, "Show me")))
+	        var infoDivStyle = { width: 200, border: '1px solid #cecece', borderRadius: '15px', padding: 10 };
+	        var infoBlocks = React.createElement("div", {style: { display: 'inline-flex', flexWrap: 'wrap', maxWidth: '85%' }}, React.createElement("div", {style: infoDivStyle}, React.createElement("b", {style: { display: 'block' }}, "Openness"), React.createElement("a", {style: { textDecoration: 'none' }, target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps"}, React.createElement("i", {className: 'fa fa-github-square', style: { display: 'block', fontSize: '80px', color: '#cecece' }})), "MakeMaps is built as open source, on open source libraries, with open data in mind.", React.createElement("br", null), " See us at ", React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps"}, "GitHub")), React.createElement("div", {style: infoDivStyle}, React.createElement("b", {style: { display: 'block' }}, "Accessibility"), React.createElement("i", {className: 'fa fa-eye', style: { display: 'block', fontSize: '80px', color: '#cecece' }}), "MakeMaps offers a selection of color schemes" + ' ' + "from", React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "http://colorbrewer2.org/"}, " Color Brewer "), "that are easily visible to all kinds of users"), React.createElement("div", {style: infoDivStyle}, React.createElement("b", {style: { display: 'block' }}, "Ease of use"), React.createElement("i", {className: 'fa fa-bolt', style: { display: 'block', fontSize: '80px', color: '#cecece' }}), "You can create powerful visualizations and easy-to-read maps with just a few clicks." + ' ' + "See the ", React.createElement("a", {target: "_blank", rel: "noopener noreferrer", href: "https://github.com/simopaasisalo/MakeMaps/wiki"}, "Project Wiki"), " for user guides and more"), React.createElement("div", {style: infoDivStyle}, React.createElement("b", {style: { display: 'block' }}, "Data filtering"), React.createElement("i", {className: 'fa fa-sliders', style: { display: 'block', fontSize: '80px', color: '#cecece' }}), "MakeMaps allows for dynamic data filtering on the fly. You can set your own filter steps, filter by unique values or anything in between"));
+	        return (React.createElement("div", {style: { textAlign: 'center' }}, React.createElement("div", {style: { display: 'block', margin: '0 auto', padding: 5 }}, React.createElement("img", {src: 'app/images/favicon.png', style: { display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }}), React.createElement("img", {src: 'app/images/logo_pre.png', style: { display: 'inline-block', verticalAlign: 'middle' }}), React.createElement("img", {src: 'app/images/favicon.png', style: { display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }})), React.createElement("hr", null), this.getDemoButtons().map(function (d) { return d; }), React.createElement("div", {style: {
+	            overflowX: 'hidden', overflowY: 'hidden', height: 250, maxWidth: '85%',
+	            margin: '0 auto', whiteSpace: 'nowrap', position: 'relative'
+	        }, onMouseEnter: function () { _this.stopScrolling(); }, onMouseLeave: function () { _this.startScrolling(); }}, React.createElement("button", {className: 'primaryButton', style: { height: '100%', width: 40, position: 'absolute', left: 0, top: 0 }, onClick: function () { return _this.moveDemosRight(); }}, '<'), React.createElement("div", {style: { marginLeft: 25 }}, this.getDemos().map(function (d) { return d; })), React.createElement("button", {className: 'primaryButton', style: { height: '100%', width: 40, position: 'absolute', right: 0, top: 0 }, onClick: function () { return _this.moveDemosLeft(); }}, '>')), React.createElement("hr", null), infoBlocks, React.createElement("br", null), React.createElement("div", {style: { display: 'inline-flex', flexWrap: 'wrap', padding: 20 }}, React.createElement(Dropzone, {className: 'dropZone', style: dropStyle, onDrop: this.onDrop.bind(this), accept: '.mmap'}, this.props.state.fileName ?
+	            React.createElement("span", null, React.createElement("i", {className: 'fa fa-check', style: { color: '#549341', fontSize: 17 }}), this.props.state.fileName, React.createElement("div", {style: { margin: '0 auto' }}, React.createElement("button", {className: 'primaryButton', onClick: this.loadMap.bind(this)}, "Show me")))
 	            :
-	                React.createElement("div", {style: { margin: '0 auto' }}, "Drop a .mmap here or click to upload"))), React.createElement("div", {style: { width: '50%', display: 'inline-block' }}, React.createElement("h3", null, "Create a new map"), "Start creating your own map from here. Upload your file and get visualizin' in seconds!", React.createElement("br", null), React.createElement("button", {className: 'primaryButton', onClick: this.createNewMap.bind(this)}, "Create a map")))));
+	                React.createElement("div", {style: { margin: '0 auto' }}, "Drop a previously saved map here or click to upload")), React.createElement("button", {style: { margin: 60, width: 200 }, className: 'primaryButton', onClick: this.createNewMap.bind(this)}, "Create a new map"))));
 	    };
+	    WelcomeScreen.prototype.getDemoButtons = function () {
+	        var _this = this;
+	        var buttons = [];
+	        var _loop_1 = function(i) {
+	            buttons.push(React.createElement("button", {key: i, className: 'welcomeDemoButton' + (this_1.props.state.demoOrder[0] == i ? ' active' : ''), onClick: function () { _this.highlightDemo(i); }}));
+	        };
+	        var this_1 = this;
+	        for (var i = 0; i < this.props.state.demoOrder.length; i++) {
+	            _loop_1(i);
+	        }
+	        return buttons;
+	    };
+	    WelcomeScreen.prototype.getDemos = function () {
+	        var _this = this;
+	        var demos = [React.createElement(DemoPreview_1.DemoPreview, {key: 0, isHighlighted: this.props.state.demoOrder.indexOf(0) == 0, imageURL: 'demos/chorodemo.png', description: 'This demo shows the classic choropleth map by mapping the United States by population density.', loadDemo: this.loadDemo.bind(this, 'chorodemo'), onClick: function () { _this.highlightDemo(0); }}),
+	            React.createElement(DemoPreview_1.DemoPreview, {key: 1, isHighlighted: this.props.state.demoOrder.indexOf(1) == 0, imageURL: 'demos/symboldemo.png', description: 'This demo shows some of the different symbol options of MakeMaps.', loadDemo: this.loadDemo.bind(this, 'symboldemo'), onClick: function () { _this.highlightDemo(1); }}),
+	            React.createElement(DemoPreview_1.DemoPreview, {key: 2, isHighlighted: this.props.state.demoOrder.indexOf(2) == 0, imageURL: 'demos/hki_chartdemo.png', description: 'This demo shows the chart-as-a-symbol map by visualizing distribution between different traffic types in Helsinki using a pie chart. Data acquired from hri.fi', loadDemo: this.loadDemo.bind(this, 'hki_chartdemo'), onClick: function () { _this.highlightDemo(2); }}),
+	            React.createElement(DemoPreview_1.DemoPreview, {key: 3, isHighlighted: this.props.state.demoOrder.indexOf(3) == 0, imageURL: 'demos/hki_heatdemo.png', description: 'This demo showcases the heat map by visualizing the daily public transportation boardings by HSL', loadDemo: this.loadDemo.bind(this, 'hki_heatdemo'), onClick: function () { _this.highlightDemo(3); }}),
+	            React.createElement(DemoPreview_1.DemoPreview, {key: 4, isHighlighted: this.props.state.demoOrder.indexOf(4) == 0, imageURL: 'demos/clusterdemo.png', description: 'This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently', loadDemo: this.loadDemo.bind(this, 'clusterdemo'), onClick: function () { _this.highlightDemo(4); }})];
+	        var arr = [];
+	        for (var _i = 0, _a = this.props.state.demoOrder; _i < _a.length; _i++) {
+	            var i = _a[_i];
+	            arr.push(demos[i]);
+	        }
+	        return arr;
+	    };
+	    WelcomeScreen = __decorate([
+	        mobx_react_1.observer, 
+	        __metadata('design:paramtypes', [])
+	    ], WelcomeScreen);
 	    return WelcomeScreen;
 	}(React.Component));
 	exports.WelcomeScreen = WelcomeScreen;
@@ -106666,14 +106747,8 @@
 	var DemoPreview = (function (_super) {
 	    __extends(DemoPreview, _super);
 	    function DemoPreview() {
-	        _super.call(this);
-	        this.state = { overlayOpen: false };
+	        _super.apply(this, arguments);
 	    }
-	    DemoPreview.prototype.setOverlayState = function (state) {
-	        this.setState({
-	            overlayOpen: state
-	        });
-	    };
 	    DemoPreview.prototype.loadClicked = function () {
 	        this.props.loadDemo();
 	    };
@@ -106681,11 +106756,14 @@
 	        var style = {
 	            borderRadius: 15,
 	            backgroundImage: 'url(' + this.props.imageURL + ')',
-	            margin: 15,
-	            width: this.state.overlayOpen ? 400 : 200,
-	            height: 400,
+	            marginLeft: 15,
+	            height: '100%',
+	            width: '100%',
 	            display: 'inline-flex',
-	            position: 'relative'
+	            position: 'relative',
+	            MozUserSelect: 'none',
+	            WebkitUserSelect: 'none',
+	            msUserSelect: 'none'
 	        };
 	        var overlayStyle = {
 	            border: '1px solid #c1c1c1',
@@ -106695,11 +106773,11 @@
 	            whiteSpace: 'normal',
 	            zIndex: 90,
 	            background: 'white',
-	            bottom: 0.
+	            bottom: 0
 	        };
-	        return (React.createElement("div", {style: style, onMouseOver: this.setOverlayState.bind(this, true), onMouseLeave: this.setOverlayState.bind(this, false)}, this.state.overlayOpen ?
-	            React.createElement("div", {style: overlayStyle}, this.props.description, React.createElement("button", {className: 'primaryButton', style: { display: 'block', margin: '0 auto' }, onClick: this.loadClicked.bind(this)}, "Check it out"))
-	            : null));
+	        return (this.props.isHighlighted ?
+	            React.createElement("div", {style: style, onClick: this.props.onClick}, React.createElement("div", {style: overlayStyle}, this.props.description, React.createElement("button", {className: 'primaryButton', style: { display: 'block', margin: '0 auto' }, onClick: this.loadClicked.bind(this)}, "Check it out")))
+	            : null);
 	    };
 	    return DemoPreview;
 	}(React.Component));
