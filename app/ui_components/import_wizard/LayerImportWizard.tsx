@@ -108,6 +108,7 @@ export class LayerImportWizard extends React.Component<{
         switch (this.props.state.importWizardState.step) {
             case 0:
                 return <FileUploadView
+                    strings = {this.props.state.strings}
                     state={this.props.state.importWizardState}
                     saveValues={() => {
                         ShowLoading();
@@ -120,6 +121,7 @@ export class LayerImportWizard extends React.Component<{
                     />
             case 1:
                 return <FileDetailsView
+                    strings = {this.props.state.strings}
                     state={this.props.state.importWizardState}
                     saveValues={() => {
                         ShowLoading();

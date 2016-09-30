@@ -119,6 +119,7 @@ export class FilterMenu extends React.Component<{
     }
 
     render() {
+        let strings = this.props.state.strings;
         let layers = [];
         if (this.props.state.layers) {
             for (let layer of this.props.state.layers) {
@@ -137,7 +138,7 @@ export class FilterMenu extends React.Component<{
             <div className="makeMaps-options">
                 {filters ?
                     <div>
-                        <label>Select the filter to update</label>
+                        <label>{strings.selectFilter}</label>
                         <Select
                             options={filters}
                             onChange={(id: ISelectData) => {
@@ -147,15 +148,16 @@ export class FilterMenu extends React.Component<{
                             } }
                             value={filter}
                             valueRenderer={(v) => { return v.title } }
+                            placeholder={strings.selectPlaceholder}
                             />
-                        Or</div> : null}
-                <button className='menuButton' onClick={this.createNewFilter}>Create new filter</button>
+                        {strings.or}</div> : null}
+                <button className='menuButton' onClick={this.createNewFilter}>{strings.createNewFilter}</button>
                 <br/>
 
                 {filter ?
 
                     <div>
-                        <label>Select layer to attach filter to</label>
+                        <label>{strings.selectFilterLayer}</label>
                         <Select
                             options={layers}
                             onChange = {(val: { label: string, value: Layer }) => {
@@ -166,9 +168,10 @@ export class FilterMenu extends React.Component<{
                                 return option ? option.name : '';
                             } }
                             clearable={false}
+                            placeholder={strings.selectPlaceholder}
                             />
                         <br/>
-                        <label>Give a name to the filter
+                        <label>{strings.giveNameToFilter}
                             <input type="text" onChange={(e) => {
                                 filter.title = (e.target as any).value;
                             } } value={filter ? filter.title : ''}/>
@@ -176,17 +179,19 @@ export class FilterMenu extends React.Component<{
                         {filter.show ? <br/>
                             :
                             <div>
-                                <label>Select the filter variable
+                                <label>{strings.selectFilterVariable}
                                     <Select
                                         options={layer.headers.slice()}
                                         onChange={this.onFilterVariableChange}
                                         value={filter ? filter.fieldToFilter : ''}
+                                        placeholder={strings.selectPlaceholder}
+                                        clearable={false}
                                         />
                                 </label>
                             </div>
                         }
                         <label forHTML='steps'>
-                            Use predefined steps
+                            {strings.filterUseSteps}
                             <input
                                 type='checkbox'
                                 onChange={(e) => {
@@ -201,7 +206,7 @@ export class FilterMenu extends React.Component<{
                         {filter.fieldToFilter.type !== 'string' && state.useCustomSteps && filter.totalMin !== undefined && filter.totalMax !== undefined ?
                             <div>
                                 <label forHTML='dist'>
-                                    Use distinct values
+                                    {strings.filterUseDistinctValues}
                                     <input
                                         type='checkbox'
                                         onChange={(e) => {
@@ -222,7 +227,7 @@ export class FilterMenu extends React.Component<{
                         {layer.layerType === LayerTypes.HeatMap ? null :
                             <div>
                                 <label forHTML='remove'>
-                                    Remove filtered items
+                                    {strings.filterRemove}
                                     <input
                                         type='radio'
                                         onChange={() => {
@@ -236,10 +241,10 @@ export class FilterMenu extends React.Component<{
                                         />
                                 </label>
                                 <br/>
-                                Or
+                                {strings.or}
                                 <br/>
                                 <label forHTML='opacity' style={{ marginTop: 0 }}>
-                                    Change opacity
+                                    {strings.filterChangeOpacity}
                                     <input
                                         type='radio'
                                         onChange={() => {
@@ -256,12 +261,12 @@ export class FilterMenu extends React.Component<{
                             </div>
                         }
                         {filter.show ?
-                            <button className='menuButton' onClick={this.deleteFilter}>Delete filter</button>
+                            <button className='menuButton' onClick={this.deleteFilter}>{strings.deleteFilter}</button>
                             :
-                            <button className='menuButton' onClick={this.saveFilter}>Save filter</button>}
+                            <button className='menuButton' onClick={this.saveFilter}>{strings.saveFilter}</button>}
 
                         <br/>
-                        <i>TIP: drag the filter on screen by the header to place it where you wish</i>
+                        <i>{strings.filterDragTip}</i>
                     </div>
 
                     :

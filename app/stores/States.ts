@@ -2,6 +2,8 @@ import { observable, computed, autorun } from 'mobx';
 import { Layer, LayerTypes, Header } from './Layer';
 import { Filter } from './Filter';
 import { Legend } from './Legend';
+import { Strings } from '../localizations/strings';
+
 let mobx = require('mobx');
 
 
@@ -67,6 +69,8 @@ export class AppState {
     @observable autoRefresh: boolean = true;
 
     @observable embed: boolean = false;
+
+    strings: Strings;
 
     map: L.Map;
 }

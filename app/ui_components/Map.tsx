@@ -388,8 +388,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
 
     render() {
-        //Hack - get all the string options visible in the IDE
-        let strings: Strings = (locale as any);
         let modalStyle = {
             content: {
                 border: '1px solid #cecece',
@@ -398,7 +396,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                 maxWidth: 1900,
             }
         }
-        console.log(strings.layerMenuTitle)
         return (
             <div>
                 <div id='map'>
@@ -411,6 +408,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                             isOpen={this.props.state.welcomeShown}
                             style = {modalStyle}>
                             <WelcomeScreen
+                                strings = {this.props.state.strings}
                                 state={new WelcomeScreenState()}
                                 loadMap={this.loadSavedMap.bind(this)}
                                 openLayerImport={this.startLayerImport.bind(this)}
@@ -440,14 +438,14 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                 }
 
                 <div className='notification' id='loading'>
-                    <span style={{ lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}>Loading</span>
+                    <span style={{ lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}>{this.props.state.strings.loading}</span>
                     <div className="sk-double-bounce">
                         <div className="sk-child sk-double-bounce1"></div>
                         <div className="sk-child sk-double-bounce2"></div>
                     </div>
                 </div>
                 <div className='notification' id='notification'>
-                    <span id='notificationText' style={{ lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}>Notification</span>
+                    <span id='notificationText' style={{ lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}>{this.props.state.strings.notification}</span>
                     <br/>
                     <button className='menuButton' onClick={() => { HideNotification() } }>Ok</button>
                 </div>
@@ -460,6 +458,10 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
 var Map = MapMain;
 const state = new AppState();
+// locale.setLanguage('fi');
+//Hack - get all the string options visible in the IDE
+let strings: Strings = (locale as any);
+state.strings = strings;
 ReactDOM.render(
     <Map state={state}/>, document.getElementById('content')
 );

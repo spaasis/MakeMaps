@@ -13,28 +13,38 @@ export class ExportMenu extends React.Component<{
 }, {}>{
 
     render() {
+        let strings = this.props.state.strings;
         return (
             <div>
-                <label htmlFor='showLegend'>Show legend on the image</label>
-                <input id='showLegend' type='checkbox' checked={this.props.state.exportMenuState.showLegend} onChange={(e) => {
-                    this.props.state.exportMenuState.showLegend = (e.currentTarget as any).checked;
-                } }/>
-                <br/>
-                <label htmlFor='showFilters'>Show filters on the image</label>
-                <input id='showFilters' type='checkbox' checked={this.props.state.exportMenuState.showFilters}
-                    onChange={(e) => {
-                        this.props.state.exportMenuState.showFilters = (e.currentTarget as any).checked;
-                    } }/>
-                <br/>
+                {this.props.state.legend.visible ?
+                    <div>
+                        <label htmlFor='showLegend'>{strings.downloadShowLegend}</label>
+                        <input id='showLegend' type='checkbox' checked={this.props.state.exportMenuState.showLegend} onChange={(e) => {
+                            this.props.state.exportMenuState.showLegend = (e.currentTarget as any).checked;
+                        } }/>
+                        <br/>
+                    </div> : null
+                }
+                {this.props.state.filters.length > 0 ?
+                    <div>
+                        <label htmlFor='showFilters'>{strings.downloadShowFilters}</label>
+                        <input id='showFilters' type='checkbox' checked={this.props.state.exportMenuState.showFilters}
+                            onChange={(e) => {
+                                this.props.state.exportMenuState.showFilters = (e.currentTarget as any).checked;
+                            } }/>
+                        <br/>
+                    </div> : null
+                }
+
                 <button className='menuButton' onClick={() => {
                     this.props.saveImage();
-                } }>Download map as image</button>
+                } }>{strings.saveAsImage}</button>
                 <br/>
-                Or
+                {strings.or}
                 <br/>
                 <button className='menuButton' onClick={() => {
                     this.props.saveFile();
-                } }>Download map as a file</button>
+                } }>{strings.saveAsFile}</button>
 
                 <br/>
 

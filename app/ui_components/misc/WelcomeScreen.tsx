@@ -3,10 +3,16 @@ import { DemoPreview } from './DemoPreview';
 let Dropzone = require('react-dropzone');
 import { LoadExternalMap, ShowLoading, ShowNotification } from '../../common_items/common';
 import { WelcomeScreenState } from '../../stores/States';
+import { Strings } from '../../localizations/strings';
 
 import { observer } from 'mobx-react';
 @observer
-export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, loadMap: (json) => void, openLayerImport: () => void }, {}>{
+export class WelcomeScreen extends React.Component<{
+    state: WelcomeScreenState,
+    loadMap: (json) => void,
+    openLayerImport: () => void,
+    strings: Strings,
+}, {}>{
 
     componentDidMount() {
         this.startScrolling();
@@ -87,10 +93,10 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
 
 
     render() {
-
+        let strings = this.props.strings;
         let dropStyle = {
 
-            lineHeight: this.props.state.fileName ? '60px' : '150px',
+            lineHeight: '60px',
             width: 500,
         }
 
@@ -99,33 +105,31 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
         let infoBlocks =
             <div style={{ display: 'inline-flex', flexWrap: 'wrap', maxWidth: '85%' }}>
                 <div style={infoDivStyle}>
-                    <b style={{ display: 'block' }}>Openness</b>
+                    <b style={{ display: 'block' }}>{strings.welcomeOpenness}</b>
                     <a style={{ textDecoration: 'none' }} target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps"><i className='fa fa-github-square' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/></a>
-                    MakeMaps is built as open source, on open source libraries, with open data in mind.<br/> See us at <a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps">GitHub</a>
+                    {strings.welcomeOpennessText1}<br/>{strings.welcomeOpennessText2}<a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps">GitHub</a>
                 </div>
                 <div style={infoDivStyle}>
-                    <b style={{ display: 'block' }}>Accessibility</b>
+                    <b style={{ display: 'block' }}>{strings.welcomeAccessibility}</b>
                     <i className='fa fa-eye' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/>
-                    MakeMaps offers a selection of color schemes
-                    from
-                    <a target="_blank" rel="noopener noreferrer" href="http://colorbrewer2.org/"> Color Brewer </a>
-                    that are easily viewable to all kinds of users
+                    {strings.welcomeAccessibilityText1}
+                    <a target="_blank" rel="noopener noreferrer" href="http://colorbrewer2.org/">Color Brewer</a>
+                    {strings.welcomeAccessibilityText2}
                 </div>
                 <div style={infoDivStyle}>
-                    <b style={{ display: 'block' }}>Ease of use</b>
+                    <b style={{ display: 'block' }}>{strings.welcomeUsability}</b>
                     <i className='fa fa-bolt' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/>
-                    You can create powerful visualizations and easy-to-read maps with just a few clicks.
-                    See the <a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps/wiki">Project Wiki</a> for user guides and more
+                    {strings.welcomeUsabilityText1} <a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps/wiki">{strings.wiki}</a> {strings.welcomeUsabilityText2}
                 </div>
                 <div style={infoDivStyle}>
-                    <b style={{ display: 'block' }}>File support</b>
+                    <b style={{ display: 'block' }}>{strings.welcomeFileSupport}</b>
                     <i className='fa fa-file-text-o' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/>
-                    MakeMaps can create maps from XLSX,CSV,KML and GPX file formats, among others.<br/><a target="_blank" rel="noopener noreferrer"  href="https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements">Full list and details</a>
+                    {strings.welcomeFileSupportText}<br/><a target="_blank" rel="noopener noreferrer"  href="https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements">{strings.welcomeFileSupportLink}</a>
                 </div>
                 <div style={infoDivStyle}>
-                    <b style={{ display: 'block' }}>Data filtering</b>
+                    <b style={{ display: 'block' }}>{strings.welcomeDataFiltering}</b>
                     <i className='fa fa-sliders' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/>
-                    MakeMaps allows for dynamic data filtering on the fly. You can set your own filter steps, filter by unique values or anything in between
+                    {strings.welcomeDataFilteringText}
                 </div>
             </div>;
 
@@ -168,16 +172,16 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
                             <i className='fa fa-check' style={{ color: '#549341', fontSize: 17 }}/>
                             {this.props.state.fileName}
                             <div style={{ margin: '0 auto' }}>
-                                <button  className='primaryButton' onClick={this.loadMap.bind(this)}>Show me</button>
+                                <button  className='primaryButton' onClick={this.loadMap.bind(this)}>{strings.openSavedMapButton}</button>
                             </div>
                         </span>
                         :
                         <div style={{ margin: '0 auto' }}>
-                            Drop a previously saved map here or click to upload
+                            {strings.uploadMapDropBoxText}
                         </div>
                     }
                 </Dropzone>
-                <button style={{ margin: 60, width: 200 }} className='primaryButton' onClick={this.createNewMap.bind(this)}>Create a new map</button>
+                <button style={{ margin: 60, width: 200 }} className='primaryButton' onClick={this.createNewMap.bind(this)}>{strings.createNewMap}</button>
             </div>
         </div >);
     }
@@ -196,44 +200,49 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
     }
 
     getHighlightedDemo() {
-
+        let strings = this.props.strings;
         let demos = [<DemoPreview
             key={0}
+            strings = {strings}
             isHighlighted={this.props.state.demoOrder.indexOf(0) == 0}
             imageURL='demos/chorodemo.png'
-            description='This demo shows the classic choropleth map by mapping the United States by population density.'
+            description={strings.chorodemoDescription}
             loadDemo={this.loadDemo.bind(this, 'chorodemo')}
             onClick={() => { this.highlightDemo(0) } }
             />,
         <DemoPreview
             key={1}
+            strings = {strings}
             isHighlighted={this.props.state.demoOrder.indexOf(1) == 0}
             imageURL='demos/symboldemo.png'
-            description='This demo shows some of the different symbol options of MakeMaps.'
+            description={strings.symboldemoDescription}
             loadDemo={this.loadDemo.bind(this, 'symboldemo')}
             onClick={() => { this.highlightDemo(1) } }
             />,
         <DemoPreview
             key={2}
+            strings = {strings}
             isHighlighted={this.props.state.demoOrder.indexOf(2) == 0}
             imageURL='demos/hki_chartdemo.png'
-            description='This demo shows the chart-as-a-symbol map by visualizing distribution between different traffic types in Helsinki using a pie chart. Data acquired from hri.fi'
+            description={strings.chartDemoDescription}
             loadDemo={this.loadDemo.bind(this, 'hki_chartdemo')}
             onClick={() => { this.highlightDemo(2) } }
             />,
         <DemoPreview
             key={3}
+            strings = {strings}
             isHighlighted={this.props.state.demoOrder.indexOf(3) == 0}
             imageURL='demos/hki_heatdemo.png'
-            description='This demo showcases the heat map by visualizing the daily public transportation boardings by HSL'
+            description={strings.heatDemoDescription}
             loadDemo={this.loadDemo.bind(this, 'hki_heatdemo')}
             onClick={() => { this.highlightDemo(3) } }
             />,
         <DemoPreview
             key={4}
+            strings = {strings}
             isHighlighted={this.props.state.demoOrder.indexOf(4) == 0}
             imageURL='demos/clusterdemo.png'
-            description='This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently'
+            description={strings.clusterDemoDescription}
             loadDemo={this.loadDemo.bind(this, 'clusterdemo')}
             onClick={() => { this.highlightDemo(4) } }
             />];

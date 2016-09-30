@@ -254,6 +254,7 @@ export class SymbolMenu extends React.Component<{
     }
 
     render() {
+        let strings = this.props.state.strings;
         let layer = this.props.state.editingLayer;
         let sym: SymbolOptions = layer.symbolOptions;
         let state: SymbolMenuState = this.props.state.symbolMenuState;
@@ -290,15 +291,15 @@ export class SymbolMenu extends React.Component<{
                 style={iconSelectStyle}
                 >
                 {state.iconSelectOpen ? <div>
-                    Icon
+                    {strings.icon}
                     {this.renderIcons.call(this)}
-                    Or
+                    {strings.or}
                     <br/>
-                    <label>Use another <a href='http://fontawesome.io/icons/'>Font Awesome</a> icon</label>
+                    <label>{strings.symbolMenuUseFAIcon} <a href='http://fontawesome.io/icons/'>Font Awesome</a></label>
                     <input type="text" onChange={this.onFAIconChange} value={sym.icons[state.currentIconIndex].fa}/>
 
                     <br/>
-                    Icon shape
+                    {strings.iconShape}
                     <br/>
                     <div
                         style ={{ display: 'inline-block' }}
@@ -332,11 +333,11 @@ export class SymbolMenu extends React.Component<{
         return (
 
             <div className="makeMaps-options">
-                <label>Select symbol type </label>
+                <label>{strings.selectSymbolType}</label>
                 <br/>
                 <label forHTML='circle'>
                     <i style={{ margin: 4 }} className='fa fa-circle-o'/>
-                    Simple
+                    {strings.symbolTypeSimple}
                     <input
                         type='radio'
                         onChange={this.onTypeChange.bind(this, SymbolTypes.Simple)}
@@ -348,7 +349,7 @@ export class SymbolMenu extends React.Component<{
                 </label>
                 <label forHTML='icon'>
                     <i style={{ margin: 4 }} className='fa fa-map-marker'/>
-                    Icon
+                    {strings.icon}
                     <input
                         type='radio'
                         onChange={this.onTypeChange.bind(this, SymbolTypes.Icon)}
@@ -360,7 +361,7 @@ export class SymbolMenu extends React.Component<{
                 </label>
                 <label forHTML='chart'>
                     <i style={{ margin: 4 }} className='fa fa-pie-chart'/>
-                    Chart
+                    {strings.symbolTypeChart}
                     <input
                         type='radio'
                         onChange={this.onTypeChange.bind(this, SymbolTypes.Chart)}
@@ -372,7 +373,7 @@ export class SymbolMenu extends React.Component<{
                 </label>
                 <label forHTML='blocks'>
                     <i style={{ margin: 4 }} className='fa fa-th-large'/>
-                    Blocks
+                    {strings.symbolTypeBlocks}
                     <input
                         type='radio'
                         onChange={this.onTypeChange.bind(this, SymbolTypes.Blocks)}
@@ -384,22 +385,24 @@ export class SymbolMenu extends React.Component<{
                 </label>
                 {sym.symbolType !== SymbolTypes.Icon ?
                     <div>
-                        <label>Scale {sym.symbolType === SymbolTypes.Simple ? 'width' : 'size'} by</label>
+                        <label>{strings.symbolMenuScale1 + (sym.symbolType === SymbolTypes.Simple ? strings.width : strings.size) + strings.symbolMenuScale2}</label>
                         <Select
                             options={layer.numberHeaders}
                             onChange={this.onXVariableChange}
                             value={sym.symbolType === SymbolTypes.Blocks ? sym.blockSizeVar : sym.sizeXVar}
                             clearable={sym.symbolType !== SymbolTypes.Blocks}
+                            placeholder= {strings.selectPlaceholder}
                             />
 
                         {sym.symbolType === SymbolTypes.Simple ? <div>
-                            <label>Scale height by</label>
+                            <label>{strings.symbolMenuScaleHeight}</label>
                             <Select
                                 options={layer.numberHeaders}
                                 onChange={this.onYVariableChange}
                                 value={sym.sizeYVar}
+                                placeholder= {strings.selectPlaceholder}
                                 />
-                            <label>Border radius
+                            <label>{strings.borderRadius}
                                 <input type='number' value={sym.borderRadius} onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
                                     if (sym.borderRadius != val) {
@@ -412,7 +415,7 @@ export class SymbolMenu extends React.Component<{
                         </div> : null}
                         {sym.symbolType !== SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar) ?
                             <div>
-                                <label>Size multiplier
+                                <label>{strings.sizeMultiplier}
                                     <input type='number' value={sym.sizeMultiplier} onChange={(e) => {
                                         let val = (e.currentTarget as any).valueAsNumber;
                                         if (sym.sizeMultiplier != val) {
@@ -423,7 +426,7 @@ export class SymbolMenu extends React.Component<{
                                     } } min={0.1} max={10} step={0.1}/>
                                 </label>
                                 <br/>
-                                <label>Size lower limit
+                                <label>{strings.sizeLowLimit}
                                     <input type='number' value={sym.sizeLowLimit} onChange={(e) => {
                                         let val = (e.currentTarget as any).valueAsNumber;
                                         if (sym.sizeLowLimit != val) {
@@ -434,7 +437,7 @@ export class SymbolMenu extends React.Component<{
                                     } } min={0}/>
                                 </label>
                                 <br/>
-                                <label>Size upper limit
+                                <label>{strings.sizeUpLimit}
                                     <input type='number' value={sym.sizeUpLimit} onChange={(e) => {
                                         let val = (e.currentTarget as any).valueAsNumber;
                                         if (sym.sizeUpLimit != val) {
@@ -452,20 +455,21 @@ export class SymbolMenu extends React.Component<{
                 {
                     sym.symbolType === SymbolTypes.Icon ?
                         <div>
-                            <label htmlFor='iconSteps'>Use multiple icons</label>
+                            <label htmlFor='iconSteps'>{strings.useMultipleIcons}</label>
                             <input id='iconSteps' type='checkbox' onChange={this.onUseIconStepsChange} checked={sym.useMultipleIcons}/>
 
                             {sym.useMultipleIcons ?
                                 <div>
-                                    <label>Field to change icon by</label>
+                                    <label>{strings.iconField}</label>
                                     <Select
                                         options={layer.headers.slice()}
                                         onChange={this.onIconFieldChange}
                                         value={sym.iconField}
                                         clearable={false}
+                                        placeholder={strings.selectPlaceholder}
                                         />
                                     {sym.iconField && sym.iconField.type == 'number' ?
-                                        <div>Set the <i>lower limit</i> and icon
+                                        <div>{strings.iconStepHelp}
                                             <br/>
                                             <button onClick={this.onIconStepCountChange.bind(this, -1)}>-</button>
                                             <button onClick={this.onIconStepCountChange.bind(this, 1)}>+</button>
@@ -476,31 +480,31 @@ export class SymbolMenu extends React.Component<{
                                 </div>
                                 :
                                 <div>
-                                    Set icon
+                                    {strings.setIcon}
                                     {this.getIcon(sym.icons[0].shape, sym.icons[0].fa, '#999999', 'transparent', this.toggleIconSelect.bind(this, 0))}
 
                                 </div>
                             }
                             <br/>
-                            Change icon colors in the color menu
+                            {strings.iconColorHelp}
                         </div>
                         : null
                 }
                 {sym.symbolType === SymbolTypes.Chart ?
                     <div>
-                        <label>Select the variables to show</label>
+                        <label>{strings.selectHeadersToShow}</label>
                         <Select
                             options={layer.numberHeaders}
                             multi
                             onChange={this.onChartFieldsChange}
                             value={sym.chartFields.slice()}
                             backspaceRemoves={false}
-
+                            placeholder={strings.selectPlaceholder}
                             />
-                        Chart type
+                        {strings.chartType}
                         <br/>
                         <label forHTML='pie'>
-                            Pie
+                            {strings.chartTypePie}
                             <input
                                 type='radio'
                                 onChange={() => {
@@ -515,7 +519,7 @@ export class SymbolMenu extends React.Component<{
 
                         </label>
                         <label forHTML='donut'>
-                            Donut
+                            {strings.chartTypeDonut}
                             <input
                                 type='radio'
                                 onChange={() => {
@@ -530,14 +534,14 @@ export class SymbolMenu extends React.Component<{
 
                         </label>
                         <br/>
-                        <i>TIP: hover over symbol segments to see corresponding value</i>
+                        <i>{strings.symbolMenuChartTip}</i>
                     </div>
 
                     : null
                 }
                 {sym.symbolType === SymbolTypes.Blocks ?
                     <div>
-                        <label>Single block value
+                        <label>{strings.singleBlockValue}
                             <input type='number' value={sym.blockValue}
                                 onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
@@ -549,7 +553,7 @@ export class SymbolMenu extends React.Component<{
                                 } }
                                 min={1}/>
                         </label>
-                        <label>Single block width
+                        <label>{strings.singleBlockWidth}
                             <input type='number' value={sym.blockWidth}
                                 onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
@@ -561,7 +565,7 @@ export class SymbolMenu extends React.Component<{
                                 } }
                                 min={1}/>
                         </label>
-                        <label>Max. width
+                        <label>{strings.maxBlockColumns}
                             <input type='number' value={sym.maxBlockColumns}
                                 onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
@@ -573,7 +577,7 @@ export class SymbolMenu extends React.Component<{
                                 } }
                                 min={1}/>
                         </label>
-                        <label>Max. height
+                        <label>{strings.maxBlockRows}
                             <input type='number' value={sym.maxBlockRows}
                                 onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
@@ -590,7 +594,7 @@ export class SymbolMenu extends React.Component<{
 
                 }
                 {autoRefresh ? null :
-                    <button className='menuButton' onClick={() => { layer.refresh() } }>Refresh map</button>
+                    <button className='menuButton' onClick={() => { layer.refresh() } }>{strings.refreshMap}</button>
                 }
                 {iconSelect}
             </div >

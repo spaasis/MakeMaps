@@ -17,7 +17,7 @@ export class PopUpMenu extends React.Component<{
         let layer = this.props.state.editingLayer;
         if (e === null)
             e = [];
-        layer.popupHeaders=[] //empty headers
+        layer.popupHeaders = [] //empty headers
         for (let i of e) { //add new headers
             layer.popupHeaders.push(i);
         }
@@ -26,20 +26,22 @@ export class PopUpMenu extends React.Component<{
 
     }
     render() {
+        let strings = this.props.state.strings;
         let layer = this.props.state.editingLayer;
         return (<div className="makeMaps-options">
-            <label>Select the variables to show</label>
+            <label>{strings.selectHeadersToShow}</label>
             <Select
                 options={layer.headers.slice()}
                 multi
                 onChange={this.onSelectionChange}
                 value={layer.popupHeaders.slice()}
                 backspaceRemoves={false}
+                placeholder={strings.selectPlaceholder}
                 />
 
             <div>
                 <label forHTML='click'>
-                    Open on click
+                    {strings.showPopupOnClick}
                     <input
                         type='radio'
                         onChange={() => {
@@ -54,10 +56,10 @@ export class PopUpMenu extends React.Component<{
                         />
                 </label>
                 <br/>
-                Or
+                {strings.or}
                 <br/>
                 <label forHTML='hover' style={{ marginTop: 0 }}>
-                    Open on hover
+                    {strings.showPopUpOnHover}
                     <input
                         type='radio'
                         onChange={() => {
@@ -75,10 +77,10 @@ export class PopUpMenu extends React.Component<{
             {this.props.state.autoRefresh ? null :
                 <button className='menuButton' onClick={() => {
                     this.saveValues();
-                } }>Refresh map</button>
+                } }>{strings.refreshMap}</button>
             }
             <br/>
-            <i>Pop-ups show information about map features, such as points and areas. Select the data you wish to show, and the method by which the pop-up is opened.</i>
+            <i>{strings.popupHelp}</i>
         </div >
         );
     }

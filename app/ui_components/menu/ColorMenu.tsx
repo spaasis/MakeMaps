@@ -191,6 +191,7 @@ export class ColorMenu extends React.Component<{
 
 
     render() {
+        let strings = this.props.state.strings;
         let layer = this.props.state.editingLayer;
         let col = layer.colorOptions;
 
@@ -256,8 +257,9 @@ export class ColorMenu extends React.Component<{
         </Modal>;
 
         let stepModes = <div>
+            {strings.selectStepCalculationMode}
             <label forHTML='quantiles'>
-                Quantiles
+                {strings.colorStepQuantiles}
                 <input
                     type='radio'
                     onChange={() => { col.mode = 'q'; this.calculateValues(); } }
@@ -268,7 +270,7 @@ export class ColorMenu extends React.Component<{
                 <br/>
             </label>
             <label forHTML='kmeans'>
-                K-means
+                {strings.colorStepKMeans}
                 <input
                     type='radio'
                     onChange={() => { col.mode = 'k'; this.calculateValues(); } }
@@ -280,7 +282,7 @@ export class ColorMenu extends React.Component<{
 
             </label>
             <label forHTML='equidistant'>
-                Equidistant
+                {strings.colorStepEquidistant}
                 <input
                     type='radio'
                     onChange={() => { col.mode = 'e'; this.calculateValues(); } }
@@ -296,12 +298,12 @@ export class ColorMenu extends React.Component<{
         let colorBlocks = <div>
             {col.useMultipleFillColors || isHeat || isChart ?
                 null :
-                <div className='colorBlock' style={fillColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'fillColor')}>Fill</div>
+                <div className='colorBlock' style={fillColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'fillColor')}>{strings.fillColor}</div>
             }
             {isHeat ? null :
                 <div className='colorBlock'
                     style={{ background: col.color, border: '1px solid ' + col.color, cursor: 'pointer' }}
-                    onClick={this.toggleColorPick.bind(this, 'borderColor')}>Border
+                    onClick={this.toggleColorPick.bind(this, 'borderColor')}>{strings.border}
                     <input type='number' min={0} max={15} step={1} value={col.weight} style={{ position: 'absolute', right: 0, width: 50 }}
                         onClick={(e) => { e.stopPropagation(); } }
                         onChange={(e) => {
@@ -314,16 +316,15 @@ export class ColorMenu extends React.Component<{
                 </div>
             }
             {!isHeat && layer.symbolOptions.symbolType === SymbolTypes.Icon ?
-                <div className='colorBlock' style={iconTextColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'iconTextColor')}>Icon</div>
+                <div className='colorBlock' style={iconTextColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'iconTextColor')}>{strings.icon}</div>
                 : null
             }
-
         </div>
 
         let colorSchemeOptions = <div>
-            Or
+            {strings.or}
             <br/>
-            <label>Select a color scheme</label>
+            <label>{strings.selectColorScheme}</label>
             <Select
                 clearable = {false}
                 searchable = {false}
@@ -338,7 +339,7 @@ export class ColorMenu extends React.Component<{
                 } }
                 value={col.colorScheme}
                 />
-            <label htmlFor='revertSelect'>Revert</label>
+            <label htmlFor='revertSelect'>{strings.revert}</label>
             <input
                 id='revertSelect'
                 type='checkbox'
@@ -352,7 +353,7 @@ export class ColorMenu extends React.Component<{
         return (
             <div className="makeMaps-options">
                 {isHeat || isChart ? null :
-                    <label htmlFor='multipleSelect'>Use multiple fill colors
+                    <label htmlFor='multipleSelect'>{strings.useMultipleFillColors}
                         <input
                             id='multipleSelect'
                             type='checkbox'
@@ -365,7 +366,7 @@ export class ColorMenu extends React.Component<{
                     </label>
                 }
                 {colorBlocks}
-                <label>Opacity
+                <label>{strings.opacity}
                     <input type='number' max={1} min={0} step={0.1}
                         onChange={(e) => {
                             let val: number = (e.target as any).valueAsNumber;
@@ -385,7 +386,7 @@ export class ColorMenu extends React.Component<{
                     (col.useMultipleFillColors || isHeat) && !isChart ?
                         <div>
                             <div>
-                                <label>Select color variable</label>
+                                <label>{strings.selectColorVariable}</label>
                                 <Select
                                     options={layer.headers.slice()}
                                     onChange={(e: Header) => {
@@ -396,12 +397,13 @@ export class ColorMenu extends React.Component<{
                                     } }
                                     value={col.colorField}
                                     clearable={false}
+                                    placeholder= {strings.selectPlaceholder}
                                     />
                             </div>
 
                             {col.colorField && !fieldIsString ?
                                 <div>
-                                    <label htmlFor='customScale'>Set custom scheme</label>
+                                    <label htmlFor='customScale'>{strings.setCustomScheme}</label>
                                     <input
                                         id='customScale'
                                         type='checkbox'
@@ -413,7 +415,7 @@ export class ColorMenu extends React.Component<{
                                         :
                                         colorSchemeOptions
                                     }
-                                    <label>Steps</label>
+                                    <label>{strings.steps}</label>
                                     <input
                                         type='number'
                                         max={layer.uniqueValues[col.colorField.value].length}
@@ -429,7 +431,7 @@ export class ColorMenu extends React.Component<{
                                         value={col.steps}/>
                                     {col.useCustomScheme ?
                                         <div>
-                                            Set the <i>lower limit</i> for each step and a color to match
+                                            {strings.colorMenuStepHelp}
                                             {this.renderSteps()}
                                         </div>
                                         :
@@ -437,7 +439,7 @@ export class ColorMenu extends React.Component<{
                                     }
                                     {isHeat ?
                                         <div>
-                                            Set the heatmap radius
+                                            {strings.heatMapRadius}
                                             <input
                                                 type='number'
                                                 max={100}
@@ -467,7 +469,7 @@ export class ColorMenu extends React.Component<{
                 {autoRefresh ? null :
                     <button className='menuButton' onClick={() => {
                         this.props.state.editingLayer.refresh();
-                    } }>Refresh map</button>
+                    } }>{strings.refreshMap}</button>
                 }
             </div >
         );

@@ -380,6 +380,7 @@ export class Layer {
             icon = L.divIcon({
                 html: html, className: '',
                 iconAnchor: L.point(25, 25),
+                popupAnchor: L.point(500, 500),
             });
 
 
