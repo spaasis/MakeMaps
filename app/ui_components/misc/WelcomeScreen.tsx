@@ -132,7 +132,7 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
         return (<div style={{ textAlign: 'center' }}>
             <div style={{ display: 'block', margin: '0 auto', padding: 5 }}>
                 <img src='app/images/favicon.png' style={{ display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }}/>
-                <img src='app/images/logo_pre.png' style={{ display: 'inline-block', verticalAlign: 'middle' }}/>
+                <img src='app/images/logo.png' style={{ display: 'inline-block', verticalAlign: 'middle' }}/>
                 <img src='app/images/favicon.png' style={{ display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }}/>
 
             </div>
@@ -178,6 +178,8 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
                 <button key={i}
                     className={'welcomeDemoButton' + (this.props.state.demoOrder[0] == i ? ' active' : '')}
                     onClick={() => { this.highlightDemo(i) } }
+                    onMouseEnter={() => { this.stopScrolling() } }
+                    onMouseLeave={() => { this.startScrolling() } }
                     />
             );
         }
@@ -188,7 +190,6 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
 
         let demos = [<DemoPreview
             key={0}
-            isHighlighted={this.props.state.demoOrder.indexOf(0) == 0}
             imageURL='demos/chorodemo.png'
             description='This demo shows the classic choropleth map by mapping the United States by population density.'
             loadDemo={this.loadDemo.bind(this, 'chorodemo')}
@@ -196,7 +197,6 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
             />,
         <DemoPreview
             key={1}
-            isHighlighted={this.props.state.demoOrder.indexOf(1) == 0}
             imageURL='demos/symboldemo.png'
             description='This demo shows some of the different symbol options of MakeMaps.'
             loadDemo={this.loadDemo.bind(this, 'symboldemo')}
@@ -204,7 +204,6 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
             />,
         <DemoPreview
             key={2}
-            isHighlighted={this.props.state.demoOrder.indexOf(2) == 0}
             imageURL='demos/hki_chartdemo.png'
             description='This demo shows the chart-as-a-symbol map by visualizing distribution between different traffic types in Helsinki using a pie chart. Data acquired from hri.fi'
             loadDemo={this.loadDemo.bind(this, 'hki_chartdemo')}
@@ -212,7 +211,6 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
             />,
         <DemoPreview
             key={3}
-            isHighlighted={this.props.state.demoOrder.indexOf(3) == 0}
             imageURL='demos/hki_heatdemo.png'
             description='This demo showcases the heat map by visualizing the daily public transportation boardings by HSL'
             loadDemo={this.loadDemo.bind(this, 'hki_heatdemo')}
@@ -220,7 +218,6 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
             />,
         <DemoPreview
             key={4}
-            isHighlighted={this.props.state.demoOrder.indexOf(4) == 0}
             imageURL='demos/clusterdemo.png'
             description='This clustering demo utilizes the same data from HSL as the heatmap. Clustering is another excellent way to display large datasets efficiently'
             loadDemo={this.loadDemo.bind(this, 'clusterdemo')}

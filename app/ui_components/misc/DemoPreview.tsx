@@ -3,7 +3,6 @@ export class DemoPreview extends React.Component<{
     imageURL: string,
     description: string,
     loadDemo: () => void,
-    isHighlighted: boolean,
     onClick: () => void,
 }
     , {}>{
@@ -12,14 +11,14 @@ export class DemoPreview extends React.Component<{
     }
     render() {
         let style = {
-            backgroundImage: 'url(' + this.props.imageURL + ')',
             height: '100%',
             width: '100%',
             display: 'inline-flex',
             position: 'relative',
             MozUserSelect: 'none',
             WebkitUserSelect: 'none',
-            msUserSelect: 'none'
+            msUserSelect: 'none',
+            overflowX: 'hidden'
         };
         let overlayStyle = {
             border: '1px solid #c1c1c1',
@@ -29,19 +28,18 @@ export class DemoPreview extends React.Component<{
             whiteSpace: 'normal',
             zIndex: 90,
             background: 'white',
-            bottom: 0
+            bottom: 0,
+            left: 0,
         }
         return (
-            this.props.isHighlighted ?
-                <div style = {style} onClick={this.props.onClick}>
-
-                    <div style={overlayStyle}>
-                        {this.props.description}
-                        <button className='primaryButton' style={{ display: 'block', margin: '0 auto' }} onClick={this.loadClicked.bind(this)}>Check it out</button>
-                    </div>
-
+            <div style = {style}>
+                <img  className='demoImage' src = {this.props.imageURL}/>
+                <div style={overlayStyle}>
+                    {this.props.description}
+                    <button className='primaryButton' style={{ display: 'block', margin: '0 auto' }} onClick={this.loadClicked.bind(this)}>Check it out</button>
                 </div>
-                : null
+
+            </div>
         )
     }
 }
