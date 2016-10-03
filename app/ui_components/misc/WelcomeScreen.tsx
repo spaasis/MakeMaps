@@ -56,7 +56,7 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
         let reader = new FileReader();
         let fileName, content;
         let state = this.props.state;
-
+        let load = this.loadMap.bind(this);
         reader.onload = contentUploaded.bind(this);
         files.forEach((file) => {
             fileName = file.name;
@@ -68,6 +68,7 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
             if (ext === 'mmap') {
                 state.loadedMap = JSON.parse(contents.result);
                 state.fileName = fileName;
+                load();
             }
             else {
                 ShowNotification('Select a .mmap file!');
@@ -75,10 +76,8 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
 
         }
     }
-    loadMap(e) {
+    loadMap() {
         ShowLoading();
-        e.preventDefault();
-        e.stopPropagation();
         let load = this.props.loadMap;
         let json = this.props.state.loadedMap;
 
@@ -89,9 +88,9 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
     render() {
 
         let dropStyle = {
-
-            lineHeight: this.props.state.fileName ? '60px' : '150px',
-            width: 500,
+            width: 300,
+            fontSize: '14px',
+            marginRight: 5,
         }
 
         let infoDivStyle = { width: 200, border: '1px solid #cecece', borderRadius: '15px', padding: 10 }
@@ -147,38 +146,28 @@ export class WelcomeScreen extends React.Component<{ state: WelcomeScreenState, 
                 onMouseEnter={() => { this.stopScrolling() } }
                 onMouseLeave={() => { this.startScrolling() } }>
                 <button className='primaryButton' style={{ height: '100%', width: 40, position: 'absolute', left: 0, top: 0 }} onClick={() => this.moveDemosRight()}>{'<'}</button>
-                <div style={{ marginLeft: 25 }}>
+                <div style={{ marginLeft: 40, marginRight: 40 }}>
                     {this.getHighlightedDemo()}
                 </div>
                 <button className='primaryButton' style={{ height: '100%', width: 40, position: 'absolute', right: 0, top: 0 }} onClick={() => this.moveDemosLeft()}>{'>'}</button>
 
             </div>
             <hr/>
-            {infoBlocks}
-            <br/>
             <div style={{ display: 'inline-flex', flexWrap: 'wrap', padding: 20 }}>
                 <Dropzone
-                    className='dropZone'
+                    className='primaryButton dropButton'
                     style={dropStyle}
                     onDrop={this.onDrop.bind(this)}
                     accept={'.mmap'}
                     >
-                    {this.props.state.fileName ?
-                        <span>
-                            <i className='fa fa-check' style={{ color: '#549341', fontSize: 17 }}/>
-                            {this.props.state.fileName}
-                            <div style={{ margin: '0 auto' }}>
-                                <button  className='primaryButton' onClick={this.loadMap.bind(this)}>Show me</button>
-                            </div>
-                        </span>
-                        :
-                        <div style={{ margin: '0 auto' }}>
-                            Drop a previously saved map here or click to upload
-                        </div>
-                    }
+                    Upload a saved map
                 </Dropzone>
-                <button style={{ margin: 60, width: 200 }} className='primaryButton' onClick={this.createNewMap.bind(this)}>Create a new map</button>
+                <button style={{ width: 300, marginLeft: 5 }} className='primaryButton' onClick={this.createNewMap.bind(this)}>Create a new map</button>
             </div>
+            <br/>
+            {infoBlocks}
+            <br/>
+
         </div >);
     }
 

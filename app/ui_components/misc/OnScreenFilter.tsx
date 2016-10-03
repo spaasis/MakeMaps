@@ -8,28 +8,49 @@ import { observer } from 'mobx-react';
 @observer
 export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
     advanceSliderWhenLocked = (lower, upper) => {
-        let minValDiff = this.props.filter.currentMin - lower;
-        let maxValDiff = this.props.filter.currentMax - upper;
+        let filter = this.props.filter;
+        let minValDiff = filter.currentMin - lower;
+        let maxValDiff = filter.currentMax - upper;
         if (minValDiff != 0) {
-            if (this.props.filter.currentMin - minValDiff > this.props.filter.totalMin &&
-                this.props.filter.currentMax - minValDiff < this.props.filter.totalMax) {
+            if (filter.currentMin - minValDiff >= filter.totalMin &&
+                filter.currentMax - minValDiff <= filter.totalMax) {
 
-                this.props.filter.currentMin -= minValDiff;
-                this.props.filter.currentMax -= minValDiff;
+                filter.currentMin -= minValDiff;
+                filter.currentMax -= minValDiff;
+            }
+            else {
+                if (filter.currentMin - minValDiff < filter.totalMin) {
+                    filter.currentMin = filter.totalMin;
+                    filter.currentMax = filter.totalMin + filter.lockedDistance
+                }
+                if (filter.currentMax - minValDiff > filter.totalMax) {
+                    filter.currentMax = filter.totalMax;
+                    filter.currentMin = filter.totalMax - filter.lockedDistance
+                }
             }
         }
         else if (maxValDiff != 0) {
-            if (this.props.filter.currentMin - maxValDiff > this.props.filter.totalMin &&
-                this.props.filter.currentMax - maxValDiff < this.props.filter.totalMax) {
+            if (filter.currentMin - maxValDiff >= filter.totalMin &&
+                filter.currentMax - maxValDiff <= filter.totalMax) {
 
-                this.props.filter.currentMin -= maxValDiff
-                this.props.filter.currentMax -= maxValDiff;
+                filter.currentMin -= maxValDiff
+                filter.currentMax -= maxValDiff;
+            }
+            else {
+                if (filter.currentMin - maxValDiff < filter.totalMin) {
+                    filter.currentMin = filter.totalMin;
+                    filter.currentMax = filter.totalMin + filter.lockedDistance
+                }
+                if (filter.currentMax - maxValDiff > filter.totalMax) {
+                    filter.currentMax = filter.totalMax;
+                    filter.currentMin = filter.totalMax - filter.lockedDistance
+                }
             }
         }
         this.props.filter.filterLayer();
     }
     onFilterScaleChange = (values) => {
-        if (this.props.filter.lockDistance) {
+        if (this.props.filter.locked) {
             this.advanceSliderWhenLocked(values[0], values[1]);
         }
         else {
@@ -42,7 +63,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
     onCurrentMinChange = (e) => {
         let val = e.currentTarget.valueAsNumber
         this.props.filter.selectedStep = -1;
-        if (this.props.filter.lockDistance) {
+        if (this.props.filter.locked) {
             this.advanceSliderWhenLocked(val, this.props.filter.currentMax);
         }
         else {
@@ -54,7 +75,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
     onCurrentMaxChange = (e) => {
         let val = e.currentTarget.valueAsNumber
         this.props.filter.selectedStep = -1;
-        if (this.props.filter.lockDistance) {
+        if (this.props.filter.locked) {
             this.advanceSliderWhenLocked(this.props.filter.currentMin, val);
         }
         else {
@@ -172,17 +193,18 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
                         <Slider className='horizontal-slider'
                             onAfterChange={(e) => { this.onFilterScaleChange(e); filter.selectedStep = -1; } }
                             value={[filter.currentMin, filter.currentMax]}
-                            min={filter.totalMin - 1}
-                            max={filter.totalMax + 1}
+                            min={filter.totalMin}
+                            max={filter.totalMax}
                             withBars>
                             <div className='minHandle'></div>
                             <div className='maxHandle'></div>
                         </Slider>
                         <input type='number' style={{ width: '70px' }} value={filter.currentMax.toFixed(0)} onChange={this.onCurrentMaxChange}/>
                         <div style={{ display: 'inline-block', cursor: 'pointer' }} onClick={() => {
-                            filter.lockDistance = !filter.lockDistance;
+                            filter.locked = !filter.locked;
+                            filter.lockedDistance = filter.currentMax - filter.currentMin;
                         } }>
-                            <i style={{ color: 'cecece', fontSize: 20, padding: 4 }} className={!filter.lockDistance ? 'fa fa-unlock-alt' : 'fa fa-lock'}/>
+                            <i style={{ color: 'cecece', fontSize: 20, padding: 4 }} className={!filter.locked ? 'fa fa-unlock-alt' : 'fa fa-lock'}/>
                         </div>
                     </div>
                     : null}

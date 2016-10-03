@@ -39,7 +39,9 @@ export class Filter {
     /** Keep the distance between the min and max the same when the slider is being moved.
      * Useful for keeping a locked range to filter
      */
-    @observable lockDistance: boolean;
+    @observable locked: boolean;
+    /** Distance between the locked limits (max - min) */
+    lockedDistance: number;
 
     appState: AppState;
 
@@ -64,7 +66,7 @@ export class Filter {
         this.filteredIndices = prev && prev.filteredIndices || [];
         this.selectedStep = prev && prev.selectedStep || -1;
         this.selectedCategories = prev && prev.selectedCategories || [];
-        this.lockDistance = prev && prev.lockDistance || false;
+        this.locked = prev && prev.locked || false;
         this.show = prev && prev.show || false;
         this.appState = prev && prev.appState || appState;
 
