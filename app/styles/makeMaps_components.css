@@ -115,7 +115,6 @@ hr{
 	font-size:15px;
 	font-weight:bold;
 	font-style:normal;
-	height:40px;
 	line-height:38px;
 	width:131px;
 	text-decoration:none;
@@ -154,8 +153,12 @@ hr{
 	border: 1px solid #c1c1c1;
 }
 
+.dropButton:hover{
+  width: 296px !important;
+}
+
 .dropZone{
-  border : 1px dotted #54b4ce;
+  border : 1px solid #54b4ce;
   height: 150px;
   line-height: 150px;
   border-radius: 15px;
