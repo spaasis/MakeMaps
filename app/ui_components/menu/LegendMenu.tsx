@@ -10,47 +10,48 @@ export class LegendMenu extends React.Component<{
 }, {}>{
 
     render() {
+        let strings = this.props.state.strings;
         let legend = this.props.state.legend;
 
         return (
             <div className="makeMaps-options">
-                <label htmlFor='showLegend'>Show legend
+                <label htmlFor='showLegend'>{strings.showLegend}
                     <input id='showLegend' type='checkbox' checked={legend.visible} onChange={(e) => {
                         legend.visible = (e.currentTarget as any).checked;
                     } }/>
                 </label>
                 <br/>
                 {legend.visible ? <div>
-                    <label>Title</label>
+                    <label>{strings.legendTitle}</label>
                     <input type='text' style={{ width: '100%' }} value={legend.title} onChange={(e) => {
-                        legend.title = (e.target as any).value;
+                        this.props.state.legend.title = (e.target as any).value;
                     } }/>
                     <br/>
-                    <label htmlFor='showEdit'>Show legend edit options
+                    <label htmlFor='showEdit'>{strings.legendEditShow}
                         <input id='showEdit' type='checkbox' checked={legend.edit} onChange={(e) => {
                             legend.edit = (e.currentTarget as any).checked;
                         } }/>
                     </label>
                     <br/>
-                    <label htmlFor='showPercentages'>Show distribution
+                    <label htmlFor='showPercentages'>{strings.legendDistShow}
                         <input id='showPercentages' type='checkbox' checked={legend.showPercentages} onChange={(e) => {
-                            legend.showPercentages = (e.currentTarget as any).checked;
+                            this.props.state.legend.showPercentages = (e.currentTarget as any).checked;
                         } }/>
                     </label>
                     <br/>
-                    <label htmlFor='showPercentages'>Show variable names
+                    <label htmlFor='showPercentages'>{strings.legendVarShow}
                         <input id='showPercentages' type='checkbox' checked={legend.showVariableNames} onChange={(e) => {
                             legend.showVariableNames = (e.currentTarget as any).checked;
                         } }/>
                     </label>
                     <br/>
-                    <label htmlFor='makeHorizontal'>Align horizontally
+                    <label htmlFor='makeHorizontal'>{strings.legendAlignHorizontal}
                         <input id='makeHorizontal' type='checkbox' checked={legend.horizontal} onChange={(e) => {
-                            legend.horizontal = (e.currentTarget as any).checked;
+                            this.props.state.legend.horizontal = (e.currentTarget as any).checked;
                         } }/>
                     </label>
                     <hr/>
-                    <label>Legend position</label>
+                    <label>{strings.legendPosition}</label>
                     <table style={{ cursor: 'pointer', border: "1px solid #999999", width: 50, height: 50, margin: '0 auto' }}>
                         <tbody>
                             <tr>
@@ -79,7 +80,6 @@ export class LegendMenu extends React.Component<{
                             </tr>
                         </tbody>
                     </table>
-
                 </div> : null}
             </div >)
     }

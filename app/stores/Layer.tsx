@@ -139,300 +139,300 @@ export class Layer {
                             c.layer.openPopup();
                         else
                             this.appState.infoScreenText = c.layer.getPopup().getContent();
-                
-            }, this);
-            markers.on('clustermouseout', function(c: any) {
-                if (this.showPopUpInPlace)
-                    c.layer.closePopup();
-                else
-                    this.appState.infoScreenText = null;
 
-            }, this);
+                    }, this);
+                    markers.on('clustermouseout', function(c: any) {
+                        if (this.showPopUpInPlace)
+                            c.layer.closePopup();
+                        else
+                            this.appState.infoScreenText = null;
 
-            this.batchAdd(0, 500, this.displayLayer.getLayers(), markers);
-            // markers.addLayer(this.displayLayer);
-            this.displayLayer = markers as any;
+                    }, this);
 
-
-        }
-        this.appState.map.addLayer(this.displayLayer);
-
-        this.refreshFilters();
-        if (!this.values) {
-            this.getValues();
-        }
-        this.toggleRedraw = false;
-
-    }
-
-}
-
-if (this.layerType !== LayerTypes.HeatMap) {
-    if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
-        this.symbolOptions.symbolType === SymbolTypes.Simple) {
-        getScaleSymbolMaxValues.call(this);
-    }
-}
-
-    }
+                    this.batchAdd(0, 500, this.displayLayer.getLayers(), markers);
+                    // markers.addLayer(this.displayLayer);
+                    this.displayLayer = markers as any;
 
 
-refreshFilters() {
-    let filters = this.appState.filters.filter((f) => { return f.layerId === this.id });
-    for (let i in filters) {
-        filters[i].init(true);
-    }
-}
-
-/**  Manually trigger popup update without refreshing the layer*/
-refreshPopUps() {
-    if (this.layerType !== LayerTypes.HeatMap) {
-        if (this.displayLayer && this.popupHeaders) {
-            if (this.showPopUpInPlace)
-                this.appState.infoScreenText = null;
-            this.displayLayer.eachLayer(function(l: any) {
-                addPopups.call(this, l.feature, l);
-            }, this)
-        }
-    }
-}
-
-/** Manually trigger cluster update*/
-refreshCluster() {
-    if ((this.displayLayer as any).refreshClusters) {
-        (this.displayLayer as any).refreshClusters();
-    }
-}
-
-/** GetColors - calculates the color values based on a field name (colorOptions.colorField)  */
-getColors() {
-    let opts = this.colorOptions;
-    if (!opts.colorField) {
-        return;
-    }
-    let values = this.values[opts.colorField.value]
-    let colors = [];
-    opts.limits = chroma.limits(values, opts.mode, opts.steps);
-    opts.limits.splice(opts.limits.length - 1, 1); //remove maximum value
-    opts.limits = opts.limits.filter(function(e, i, arr) {
-        return arr.lastIndexOf(e) === i;
-    }); //only unique values in limits
-    colors = chroma.scale(opts.colorScheme).colors(opts.limits.length);
-    opts.colors = opts.revert ? colors.reverse() : colors;
-}
-
-setOpacity() {
-    if (this.layerType === LayerTypes.HeatMap) {
-        this.toggleRedraw = true;
-        this.refresh();
-        return;
-    }
-    for (let lyr of this.displayLayer.getLayers()) {
-        if ((lyr as any).setOpacity)
-            (lyr as any).setOpacity(this.colorOptions.opacity);
-        else
-                (lyr as any).setStyle({ fillOpacity: this.colorOptions.fillOpacity, opacity: this.colorOptions.opacity })
-    }
-    this.refreshFilters();
-}
-
-/** Get feature values in their own dictionary to reduce the amount of common calculations*/
-getValues() {
-    if (!this.values)
-        this.values = {};
-    if (!this.uniqueValues)
-        this.uniqueValues = {};
-    let pointCount = 0;
-    this.geoJSON.features.map(function(feat) {
-        if (feat.geometry.type == 'Point') {
-            pointCount++;
-        }
-        for (let i in feat.properties) {
-            if (!this.values[i])
-                this.values[i] = [];
-            this.values[i].push(feat.properties[i]);
-        }
-    }, this);
-    for (let i in this.headers.slice()) {
-        let header = this.headers[i].value;
-
-        if (this.values[header]) {
-            this.values[header].sort(function(a, b) { return a == b ? 0 : a < b ? -1 : 1 })
-            this.uniqueValues[header] = unique(this.values[header]);
-        }
-    }
-
-    this.pointFeatureCount = pointCount;
-    function unique(arr: any[]) { //http://stackoverflow.com/questions/1960473/unique-values-in-an-array/1961068#1961068
-        var u = {}, a = [];
-        for (var i = 0, l = arr.length; i < l; ++i) {
-            if (u.hasOwnProperty(arr[i])) {
-                continue;
-            }
-            a.push(arr[i]);
-            u[arr[i]] = 1;
-        }
-        return a;
-    }
-}
-
-createClusteredIcon(cluster) {
-    let values: { [field: string]: any[]; } = {};
-    let avg: { [field: string]: number; } = {};
-    let sum: { [field: string]: number; } = {};
-    let col = this.colorOptions;
-    let clu = this.clusterOptions;
-    let sym = this.symbolOptions;
-    let count = 0;
-    let markers = cluster.getAllChildMarkers();
-
-    let relevantHeaders: Header[] = [];
-    if (col.colorField)
-        relevantHeaders.push(col.colorField);
-    switch (sym.symbolType) {
-        case SymbolTypes.Simple:
-            if (sym.sizeXVar)
-                relevantHeaders.push(sym.sizeXVar);
-            if (sym.sizeYVar)
-                relevantHeaders.push(sym.sizeYVar);
-            break;
-        case SymbolTypes.Icon:
-            relevantHeaders.push(sym.iconField);
-            break;
-        case SymbolTypes.Blocks:
-            relevantHeaders.push(sym.blockSizeVar);
-            break;
-        case SymbolTypes.Chart:
-            sym.chartFields.map(function(f) { relevantHeaders.push(f) });
-    }
-    for (let h of clu.hoverHeaders) {
-        let header = this.getHeaderById(h.headerId)
-        if (relevantHeaders.indexOf(header) == -1 && (h.showAvg || h.showSum)) {
-            relevantHeaders.push(header);
-        }
-    }
-
-    for (let i = 0; i < markers.length; i++) {
-        let marker = markers[i];
-        if (marker.options.icon && marker.options.icon.options.className.indexOf('marker-hidden') > -1)
-            continue;
-        count++;
-
-        for (let h of relevantHeaders.slice()) {
-
-            let val = marker.feature.properties[h.value];
-            if (val !== undefined) {
-                if (!values[h.value])
-                    values[h.value] = [];
-                values[h.value].push(val);
-                if (h.type == 'number') {
-                    if (sum[h.value] === undefined)
-                        sum[h.value] = 0;
-                    sum[h.value] += +val;
-                    avg[h.value] = values[h.value].length > 0 ? +(sum[h.value] / values[h.value].length).toFixed(h.decimalAccuracy) : 0;
                 }
+                this.appState.map.addLayer(this.displayLayer);
 
+                this.refreshFilters();
+                if (!this.values) {
+                    this.getValues();
+                }
+                this.toggleRedraw = false;
+
+            }
+
+        }
+
+        if (this.layerType !== LayerTypes.HeatMap) {
+            if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
+                this.symbolOptions.symbolType === SymbolTypes.Simple) {
+                getScaleSymbolMaxValues.call(this);
+            }
+        }
+
+    }
+
+
+    refreshFilters() {
+        let filters = this.appState.filters.filter((f) => { return f.layerId === this.id });
+        for (let i in filters) {
+            filters[i].init(true);
+        }
+    }
+
+    /**  Manually trigger popup update without refreshing the layer*/
+    refreshPopUps() {
+        if (this.layerType !== LayerTypes.HeatMap) {
+            if (this.displayLayer && this.popupHeaders) {
+                if (this.showPopUpInPlace)
+                    this.appState.infoScreenText = null;
+                this.displayLayer.eachLayer(function(l: any) {
+                    addPopups.call(this, l.feature, l);
+                }, this)
             }
         }
     }
-    if (col.colorField && col.useMultipleFillColors) {
-        col.fillColor = GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), avg[col.colorField.value]);
+
+    /** Manually trigger cluster update*/
+    refreshCluster() {
+        if ((this.displayLayer as any).refreshClusters) {
+            (this.displayLayer as any).refreshClusters();
+        }
     }
 
-    let icon: L.DivIcon;
+    /** GetColors - calculates the color values based on a field name (colorOptions.colorField)  */
+    getColors() {
+        let opts = this.colorOptions;
+        if (!opts.colorField) {
+            return;
+        }
+        let values = this.values[opts.colorField.value]
+        let colors = [];
+        opts.limits = chroma.limits(values, opts.mode, opts.steps);
+        opts.limits.splice(opts.limits.length - 1, 1); //remove maximum value
+        opts.limits = opts.limits.filter(function(e, i, arr) {
+            return arr.lastIndexOf(e) === i;
+        }); //only unique values in limits
+        colors = chroma.scale(opts.colorScheme).colors(opts.limits.length);
+        opts.colors = opts.revert ? colors.reverse() : colors;
+    }
 
-    if (clu.useSymbolStyle) {
+    setOpacity() {
+        if (this.layerType === LayerTypes.HeatMap) {
+            this.toggleRedraw = true;
+            this.refresh();
+            return;
+        }
+        for (let lyr of this.displayLayer.getLayers()) {
+            if ((lyr as any).setOpacity)
+                (lyr as any).setOpacity(this.colorOptions.opacity);
+            else
+                (lyr as any).setStyle({ fillOpacity: this.colorOptions.fillOpacity, opacity: this.colorOptions.opacity })
+        }
+        this.refreshFilters();
+    }
 
+    /** Get feature values in their own dictionary to reduce the amount of common calculations*/
+    getValues() {
+        if (!this.values)
+            this.values = {};
+        if (!this.uniqueValues)
+            this.uniqueValues = {};
+        let pointCount = 0;
+        this.geoJSON.features.map(function(feat) {
+            if (feat.geometry.type == 'Point') {
+                pointCount++;
+            }
+            for (let i in feat.properties) {
+                if (!this.values[i])
+                    this.values[i] = [];
+                this.values[i].push(feat.properties[i]);
+            }
+        }, this);
+        for (let i in this.headers.slice()) {
+            let header = this.headers[i].value;
+
+            if (this.values[header]) {
+                this.values[header].sort(function(a, b) { return a == b ? 0 : a < b ? -1 : 1 })
+                this.uniqueValues[header] = unique(this.values[header]);
+            }
+        }
+
+        this.pointFeatureCount = pointCount;
+        function unique(arr: any[]) { //http://stackoverflow.com/questions/1960473/unique-values-in-an-array/1961068#1961068
+            var u = {}, a = [];
+            for (var i = 0, l = arr.length; i < l; ++i) {
+                if (u.hasOwnProperty(arr[i])) {
+                    continue;
+                }
+                a.push(arr[i]);
+                u[arr[i]] = 1;
+            }
+            return a;
+        }
+    }
+
+    createClusteredIcon(cluster) {
+        let values: { [field: string]: any[]; } = {};
+        let avg: { [field: string]: number; } = {};
+        let sum: { [field: string]: number; } = {};
+        let col = this.colorOptions;
+        let clu = this.clusterOptions;
+        let sym = this.symbolOptions;
+        let count = 0;
+        let markers = cluster.getAllChildMarkers();
+
+        let relevantHeaders: Header[] = [];
+        if (col.colorField)
+            relevantHeaders.push(col.colorField);
         switch (sym.symbolType) {
-            case SymbolTypes.Icon:
-                icon = getFaIcon(sym, col, 0, avg[sym.iconField.value]);
+            case SymbolTypes.Simple:
+                if (sym.sizeXVar)
+                    relevantHeaders.push(sym.sizeXVar);
+                if (sym.sizeYVar)
+                    relevantHeaders.push(sym.sizeYVar);
                 break;
-            case SymbolTypes.Chart:
-                let vals = [];
-                sym.chartFields.map(function(e) {
-                    if (avg[e.value] > 0)
-                        vals.push({ feat: e, val: avg[e.value], color: col.chartColors[e.value] });
-                });
-                let sizeVal = sym.sizeXVar ? avg[sym.sizeXVar.value] : undefined;
-                icon = getChartIcon(sym, col, 20, vals, sizeVal);
+            case SymbolTypes.Icon:
+                relevantHeaders.push(sym.iconField);
                 break;
             case SymbolTypes.Blocks:
-                icon = getBlockIcon(sym, col, 10, avg[sym.blockSizeVar.value]);
+                relevantHeaders.push(sym.blockSizeVar);
                 break;
-            default:
-                let yVal = sym.sizeYVar ? avg[sym.sizeYVar.value] : undefined;
-                let xVal = sym.sizeXVar ? avg[sym.sizeXVar.value] : undefined;
-                icon = getSimpleIcon(sym, col, 20, yVal, xVal);
-                break;
+            case SymbolTypes.Chart:
+                sym.chartFields.map(function(f) { relevantHeaders.push(f) });
         }
-    }
-    else {
-        let style = {
-            background: col.fillColor,
-            minWidth: 50,
-            minHeight: 50,
-            borderRadius: '30px',
-            display: count > 0 ? 'flex' : 'none',
-            alignItems: 'center',
-            border: '1px solid ' + col.color,
-            opacity: col.fillOpacity
+        for (let h of clu.hoverHeaders) {
+            let header = this.getHeaderById(h.headerId)
+            if (relevantHeaders.indexOf(header) == -1 && (h.showAvg || h.showSum)) {
+                relevantHeaders.push(header);
+            }
         }
-        let iconElem =
-            <div style={style}>
-                <div style={{
-                    textAlign: 'center',
-                    background: '#FFF',
-                    width: '100%',
-                    borderRadius: '30px'
-                }}>
-                    <b style={{ display: 'block' }} > {count}</b>
+
+        for (let i = 0; i < markers.length; i++) {
+            let marker = markers[i];
+            if (marker.options.icon && marker.options.icon.options.className.indexOf('marker-hidden') > -1)
+                continue;
+            count++;
+
+            for (let h of relevantHeaders.slice()) {
+
+                let val = marker.feature.properties[h.value];
+                if (val !== undefined) {
+                    if (!values[h.value])
+                        values[h.value] = [];
+                    values[h.value].push(val);
+                    if (h.type == 'number') {
+                        if (sum[h.value] === undefined)
+                            sum[h.value] = 0;
+                        sum[h.value] += +val;
+                        avg[h.value] = values[h.value].length > 0 ? +(sum[h.value] / values[h.value].length).toFixed(h.decimalAccuracy) : 0;
+                    }
+
+                }
+            }
+        }
+        if (col.colorField && col.useMultipleFillColors) {
+            col.fillColor = GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), avg[col.colorField.value]);
+        }
+
+        let icon: L.DivIcon;
+
+        if (clu.useSymbolStyle) {
+
+            switch (sym.symbolType) {
+                case SymbolTypes.Icon:
+                    icon = getFaIcon(sym, col, 0, avg[sym.iconField.value]);
+                    break;
+                case SymbolTypes.Chart:
+                    let vals = [];
+                    sym.chartFields.map(function(e) {
+                        if (avg[e.value] > 0)
+                            vals.push({ feat: e, val: avg[e.value], color: col.chartColors[e.value] });
+                    });
+                    let sizeVal = sym.sizeXVar ? avg[sym.sizeXVar.value] : undefined;
+                    icon = getChartIcon(sym, col, 20, vals, sizeVal);
+                    break;
+                case SymbolTypes.Blocks:
+                    icon = getBlockIcon(sym, col, 10, avg[sym.blockSizeVar.value]);
+                    break;
+                default:
+                    let yVal = sym.sizeYVar ? avg[sym.sizeYVar.value] : undefined;
+                    let xVal = sym.sizeXVar ? avg[sym.sizeXVar.value] : undefined;
+                    icon = getSimpleIcon(sym, col, 20, yVal, xVal);
+                    break;
+            }
+        }
+        else {
+            let style = {
+                background: col.fillColor,
+                minWidth: 50,
+                minHeight: 50,
+                borderRadius: '30px',
+                display: count > 0 ? 'flex' : 'none',
+                alignItems: 'center',
+                border: '1px solid ' + col.color,
+                opacity: col.fillOpacity
+            }
+            let iconElem =
+                <div style={style}>
+                    <div style={{
+                        textAlign: 'center',
+                        background: '#FFF',
+                        width: '100%',
+                        borderRadius: '30px'
+                    }}>
+                        <b style={{ display: 'block' }} > {count}</b>
+                    </div>
                 </div>
-            </div>
 
-        let html: string = reactDOMServer.renderToString(iconElem);
-        icon = L.divIcon({
-            html: html, className: '',
-            iconAnchor: L.point(25, 25),
-        });
+            let html: string = reactDOMServer.renderToString(iconElem);
+            icon = L.divIcon({
+                html: html, className: '',
+                iconAnchor: L.point(25, 25),
+            });
 
-    }
-    if (count > 0) {
-        let popupContent = (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '');
-        clu.hoverHeaders.map(function(h) {
-            let header = this.getHeaderById(h.headerId);
-            popupContent += h.showSum ? h.sumText + ' ' + sum[header.value].toFixed(header.decimalAccuracy) + '<br/>' : '';
-            popupContent += h.showAvg ? h.avgText + ' ' + avg[header.value].toFixed(header.decimalAccuracy) + '<br/>' : ''
-        }, this)
-        popupContent += 'Click or zoom to expand';
-        if (this.showPopUpInPlace)
-            cluster.bindPopup(L.popup({ closeButton: false }).setContent(popupContent));
-    }
-
-    return icon;
-}
-/** Add the determined amount of feature layers to displayLayer and let the UI refresh in between*/
-batchAdd(start: number, end: number, source, target) {
-    let i;
-    for (i = start; i < end; i++) {
-        if (source.features) {
-            if (source.features[i])
-                target.addData(source.features[i]);
-            else
-                return;
         }
-        else if (source) {
-            if (source[i])
-                target.addLayer(source[i]);
-            else
-                return;
+        if (count > 0) {
+            let popupContent = (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '');
+            clu.hoverHeaders.map(function(h) {
+                let header = this.getHeaderById(h.headerId);
+                popupContent += h.showSum ? h.sumText + ' ' + sum[header.value].toFixed(header.decimalAccuracy) + '<br/>' : '';
+                popupContent += h.showAvg ? h.avgText + ' ' + avg[header.value].toFixed(header.decimalAccuracy) + '<br/>' : ''
+            }, this)
+            popupContent += 'Click or zoom to expand';
+            if (this.showPopUpInPlace)
+                cluster.bindPopup(L.popup({ closeButton: false }).setContent(popupContent));
+        }
+
+        return icon;
+    }
+    /** Add the determined amount of feature layers to displayLayer and let the UI refresh in between*/
+    batchAdd(start: number, end: number, source, target) {
+        let i;
+        for (i = start; i < end; i++) {
+            if (source.features) {
+                if (source.features[i])
+                    target.addData(source.features[i]);
+                else
+                    return;
+            }
+            else if (source) {
+                if (source[i])
+                    target.addLayer(source[i]);
+                else
+                    return;
+            }
+        }
+        if (source.features ? i >= source.features.length : i >= source.length)
+            return;
+        else {
+            setTimeout(this.batchAdd(i, i + 500, source, target), 10);
         }
     }
-    if (source.features ? i >= source.features.length : i >= source.length)
-        return;
-    else {
-        setTimeout(this.batchAdd(i, i + 500, source, target), 10);
-    }
-}
 }
 
 /** Function to run on every point-type data to visualize it according to the settings*/

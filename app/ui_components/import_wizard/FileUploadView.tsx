@@ -7,9 +7,11 @@ let _fileModel = new FilePreProcessModel();
 let _allowedFileTypes = ['geojson', 'csv', 'gpx', 'kml', 'wkt', 'osm', 'xlsx', 'xlsxm', 'xlsb', 'xls', 'ods'];//, 'shp', 'rar', 'zip'];
 import { ImportWizardState } from '../../stores/States';
 import { observer } from 'mobx-react';
+import { Strings } from '../../localizations/strings';
 
 @observer
 export class FileUploadView extends React.Component<{
+    strings: Strings,
     state: ImportWizardState,
     /** Saves the filename, string content, delimiter and the headers/column names to the import wizard */
     saveValues: () => void,
@@ -64,7 +66,7 @@ export class FileUploadView extends React.Component<{
             [headers, delim] = _fileModel.ParseHeadersFromCSV(this.props.state.content);
             this.props.state.layer.headers = [];
             if (headers.length == 0) {
-                ShowNotification('No headers found! Make sure that the file you uploaded contains appropriate headers. Consult the wiki for more information');
+                ShowNotification(this.props.strings.noHeadersError);
                 HideLoading();
                 return;
             }
@@ -80,28 +82,29 @@ export class FileUploadView extends React.Component<{
 
         }
         else {
-            ShowNotification('Upload a file!');
+            ShowNotification(this.props.strings.noFileNotification);
             HideLoading();
         }
     }
     render() {
+        let strings = this.props.strings;
         let layer = this.props.state.layer;
         return (
             <div style={{ padding: 20 }}>
                 <div>
-                    <h2> Upload the file containing the data </h2>
+                    <h2>{strings.uploadViewHeader}</h2>
                     <hr/>
-                    <p>Currently supported file types: </p>
-                    <p> GeoJSON, Microsoft Office spreadsheets, OpenDocument spreadsheets, CSV, KML, GPX, WKT, OSM...</p>
-                    <a target="_blank" rel="noopener noreferrer" href='https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'>More info about supported file types</a>
+                    <p>{strings.currentlySupportedTypes}: </p>
+                    <p> GeoJSON, Microsoft Office {strings.spreadsheets}, OpenDocument {strings.spreadsheets}, CSV, KML, GPX, WKT, OSM...</p>
+                    <a target="_blank" rel="noopener noreferrer" href='https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'>{strings.fileTypeSupportInfo}</a>
                     <Dropzone
                         className='dropZone'
                         onDrop={this.onDrop.bind(this)}
                         accept={_allowedFileTypes.map(function(type) { return '.' + type }).join(', ')}>
 
-                        {this.props.state.fileName ? <span><i className='fa fa-check' style={{ color: '#549341', fontSize: 17 }}/> {this.props.state.fileName} </span> : <span>Drop file or click to open upload menu</span>}
+                        {this.props.state.fileName ? <span><i className='fa fa-check' style={{ color: '#549341', fontSize: 17 }}/> {this.props.state.fileName} </span> : <span>{strings.uploadDropBoxText}</span>}
                     </Dropzone>
-                    <label>Give a name to the layer</label>
+                    <label>{strings.giveNameToLayer}</label>
                     <input type="text" onChange={(e) => {
                         layer.name = (e.target as any).value;
                     } } value={layer.name}/>
@@ -109,11 +112,11 @@ export class FileUploadView extends React.Component<{
                 </div>
                 <button className='secondaryButton' style={{ position: 'absolute', left: 15, bottom: 15 }} onClick={() => {
                     this.props.cancel();
-                } }>Cancel</button>
+                } }>{strings.cancel}</button>
                 <button className='primaryButton'
                     disabled={this.props.state.content === undefined || layer.name === ''}
                     style={{ position: 'absolute', right: 15, bottom: 15 }}
-                    onClick={() => { ShowLoading(); setTimeout(this.proceed, 10) } }>Continue</button>
+                    onClick={() => { ShowLoading(); setTimeout(this.proceed, 10) } }>{strings.continue}</button>
             </div>
         );
     }

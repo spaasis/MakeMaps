@@ -267,7 +267,7 @@ hr{
 #loading{
   top: 0;
   z-index: 999;
-  max-width: 120px;
+  max-width: 150px;
 }
 
 #notification{

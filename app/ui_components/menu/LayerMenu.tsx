@@ -41,6 +41,7 @@ export class LayerMenu extends React.Component<{
         }
     }
     render() {
+        let strings = this.props.state.strings;
         let menuState = this.props.state.layerMenuState;
         let layer = menuState.editingLayer;
         let layers = [];
@@ -63,7 +64,7 @@ export class LayerMenu extends React.Component<{
         }
         return (
             <div className="makeMaps-options">
-                <label>Select the base map</label>
+                <label>{strings.selectBaseMap}</label>
                 <Select
                     options={this.props.state.obsBaseLayers}
                     onChange={(e: ISelectData) => {
@@ -73,12 +74,13 @@ export class LayerMenu extends React.Component<{
                     } }
                     value={{ value: this.props.state.activeBaseLayer, label: this.props.state.activeBaseLayer.id }}
                     clearable={false}
+                    placeholder={strings.selectPlaceholder}
                     />
                 <hr/>
-                <label>Drag and drop to reorder</label>
+                <label>{strings.layerMenuDragDrop}</label>
                 {menuState.heatLayerOrder.length > 0 ?
                     <div>
-                        <label>Heat layers</label>
+                        <label>{strings.heatLayers}</label>
                         <Sortable className='layerList'
                             onChange={this.handleSort.bind(this, 'heat')}>
                             {menuState.heatLayerOrder.map(function(item) {
@@ -92,7 +94,7 @@ export class LayerMenu extends React.Component<{
                 }
                 {menuState.standardLayerOrder.length > 0 ?
                     <div>
-                        <label>Standard layers</label>
+                        <label>{strings.standardLayers}</label>
                         <Sortable className='layerList'
                             onChange={this.handleSort.bind(this, 'standard')}>
                             {menuState.standardLayerOrder.map(function(item) {
@@ -106,10 +108,10 @@ export class LayerMenu extends React.Component<{
                 }
                 <button className='menuButton' onClick={() => {
                     this.props.addNewLayer();
-                } }>Add new layer</button>
+                } }>{strings.addNewLayer}</button>
 
                 <hr/>
-                <label>Edit layer properties</label>
+                <label>{strings.editLayerProperties}</label>
                 <Select
                     options={layers}
                     onChange = {(val: { label: string, value: Layer }) => {
@@ -120,21 +122,21 @@ export class LayerMenu extends React.Component<{
                         return option ? option.name : '';
                     } }
                     clearable={false}
-                    placeholder='Select layer...'
+                    placeholder={strings.selectLayerPlaceholder}
                     />
 
                 {layer ?
                     <div>
-                        Name
+                        {strings.name}
                         <br/>
                         <input type='text' style={{ width: '100%' }} value={layer.name} onChange={(e) => {
                             layer.name = (e.target as any).value;
                         } }/>
 
-                        Layer type
+                        {strings.layerType}
                         <br/>
                         <label forHTML='standard'>
-                            Standard
+                            {strings.layerTypeStandard}
                             <input
                                 type='radio'
                                 onChange={() => {
@@ -156,7 +158,7 @@ export class LayerMenu extends React.Component<{
 
                         </label>
                         <label forHTML='heat'>
-                            HeatMap
+                            {strings.layerTypeHeat}
                             <input
                                 type='radio'
                                 onChange={() => {
@@ -189,6 +191,7 @@ export class LayerMenu extends React.Component<{
         );
     }
     renderHeaders() {
+        let strings = this.props.state.strings;
         let arr = [];
         let menuState = this.props.state.layerMenuState;
         let headers = menuState.editingLayer.headers.slice()
@@ -222,8 +225,8 @@ export class LayerMenu extends React.Component<{
             <table style={{ width: '100%' }}>
                 <tbody>
                     <tr>
-                        <th>Name</th>
-                        <th>Decimals</th>
+                        <th>{strings.name}</th>
+                        <th>{strings.decimalAccuracy}</th>
                     </tr>
                     {arr.map(function(td) {
                         return td;

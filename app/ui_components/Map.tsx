@@ -14,6 +14,8 @@ import { OnScreenFilter } from './misc/OnScreenFilter';
 import { OnScreenLegend } from './misc/OnScreenLegend';
 import { OnScreenInfoDisplay } from './misc/OnScreenInfoDisplay';
 import { WelcomeScreen } from './misc/WelcomeScreen';
+import { Strings } from '../localizations/strings';
+import { locale } from '../localizations/locale';
 import 'leaflet';
 import 'Leaflet.extra-markers';
 import 'leaflet-fullscreen';
@@ -410,6 +412,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                             isOpen={this.props.state.welcomeShown}
                             style = {modalStyle}>
                             <WelcomeScreen
+                                strings = {this.props.state.strings}
                                 state={new WelcomeScreenState()}
                                 loadMap={this.loadSavedMap.bind(this)}
                                 openLayerImport={this.startLayerImport.bind(this)}
@@ -439,14 +442,14 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                 }
 
                 <div className='notification' id='loading'>
-                    <span style={{ lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}>Loading</span>
+                    <span style={{ lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}>{this.props.state.strings.loading}</span>
                     <div className="sk-double-bounce">
                         <div className="sk-child sk-double-bounce1"></div>
                         <div className="sk-child sk-double-bounce2"></div>
                     </div>
                 </div>
                 <div className='notification' id='notification'>
-                    <span id='notificationText' style={{ lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}>Notification</span>
+                    <span id='notificationText' style={{ lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}>{this.props.state.strings.notification}</span>
                     <br/>
                     <button className='menuButton' onClick={() => { HideNotification() } }>Ok</button>
                 </div>
@@ -459,6 +462,10 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
 var Map = MapMain;
 const state = new AppState();
+// locale.setLanguage('fi');
+//Hack - get all the string options visible in the IDE
+let strings: Strings = (locale as any);
+state.strings = strings;
 ReactDOM.render(
     <Map state={state}/>, document.getElementById('content')
 );

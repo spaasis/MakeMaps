@@ -7,10 +7,12 @@ import { DefaultProjections } from "../../common_items/common";
 
 import { ImportWizardState } from '../../stores/States';
 import { observer } from 'mobx-react';
+import { Strings } from '../../localizations/strings';
 
 @observer
 export class FileDetailsView extends React.Component<
 {
+    strings: Strings,
     state: ImportWizardState,
     /** Saves the lat- and lon- field names and the coordinate system name to the import wizard*/
     saveValues: () => void,
@@ -45,50 +47,50 @@ export class FileDetailsView extends React.Component<
 
     proceed = () => {
         let custom = (document.getElementById('customProj') as any).value;
-        this.props.state.coordinateSystem = custom !== 'Insert custom Proj4-string here' ? custom : this.props.state.coordinateSystem;
+        this.props.state.coordinateSystem = custom !== this.props.strings.customProjectionPrompt ? custom : this.props.state.coordinateSystem;
         this.props.saveValues();
     }
     render() {
-
-        return <div style={{ padding:20 }}>
+        let strings = this.props.strings;
+        return <div style={{ padding: 20 }}>
             <div>
-                <h2>Just a few more details</h2>
+                <h2>{strings.fileDetailsViewHeader}</h2>
                 <hr/>
                 {this.props.state.isGeoJSON ?
                     null :
                     <div>
-                        <label>Select the latitude/Y field name</label>
+                        <label>{strings.selectLatHeader}</label>
                         <Select
                             options={this.activeLayer.numberHeaders}
                             onChange={this.onLatitudeSelectionChange}
                             value={this.props.state.latitudeField}
                             />
-                        <label>Select the longitude/X field name</label>
+                        <label>{strings.selectLngHeader}</label>
                         <Select
                             options={this.activeLayer.numberHeaders}
                             onChange={this.onLongitudeSelectionChange}
                             value={this.props.state.longitudeField}/>
                     </div>}
-                <label>Select the coordinate system</label>
+                <label>{strings.selectCoordSystem}</label>
 
                 <Select
                     options={coords}
                     onChange={this.onCoordinateSystemChange}
                     value={this.props.state.coordinateSystem}/>
-                <p> Not sure? Try with the default (WGS84) and see if the data lines up.</p>
-                <p>Coordinate system missing? Get the Proj4-string for your system from
-                    <a href='http://spatialreference.org/ref/'> Spatial Reference</a>
+                <p>{strings.coordSystemHelp}</p>
+                <p>{strings.coordSystemMissing}
+                    <a href='http://spatialreference.org/ref/'>Spatial Reference</a>
                 </p>
-                <input id='customProj' defaultValue='Insert custom Proj4-string here' style={{ width: 400 }}/>
+                <input id='customProj' defaultValue={strings.customProjectionPrompt} style={{ width: 400 }}/>
 
             </div>
             <button className='secondaryButton'
                 style={{ position: 'absolute', left: 15, bottom: 15 }}
-                onClick={this.goBack}>Go back</button>
+                onClick={this.goBack}>{strings.previous}</button>
             <button className='primaryButton'
                 disabled={!this.props.state.coordinateSystem || (!this.props.state.isGeoJSON && (!this.props.state.latitudeField || !this.props.state.longitudeField))}
                 style={{ position: 'absolute', right: 15, bottom: 15 }}
-                onClick={this.proceed}>Make a map!</button>
+                onClick={this.proceed}>{strings.finishImport}</button>
         </div>
     }
 

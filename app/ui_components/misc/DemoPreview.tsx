@@ -1,5 +1,7 @@
 import * as React from 'react';
+import { Strings } from '../../localizations/strings';
 export class DemoPreview extends React.Component<{
+    strings: Strings,
     imageURL: string,
     description: string,
     loadDemo: () => void,
@@ -37,10 +39,11 @@ export class DemoPreview extends React.Component<{
                 <img  className='demoImage' src = {this.props.imageURL}/>
                 <div style={overlayStyle}>
                     {this.props.description}
-                    <button className='primaryButton' style={{ display: 'block', margin: '0 auto' }} onClick={this.loadClicked.bind(this)}>Check it out</button>
+                    <button className='primaryButton' style={{ display: 'block', margin: '0 auto' }} onClick={this.loadClicked.bind(this)}>{this.props.strings.demoLoadButton}</button>
                 </div>
 
             </div>
+
         )
     }
 }
