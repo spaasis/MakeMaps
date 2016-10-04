@@ -54,9 +54,18 @@ export class Layer {
     uniqueValues: { [field: string]: any[]; } = undefined;
 
 
-    constructor(state: AppState) {
+    constructor(state: AppState, prev?: Layer) {
         this.appState = state;
-        this.layerType = LayerTypes.Standard;
+        this.id = prev && prev.id !== undefined ? prev.id : 0;
+        this.name = prev && prev.name || '';
+        this.geoJSON = prev && prev.geoJSON || undefined;
+        this.layerType = prev && prev.layerType !== undefined ? prev.layerType : LayerTypes.Standard;
+        this.showPopUpInPlace = prev && prev.showPopUpInPlace !== undefined ? prev.showPopUpInPlace : true;
+        this.showPopUpOnHover = prev && prev.showPopUpOnHover || false;
+        this.colorOptions = prev && prev.colorOptions ? new ColorOptions(prev.colorOptions) : new ColorOptions();
+        this.symbolOptions = prev && prev.symbolOptions ? new SymbolOptions(prev.symbolOptions) : new SymbolOptions();
+        this.clusterOptions = prev && prev.clusterOptions ? new ClusterOptions(prev.clusterOptions) : new ClusterOptions();
+
     }
 
     /** Update layer based on changed options and properties. */
@@ -148,6 +157,9 @@ export class Layer {
                             this.appState.infoScreenText = null;
 
                     }, this);
+                    markers.on('clusterclick'), function(c: any) {
+                        console.log(c)
+                    }
 
                     this.batchAdd(0, 500, this.displayLayer.getLayers(), markers);
                     // markers.addLayer(this.displayLayer);

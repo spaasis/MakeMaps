@@ -226,14 +226,20 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
 
     saveFile() {
+        let layers: Layer[] = [];
+        for (let layer of this.props.state.layers) {
+            layers.push(new Layer(this.props.state, layer))
+        }
+        let filters: Filter[] = [];
+        for (let filter of this.props.state.filters) {
+            filters.push(new Filter(this.props.state, filter))
+        }
         let saveData: SaveState = {
             baseLayerId: this.props.state.activeBaseLayer.id,
-            layers: this.props.state.layers,
-            legend: this.props.state.legend,
-            filters: this.props.state.filters,
+            layers: layers,
+            legend: new Legend(this.props.state.legend),
+            filters: filters,
         };
-
-        saveData.layers = saveData.layers.slice();
 
         saveData.layers.forEach(function(e) {
             e['popupHeaderIds'] = [];
@@ -305,7 +311,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         }
 
         for (let lyr of saved.layers) {
-            let newLayer = new Layer(this.props.state);
+            let newLayer = new Layer(this.props.state, lyr);
             newLayer.headers = [];
             for (let j of lyr.headers) {
                 newLayer.headers.push(new Header(j));
@@ -320,22 +326,13 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                 for (let k of lyr.symbolOptions['chartHeaderIds']) {
                     chartFields.push(newLayer.getHeaderById(k));
                 }
-            newLayer.id = lyr.id;
-            newLayer.name = lyr.name
-            newLayer.showPopUpOnHover = lyr.showPopUpOnHover;
-            newLayer.showPopUpInPlace = lyr.showPopUpInPlace === undefined ? true : lyr.showPopUpInPlace;
-            newLayer.layerType = lyr.layerType;
-            newLayer.geoJSON = lyr.geoJSON;
-            newLayer.colorOptions = new ColorOptions(lyr.colorOptions);
             newLayer.colorOptions.colorField = newLayer.getHeaderById(lyr.colorOptions['colorHeaderId']);
-            newLayer.symbolOptions = new SymbolOptions(lyr.symbolOptions);
             newLayer.symbolOptions.iconField = newLayer.getHeaderById(lyr.symbolOptions['iconHeaderId']);
             newLayer.symbolOptions.blockSizeVar = newLayer.getHeaderById(lyr.symbolOptions['blockHeaderId']);
             newLayer.symbolOptions.sizeXVar = newLayer.getHeaderById(lyr.symbolOptions['xHeaderId']);
             newLayer.symbolOptions.sizeYVar = newLayer.getHeaderById(lyr.symbolOptions['yHeaderId']);
             newLayer.symbolOptions.chartFields = chartFields;
 
-            newLayer.clusterOptions = new ClusterOptions(lyr.clusterOptions);
             this.props.state.layers.push(newLayer);
             if (newLayer.layerType === LayerTypes.HeatMap)
                 this.props.state.layerMenuState.heatLayerOrder.push({ id: newLayer.id });

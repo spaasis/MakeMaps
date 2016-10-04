@@ -69,7 +69,7 @@ export class AppState {
 
     @observable embed: boolean = false;
 
-    @observable infoScreenText: string | null;
+    @observable infoScreenText: string;
     strings: Strings;
 
     map: L.Map;
