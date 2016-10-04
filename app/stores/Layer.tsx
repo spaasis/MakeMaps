@@ -409,11 +409,11 @@ export class Layer {
 
         }
         if (count > 0) {
-            let popupContent = (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '');
+            let popupContent = (clu.showCount ? '<b>' + clu.countText + '</b> ' + count + '<br/>' : '');
             clu.hoverHeaders.map(function(h) {
                 let header = this.getHeaderById(h.headerId);
-                popupContent += h.showSum ? h.sumText + ' ' + sum[header.value].toFixed(header.decimalAccuracy) + '<br/>' : '';
-                popupContent += h.showAvg ? h.avgText + ' ' + avg[header.value].toFixed(header.decimalAccuracy) + '<br/>' : ''
+                popupContent += h.showSum ? '<b>' + h.sumText + '</b> ' + sum[header.value].toFixed(header.decimalAccuracy) + '<br/>' : '';
+                popupContent += h.showAvg ? '<b>' + h.avgText + '</b> ' + avg[header.value].toFixed(header.decimalAccuracy) + '<br/>' : ''
             }, this)
             popupContent += 'Click or zoom to expand';
             cluster.bindPopup(L.popup({ closeButton: false }).setContent(popupContent));
