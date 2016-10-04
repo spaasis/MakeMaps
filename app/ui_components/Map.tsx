@@ -39,8 +39,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     componentWillMount() {
         let sPageURL = decodeURIComponent(window.location.search.substring(1));
         _parameters = sPageURL.split('&');
-
-        if (this.getUrlParameter("mapFile") || this.getUrlParameter("mapURL") || this.getUrlParameter("mapGeoJSON"))
+        if (this.getUrlParameter("mapURL"))
             this.props.state.embed = true;
     }
 
@@ -60,17 +59,9 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
     /** Parse URL parameters and act accordingly */
     embed() {
-        //Pure GeoJSON without styling as string
-        let mapGeoJSON = this.getUrlParameter("mapGeoJSON");
-        if (mapGeoJSON) {
-
-            this.layerImportSubmit(new Layer(this.props.state).geoJSON = mapGeoJSON)
-            return;
-        }
         //URL to get a .makeMaps-file
         let mapURL = this.getUrlParameter("mapURL");
         if (mapURL) {
-
             LoadExternalMap(mapURL, this.loadSavedMap.bind(this));
             return;
         }

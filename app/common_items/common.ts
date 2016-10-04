@@ -1,3 +1,4 @@
+declare var XDomainRequest;
 
 /** Projection names to show in import wizard */
 let DefaultProjections: Array<string> = ['WGS84', 'EPSG:4269', 'EPSG:3857', 'ETRS-GK25FIN'];
@@ -80,17 +81,25 @@ function LoadExternalMap(URL: string, onLoad: (string) => void) {
  * @param  onLoad     function to run on load complete
  */
 function LoadSavedMap(path: string, onLoad: (string) => void) {
-    let rawFile = new XMLHttpRequest();
-    rawFile.open("GET", path, false);
-    rawFile.onreadystatechange = uploadComplete.bind(this)
-    function uploadComplete() {
-        if (rawFile.readyState === 4) {
-            if (rawFile.status === 200 || rawFile.status == 0) {
-                onLoad(JSON.parse(rawFile.responseText));
+    var xhr = new XMLHttpRequest();
+    if ("withCredentials" in xhr) {
+        xhr.open('GET', path, true);
+    }
+    else if (typeof XDomainRequest != "undefined") {
+        xhr = new XDomainRequest();
+        xhr.open('GET', path);
+    } else {
+        xhr = null;
+    }
+    xhr.onload = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200 || xhr.status == 0) {
+                onLoad(JSON.parse(xhr.responseText));
             }
         }
     }
-    rawFile.send(null);
+    xhr.onerror = function() { console.log('Embedding error in XHR request') }
+    xhr.send();
 }
 
 
