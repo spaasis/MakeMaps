@@ -81,6 +81,7 @@ class Strings {
     opacity: string = 'Opacity';
     openSavedMapButton: string = 'Show me';
     or: string = 'or';
+    popupClusterHelp: string = 'NOTE: Cluster pop-ups will always open on hover';
     popupHelp: string = 'Pop-ups show information about map features, such as points and areas. Select the data you wish to show, and the method by which the pop-up is opened.';
     popupMenuTitle: string = 'Pop-ups';
     previous: string = 'Go back';
@@ -106,8 +107,10 @@ class Strings {
     setCustomScheme: string = 'Set custom scheme';
     setIcon: string = 'Set icon';
     showLegend: string = 'Show legend';
+    showPopUpInPlace: string = 'Open on map element';
     showPopupOnClick: string = 'Open on click';
     showPopUpOnHover: string = 'Open on hover';
+    showPopUpUpTop: string = 'Open at top of screen';
     singleBlockValue: string = 'Single block value';
     singleBlockWidth: string = 'Single block width';
     size: string = 'size';

@@ -75,7 +75,7 @@ export class PopUpMenu extends React.Component<{
                 </label>
                 <br/>
                 <label forHTML='inPlace'>
-                    Open on map element
+                    {strings.showPopUpInPlace}
                     <input
                         type='radio'
                         onChange={() => {
@@ -90,10 +90,10 @@ export class PopUpMenu extends React.Component<{
                         />
                 </label>
                 <br/>
-                Or
+                {strings.or}
                 <br/>
                 <label forHTML='separate' style={{ marginTop: 0 }}>
-                    Open in separate container
+                    {strings.showPopUpUpTop}
                     <input
                         type='radio'
                         onChange={() => {
@@ -115,6 +115,11 @@ export class PopUpMenu extends React.Component<{
             }
             <br/>
             <i>{strings.popupHelp}</i>
+            {layer.clusterOptions.useClustering ?
+                <div>
+                    <i>{strings.popupClusterHelp}</i>
+                </div>
+                : null}
         </div >
         );
     }

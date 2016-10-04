@@ -404,8 +404,7 @@ export class Layer {
                 popupContent += h.showAvg ? h.avgText + ' ' + avg[header.value].toFixed(header.decimalAccuracy) + '<br/>' : ''
             }, this)
             popupContent += 'Click or zoom to expand';
-            if (this.showPopUpInPlace)
-                cluster.bindPopup(L.popup({ closeButton: false }).setContent(popupContent));
+            cluster.bindPopup(L.popup({ closeButton: false }).setContent(popupContent));
         }
 
         return icon;

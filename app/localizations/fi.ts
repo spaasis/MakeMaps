@@ -82,6 +82,7 @@ let fi: Strings =
         opacity: 'Intensiteetti',
         openSavedMapButton: 'Avaa',
         or: 'Tai',
+        popupClusterHelp: 'HUOM: klusterin tiedot avautuvat aina, kun hiiri on klusterin päällä',
         popupHelp: 'Tässä valikossa voit asettaa karttakohteille näkyviksi lisätietoja. Valitse muuttujat joiden arvot haluat näyttää, sekä lisätietojen avaustapa',
         popupMenuTitle: 'Pop-upit',
         previous: 'Edellinen',
@@ -107,8 +108,10 @@ let fi: Strings =
         setCustomScheme: 'Määritä oma väriasteikko',
         setIcon: 'Valitse ikoni',
         showLegend: 'Näytä selite',
+        showPopUpInPlace: 'Näytä elementin päällä',
         showPopupOnClick: 'Avaa lisätiedot klikkauksella',
         showPopUpOnHover: 'Avaa lisätiedot kun hiiri on karttakohteen päällä',
+        showPopUpUpTop: 'Näytä kartan yläpuolella',
         singleBlockValue: 'Yhden ruudun arvo',
         singleBlockWidth: 'Yhden ruudun leveys',
         size: 'koko',
@@ -151,7 +154,6 @@ let fi: Strings =
         welcomeUsabilityText2: ' sisältää käyttöohjeita ja lisätietoa',
         width: 'leveys',
         wiki: 'Projektin Wiki',
-
     };
 
 export { fi };
