@@ -21,6 +21,8 @@ h2,h3{
   font-family: 'dejavu_sansextralight',Arial,sans-serif;
   text-align: center;;
   margin: 0
+  text-align: center;
+  margin: 0;
 }
 
 hr{
@@ -29,25 +31,26 @@ hr{
 }
 
 .menuOpen{
-  animation-name: menuOpen;
-  animation-duration: 0.2s;
+  -webkit-animation: menuOpen 0.3s;
+  animation: menuOpen 0.3s;
 }
 .menuClose{
-  animation-name: menuClose;
-  animation-duration: 0.2s;
+  -webkit-animation: menuClose 0.3s;
+  animation: menuClose 0.3s;
 }
 
 .legendRightAnimate{
-  animation-name: legendMoveLeft;
-  animation-duration: 0.2s;
+  -webkit-animation: legendMoveLeft 0.3s;
+  animation: legendMoveLeft 0.3s;
 }
 
 .legendLeftAnimate{
-  animation-name: legendMoveRight;
-  animation-duration: 0.2s;
+  -webkit-animation: legendMoveRight 0.3s;
+  animation: legendMoveRight 0.3s;
 }
 
 .demoImage{
+  -webkit-animation: imageReveal 0.6s;
   animation: imageReveal 0.6s;
 }
 
@@ -56,7 +59,7 @@ hr{
   text-align: center;
 }
 .menu label{
-  margin-top: 20;
+  margin-top: 20px;
   display: inline-block;
 }
 .menuHeader{
@@ -75,8 +78,7 @@ hr{
 
 .menuHeaderDiv{
   margin: 0;
-  float: 'left';
-  width: 30;
+  width: 30px;
   height: 100%;
   position: relative;
   display:flex;
@@ -93,7 +95,7 @@ hr{
 }
 .menuHeaderDiv:hover i{
   position: absolute;
-  top: 6;
+  top: 6px;
   left: 0;
   right: 0;
 }
@@ -105,7 +107,7 @@ hr{
   border: 1px solid #999999 !important;
 }
 .dialogHeader{
-  height: 40;
+  height: 40px;
   background: #6891e2;
   color: white;
 }
@@ -245,6 +247,7 @@ hr{
   max-height: calc(100% - 15px);
   z-index: 600;
   overflow-y: auto;
+  padding: 10px;
 }
 
 .filter{
@@ -301,17 +304,38 @@ hr{
   }
 }
 
-@keyframes menuOpen {
+@-webkit-keyframes menuOpen {
    from {width:0}
    to {width: 250}
 }
 
-@keyframes menuClose {
+@-webkit-keyframes menuClose {
    from {width:250}
    to {width: 0}
 }
 
+@keyframes menuOpen {
+   from {width:0}
+   to {width: 250px}
+}
+
+@keyframes menuClose {
+   from {width:250px}
+   to {width: 0}
+}
+
+@-webkit-keyframes legendMoveLeft {
+  from{right:30px}
+  to {right: 282px}
+}
+
+@-webkit-keyframes legendMoveRight {
+  from{right:282px}
+  to {right: 30px}
+}
+
 @keyframes legendMoveLeft {
+<<<<<<< HEAD
   from{right:30}
   to {right: 281}
 }
@@ -319,4 +343,13 @@ hr{
 @keyframes legendMoveRight {
   from{right:281}
   to {right: 30}
+=======
+  from{right:30px}
+  to {right: 282px}
+}
+
+@keyframes legendMoveRight {
+  from{right:282px}
+  to {right: 30px}
+>>>>>>> 61ceecdafad10e6a158a5b2e7d1d809da960fbd1
 }
