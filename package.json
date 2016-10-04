@@ -28,7 +28,7 @@
     "react-dom": "^0.14.8",
     "react-draggable": "^2.0.0-beta3",
     "react-dropzone": "^3.4.0",
-    "react-localization": "0.0.6",
+    "react-localization": "0.0.7",
     "react-modal": "^0.6.1",
     "react-select": "^1.0.0-beta12",
     "react-slider": "^0.6.1",
