@@ -298,7 +298,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
 
     saveEmbedCode() {
-        let script = '<script type="text/javascript">function setSource(){var json =' + JSON.stringify(this.formSaveJSON()) + ';	document.getElementById("MakeMapsEmbed").src = "http://makemaps.online?mapJSON="+json;}</script>';
+        let script = '<script type="text/javascript">function setSource(){var json =' + JSON.stringify(this.formSaveJSON()) + ';	document.getElementById("MakeMapsEmbed").src = "http://makemaps.online?mapJSON="+JSON.stringify(json);}</script>';
         let frame = '<iframe onLoad="setSource()"  id="MakeMapsEmbed" style="height: 800px; width: 800px; border:none;"/>';
 
         let html = script + frame;
