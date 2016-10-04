@@ -398,7 +398,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         let layers = state.layers;
         let legend = state.legend;
         let layerCount = 0;
-        let classExtension = legend.right ? (state.visibleMenu > 0 ? ' legendRightAnimate' : 'legendLeftAnimate') : '';
+        let classExtension = legend.right ? (state.visibleMenu > 0 ? ' legendRightAnimate' : ' legendLeftAnimate') : '';
         return (
             <div className={'legend' + classExtension} //animate with menu open/close
                 onMouseEnter={(e) => { state.map.dragging.disable(); } }
@@ -408,7 +408,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                     textAlign: 'center',
                     position: 'absolute',
                     left: legend.left ? 0 : '',
-                    right: legend.right ? state.menuShown ? state.visibleMenu == 0 ? 30 : 285 : 0 : '',
+                    right: legend.right ? (state.menuShown ? (state.visibleMenu == 0 ? 30 : 281) : 0) : '',
                     bottom: legend.bottom ? 15 : '', //15 to keep the legend above map attributions
                     top: legend.top ? 0 : '',
                     background: "#FFF",

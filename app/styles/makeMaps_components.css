@@ -309,10 +309,10 @@ hr{
 
 @keyframes legendMoveLeft {
   from{right:30}
-  to {right: 282}
+  to {right: 281}
 }
 
 @keyframes legendMoveRight {
-  from{right:282}
+  from{right:281}
   to {right: 30}
 }
