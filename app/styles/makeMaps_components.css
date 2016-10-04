@@ -247,6 +247,7 @@ hr{
   max-height: calc(100% - 15px);
   z-index: 600;
   overflow-y: auto;
+  padding: 10px;
 }
 
 .filter{

@@ -14,7 +14,6 @@ export class ClusterMenu extends React.Component<{
         let menuState = this.props.state.clusterMenuState;
         let options = layer.clusterOptions;
         let hoverHeader = menuState.selectedHeader ? options.hoverHeaders.filter(function(f) { return f.headerId == menuState.selectedHeader.id })[0] : undefined;
-        console.log('renderStartCluster')
         return (
             <div className='makeMaps-options'>
                 <label htmlFor='useClustering'>{strings.useClustering}

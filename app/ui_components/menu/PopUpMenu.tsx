@@ -26,8 +26,6 @@ export class PopUpMenu extends React.Component<{
 
     }
     render() {
-        console.log('renderstart')
-
         let strings = this.props.state.strings;
         let layer = this.props.state.editingLayer;
         return (<div className="makeMaps-options">

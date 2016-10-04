@@ -316,23 +316,11 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             for (let j of lyr.headers) {
                 newLayer.headers.push(new Header(j));
             }
-            newLayer.popupHeaders = [];
-            if (lyr['popupHeaderIds'])
-                for (let k of lyr['popupHeaderIds']) {
-                    newLayer.popupHeaders.push(newLayer.getHeaderById(k));
-                }
-            let chartFields: Header[] = [];
-            if (lyr.symbolOptions['chartHeaderIds'])
-                for (let k of lyr.symbolOptions['chartHeaderIds']) {
-                    chartFields.push(newLayer.getHeaderById(k));
-                }
             newLayer.colorOptions.colorField = newLayer.getHeaderById(lyr.colorOptions['colorHeaderId']);
             newLayer.symbolOptions.iconField = newLayer.getHeaderById(lyr.symbolOptions['iconHeaderId']);
             newLayer.symbolOptions.blockSizeVar = newLayer.getHeaderById(lyr.symbolOptions['blockHeaderId']);
             newLayer.symbolOptions.sizeXVar = newLayer.getHeaderById(lyr.symbolOptions['xHeaderId']);
             newLayer.symbolOptions.sizeYVar = newLayer.getHeaderById(lyr.symbolOptions['yHeaderId']);
-            newLayer.symbolOptions.chartFields = chartFields;
-
             this.props.state.layers.push(newLayer);
             if (newLayer.layerType === LayerTypes.HeatMap)
                 this.props.state.layerMenuState.heatLayerOrder.push({ id: newLayer.id });

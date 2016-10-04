@@ -19,7 +19,7 @@ export class Layer {
     /** The type of the layer. Will affect the options available.*/
     @observable layerType: LayerTypes;
     /** The data property names.*/
-    @observable headers: Header[] = [];
+    @observable headers: Header[];
 
     @computed get numberHeaders() {
         return this.headers.filter(function(val) { return val.type === 'number' });
@@ -65,6 +65,34 @@ export class Layer {
         this.colorOptions = prev && prev.colorOptions ? new ColorOptions(prev.colorOptions) : new ColorOptions();
         this.symbolOptions = prev && prev.symbolOptions ? new SymbolOptions(prev.symbolOptions) : new SymbolOptions();
         this.clusterOptions = prev && prev.clusterOptions ? new ClusterOptions(prev.clusterOptions) : new ClusterOptions();
+        this.headers = []
+        if (prev && prev.headers) {
+            for (let header of prev.headers) {
+                this.headers.push(new Header(header))
+            }
+        }
+        this.popupHeaders = [];
+        if (prev && prev['popupHeaderIds']) {//from saved files
+            for (let id of prev['popupHeaderIds']) {
+                this.popupHeaders.push(this.getHeaderById(id))
+            }
+        }
+        else if (prev && prev.popupHeaders) {
+            for (let header of prev.popupHeaders) {
+                this.popupHeaders.push(new Header(header))
+            }
+        }
+        this.symbolOptions.chartFields = [];
+        if (prev && prev.symbolOptions['chartHeaderIds']) {//from saved files
+            for (let id of prev.symbolOptions['chartHeaderIds']) {
+                this.symbolOptions.chartFields.push(this.getHeaderById(id));
+            }
+        }
+        else if (prev && prev.symbolOptions.chartFields) {
+            for (let header of prev.symbolOptions.chartFields) {
+                this.symbolOptions.chartFields.push(new Header(header))
+            }
+        }
 
     }
 
@@ -157,9 +185,14 @@ export class Layer {
                             this.appState.infoScreenText = null;
 
                     }, this);
-                    markers.on('clusterclick'), function(c: any) {
-                        console.log(c)
-                    }
+                    markers.on('click', function(a) {
+                        a.layer.closePopup();
+                    });
+
+                    markers.on('clusterclick', function(a) {
+                        // a.layer is actually a cluster
+                        a.layer.closePopup();
+                    });
 
                     this.batchAdd(0, 500, this.displayLayer.getLayers(), markers);
                     // markers.addLayer(this.displayLayer);
@@ -920,7 +953,6 @@ export class SymbolOptions {
         this.sizeLowLimit = prev && prev.sizeLowLimit || 0;
         this.sizeUpLimit = prev && prev.sizeUpLimit || 50;
         this.sizeMultiplier = prev && prev.sizeMultiplier || 1;
-        this.chartFields = prev && prev.chartFields || [];
         this.chartType = prev && prev.chartType || 'pie';
         this.blockValue = prev && prev.blockValue || 0;
         this.blockWidth = prev && prev.blockWidth || 10;
@@ -934,6 +966,8 @@ export class SymbolOptions {
         this.actualMaxYRadius = prev && prev.actualMaxYRadius || undefined;
         this.actualMinXRadius = prev && prev.actualMinXRadius || undefined;
         this.actualMaxXRadius = prev && prev.actualMaxXRadius || undefined;
+
+
     }
 }
 
