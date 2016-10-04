@@ -9,6 +9,8 @@ export class ExportMenu extends React.Component<{
     saveImage: () => void,
     /** Save map as a .makeMaps file*/
     saveFile: () => void,
+    /** Save map as .html iFrame*/
+    saveEmbedCode: () => void,
 
 }, {}>{
 
@@ -45,6 +47,12 @@ export class ExportMenu extends React.Component<{
                 <button className='menuButton' onClick={() => {
                     this.props.saveFile();
                 } }>{strings.saveAsFile}</button>
+                <br/>
+                {strings.or}
+                <br/>
+                <button className='menuButton' onClick={() => {
+                    this.props.saveEmbedCode();
+                } }>{strings.saveEmbedCode}</button>
 
                 <br/>
 

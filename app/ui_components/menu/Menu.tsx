@@ -23,10 +23,9 @@ export class MakeMapsMenu extends React.Component<{
     changeLayerOrder: () => void,
     /** Add a new layer (by opening import wizard)*/
     addLayer: () => void,
-    /** Export map as .png */
     saveImage: () => void,
-    /** Export map as .makeMaps*/
     saveFile: () => void,
+    saveEmbedCode: () => void,
 }, {}>{
     componentWillMount() {
         this.props.state.visibleMenu = 0;
@@ -80,6 +79,9 @@ export class MakeMapsMenu extends React.Component<{
                     } }
                     saveFile = {() => {
                         this.props.saveFile();
+                    } }
+                    saveEmbedCode = {() => {
+                        this.props.saveEmbedCode();
                     } }
                     />;
 

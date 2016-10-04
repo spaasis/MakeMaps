@@ -89,6 +89,7 @@ class Strings {
     revert: string = 'Revert';
     saveAsFile: string = 'Download map as a file';
     saveAsImage: string = 'Download map as image';
+    saveEmbedCode: string = 'Save embed code';
     saveFilter: string = 'Save filter';
     selectBaseMap: string = 'Select the base map';
     selectColorScheme: string = 'Select a color scheme';
@@ -153,7 +154,6 @@ class Strings {
     welcomeUsabilityText2: string = ' for user guides and more';
     width: string = 'width';
     wiki: string = 'Project Wiki';
-
 }
 
 export { Strings }

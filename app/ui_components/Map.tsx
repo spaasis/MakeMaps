@@ -39,15 +39,16 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     componentWillMount() {
         let sPageURL = decodeURIComponent(window.location.search.substring(1));
         _parameters = sPageURL.split('&');
-        if (this.getUrlParameter("mapURL"))
+        if (this.getUrlParameter('mapURL') || this.getUrlParameter('mapJSON'))
             this.props.state.embed = true;
     }
 
     componentDidMount() {
-        window.onpopstate = this.onBackButtonEvent;
         _mapInitModel.InitCustomProjections();
         this.initMap();
-        if (this.props.state.embed)
+        if (!this.props.state.embed)
+            window.onpopstate = this.onBackButtonEvent;
+        else
             this.embed();
 
     }
@@ -59,6 +60,13 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
     /** Parse URL parameters and act accordingly */
     embed() {
+        let mapJSON = this.getUrlParameter('mapJSON');
+        if (mapJSON) {
+            mapJSON = decodeURIComponent(window.location.href.substring(window.location.href.indexOf('{'))); //Hack: most of the JSON parameter is parsed as hash (because colors are defined as #xxx)
+            this.loadSavedMap(JSON.parse(mapJSON))
+            return;
+        }
+
         //URL to get a .makeMaps-file
         let mapURL = this.getUrlParameter("mapURL");
         if (mapURL) {
@@ -216,7 +224,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             });
     }
 
-    saveFile() {
+    formSaveJSON() {
         let layers: Layer[] = [];
         for (let layer of this.props.state.layers) {
             layers.push(new Layer(this.props.state, layer))
@@ -278,10 +286,25 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             }
             delete e.filterValues; delete e.filteredIndices; delete e.appState;
         });
-        let string = JSON.stringify(saveData);
 
-        let blob = new Blob([string], { type: "text/plain;charset=utf-8" });
+        return saveData;
+    }
+
+    saveFile() {
+
+        let saveString = JSON.stringify(this.formSaveJSON());
+        let blob = new Blob([saveString], { type: "text/plain;charset=utf-8" });
         (window as any).saveAs(blob, 'map.mmap');
+    }
+
+    saveEmbedCode() {
+        let script = '<script type="text/javascript">function setSource(){var json =' + JSON.stringify(this.formSaveJSON()) + ';	document.getElementById("MakeMapsEmbed").src = "http://makemaps.online?mapJSON="+json;}</script>';
+        let frame = '<iframe onLoad="setSource()"  id="MakeMapsEmbed" style="height: 800px; width: 800px; border:none;"/>';
+
+        let html = script + frame;
+
+        let blob = new Blob([html], { type: "text/plain;charset=utf-8" });
+        (window as any).saveAs(blob, 'MakeMaps_embed.html');
     }
 
     loadSavedMap(saved?: SaveState) {
@@ -412,6 +435,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                                 changeLayerOrder ={this.changeLayerOrder.bind(this)}
                                 saveImage ={this.saveImage.bind(this)}
                                 saveFile = {this.saveFile.bind(this)}
+                                saveEmbedCode = {this.saveEmbedCode.bind(this)}
                                 />
                             : null}
                     </div>

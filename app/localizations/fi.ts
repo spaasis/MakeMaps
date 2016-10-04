@@ -90,6 +90,7 @@ let fi: Strings =
         revert: 'Käännä',
         saveAsFile: 'Lataa tiedostona',
         saveAsImage: 'Lataa kuvana',
+        saveEmbedCode: 'Lataa upotuskoodi',
         saveFilter: 'Tallenna suodatin',
         selectBaseMap: 'Valitse pohjakartta',
         selectColorScheme: 'Valitse väriasteikko',
