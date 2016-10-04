@@ -63,10 +63,11 @@ export class AppState {
 
     @observable clusterMenuState: ClusterMenuState = new ClusterMenuState();
 
-
     @observable autoRefresh: boolean = true;
 
     @observable embed: boolean = false;
+
+    @observable infoScreenText: string | null;
 
     map: L.Map;
 }

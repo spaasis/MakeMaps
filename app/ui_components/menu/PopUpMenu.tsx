@@ -17,7 +17,7 @@ export class PopUpMenu extends React.Component<{
         let layer = this.props.state.editingLayer;
         if (e === null)
             e = [];
-        layer.popupHeaders=[] //empty headers
+        layer.popupHeaders = [] //empty headers
         for (let i of e) { //add new headers
             layer.popupHeaders.push(i);
         }
@@ -68,6 +68,40 @@ export class PopUpMenu extends React.Component<{
                         checked={layer.showPopUpOnHover}
                         name='openMethod'
                         id='hover'
+                        />
+
+                </label>
+                <br/>
+                <label forHTML='inPlace'>
+                    Open on map element
+                    <input
+                        type='radio'
+                        onChange={() => {
+                            layer.showPopUpInPlace = true;
+                            if (this.props.state.autoRefresh)
+                                layer.refreshPopUps();
+
+                        } }
+                        checked={layer.showPopUpInPlace}
+                        name='placement'
+                        id='inPlace'
+                        />
+                </label>
+                <br/>
+                Or
+                <br/>
+                <label forHTML='separate' style={{ marginTop: 0 }}>
+                    Open in separate container
+                    <input
+                        type='radio'
+                        onChange={() => {
+                            layer.showPopUpInPlace = false;
+                            if (this.props.state.autoRefresh)
+                                layer.refreshPopUps();
+                        } }
+                        checked={!layer.showPopUpInPlace}
+                        name='placement'
+                        id='separate'
                         />
 
                 </label>

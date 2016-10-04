@@ -35,6 +35,16 @@ hr{
   animation-duration: 0.2s;
 }
 
+.legendRightAnimate{
+  animation-name: legendMoveLeft;
+  animation-duration: 0.2s;
+}
+
+.legendLeftAnimate{
+  animation-name: legendMoveRight;
+  animation-duration: 0.2s;
+}
+
 .demoImage{
   animation: imageReveal 0.6s;
 }
@@ -295,4 +305,14 @@ hr{
 @keyframes menuClose {
    from {width:250}
    to {width: 0}
+}
+
+@keyframes legendMoveLeft {
+  from{right:30}
+  to {right: 282}
+}
+
+@keyframes legendMoveRight {
+  from{right:282}
+  to {right: 30}
 }

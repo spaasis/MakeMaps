@@ -12,6 +12,7 @@ import { MapInitModel } from '../models/MapInitModel';
 import { GetSymbolSize, LoadExternalMap, ShowLoading, HideLoading, ShowNotification, HideNotification } from '../common_items/common';
 import { OnScreenFilter } from './misc/OnScreenFilter';
 import { OnScreenLegend } from './misc/OnScreenLegend';
+import { OnScreenInfoDisplay } from './misc/OnScreenInfoDisplay';
 import { WelcomeScreen } from './misc/WelcomeScreen';
 import 'leaflet';
 import 'Leaflet.extra-markers';
@@ -320,6 +321,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             newLayer.id = lyr.id;
             newLayer.name = lyr.name
             newLayer.showPopUpOnHover = lyr.showPopUpOnHover;
+            newLayer.showPopUpInPlace = lyr.showPopUpInPlace === undefined ? true : lyr.showPopUpInPlace;
             newLayer.layerType = lyr.layerType;
             newLayer.geoJSON = lyr.geoJSON;
             newLayer.colorOptions = new ColorOptions(lyr.colorOptions);
@@ -399,6 +401,8 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                 <div id='map'>
                     {this.getFilters()}
                     {this.showLegend()}
+                    <OnScreenInfoDisplay
+                        state = {this.props.state}/>
                 </div>
                 {this.props.state.embed ? null :
                     <div>

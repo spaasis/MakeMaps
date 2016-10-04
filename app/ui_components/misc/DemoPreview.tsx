@@ -30,6 +30,7 @@ export class DemoPreview extends React.Component<{
             background: 'white',
             bottom: 0,
             left: 0,
+
         }
         return (
             <div style = {style}>

@@ -10,6 +10,7 @@ export class Legend {
     /** Is the legend shown on the map */
     @observable visible: boolean;
     @observable showPercentages: boolean;
+    @observable showVariableNames: boolean;
     @observable edit: boolean;
     @observable top: boolean;
     @observable bottom: boolean;
@@ -24,6 +25,7 @@ export class Legend {
         this.horizontal = prev && prev.horizontal !== undefined ? prev.horizontal : true; //longer format needed because default is true: if previous value is false in the shorter syntax, will resolve to false
         this.visible = prev && prev.visible !== undefined ? prev.visible : true;
         this.showPercentages = prev && prev.showPercentages || false;
+        this.showVariableNames = prev && prev.showVariableNames || false;
         this.edit = prev && prev.edit || false;
         this.top = prev && prev.top !== undefined ? prev.top : false;
         this.bottom = prev && prev.bottom !== undefined ? prev.bottom : true;
