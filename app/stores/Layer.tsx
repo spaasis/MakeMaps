@@ -382,7 +382,6 @@ export class Layer {
                 iconAnchor: L.point(25, 25),
             });
 
-
         }
         if (count > 0) {
             let popupContent = (clu.showCount ? clu.countText + ' ' + count + '<br/>' : '');
@@ -392,7 +391,7 @@ export class Layer {
                 popupContent += h.showAvg ? h.avgText + ' ' + avg[header.value].toFixed(header.decimalAccuracy) + '<br/>' : ''
             }, this)
             popupContent += 'Click or zoom to expand';
-            cluster.bindPopup(popupContent);
+            cluster.bindPopup(L.popup({ closeButton: false }).setContent(popupContent));
         }
         return icon;
     }
@@ -734,8 +733,10 @@ function addPopups(feature, layer: L.GeoJSON) {
         }
     }
 
-    if (popupContent != '')
-        layer.bindPopup(popupContent);
+    if (popupContent != '') {
+        let popup = L.popup({ closeButton: !this.showPopUpOnHover }).setContent(popupContent);
+        layer.bindPopup(popup);
+    }
     else
         layer.unbindPopup();
 
