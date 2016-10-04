@@ -116,7 +116,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
     renderSteps() {
         let rows = [];
         let filter = this.props.filter;
-        if (filter.steps) {
+        if (filter.steps.slice().length > 0) {
             let index = 0;
             filter.steps.forEach(function(step) {
                 rows.push(
@@ -139,7 +139,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
             }, this);
 
         }
-        else if (filter.categories) {
+        else if (filter.categories.slice().length > 0) {
             let index = 0;
             filter.categories.forEach(function(category) {
                 rows.push(
