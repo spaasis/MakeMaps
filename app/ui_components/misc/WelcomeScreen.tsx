@@ -11,10 +11,13 @@ export class WelcomeScreen extends React.Component<{
     state: WelcomeScreenState,
     loadMap: (json) => void,
     openLayerImport: () => void,
+    changeLanguage: (lang: string) => void,
     strings: Strings,
+    language: string,
 }, {}>{
 
     componentDidMount() {
+        this.stopScrolling();
         this.startScrolling();
     }
 
@@ -100,6 +103,13 @@ export class WelcomeScreen extends React.Component<{
         let blockHeaderStyle = { display: 'block', fontFamily: 'dejavu_sansextralight' };
         let infoDivStyle = { width: 200, border: '1px solid #cecece', borderRadius: '15px', padding: 10 }
 
+        let flags =
+            <div style={{ position: 'absolute', top: 5, left: 5 }} className='f32'>
+                <i className = 'flag gb' onClick={() => { this.props.changeLanguage('en'); } } style ={{ cursor: 'pointer', borderBottom: this.props.language == 'en' ? '2px solid #cecece' : '' }}/>
+                <i className = 'flag fi' onClick={() => { this.props.changeLanguage('fi'); } } style ={{ cursor: 'pointer', borderBottom: this.props.language == 'fi' ? '2px solid #cecece' : '' }}/>
+            </div>
+
+
         let infoBlocks =
             <div style={{ display: 'inline-flex', flexWrap: 'wrap', maxWidth: '85%' }}>
                 <div style={infoDivStyle}>
@@ -133,6 +143,7 @@ export class WelcomeScreen extends React.Component<{
 
 
         return (<div style={{ textAlign: 'center' }}>
+            {flags}
             <div style={{ display: 'block', margin: '0 auto', padding: 5 }}>
                 <img src='app/images/favicon.png' style={{ display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }}/>
                 <img src='app/images/logo.png' style={{ display: 'inline-block', verticalAlign: 'middle' }}/>

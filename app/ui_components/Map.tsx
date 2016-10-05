@@ -391,6 +391,11 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         state.welcomeShown = true;
     }
 
+    changeLanguage(lang: string) {
+        locale.setLanguage(lang);
+        this.props.state.language = lang;
+    }
+
 
     render() {
         let modalStyle = {
@@ -416,9 +421,11 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                             style = {modalStyle}>
                             <WelcomeScreen
                                 strings = {this.props.state.strings}
-                                state={new WelcomeScreenState()}
+                                state={this.props.state.welcomeScreenState}
                                 loadMap={this.loadSavedMap.bind(this)}
                                 openLayerImport={this.startLayerImport.bind(this)}
+                                changeLanguage ={this.changeLanguage.bind(this)}
+                                language={this.props.state.language}
                                 />
                         </Modal>
                         {this.props.state.importWizardShown ?
@@ -466,7 +473,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
 
 var Map = MapMain;
 const state = new AppState();
-// locale.setLanguage('fi');
+state.language = locale.getLanguage();
 //Hack - get all the string options visible in the IDE
 let strings: Strings = (locale as any);
 state.strings = strings;
