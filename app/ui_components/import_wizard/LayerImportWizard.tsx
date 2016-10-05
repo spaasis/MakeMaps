@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { FileUploadView } from './FileUploadView';
 import { FileDetailsView } from './FileDetailsView';
-import { ShowLoading, HideLoading, ShowNotification, HideNotification } from '../../common_items/common'
+import { ShowLoading, HideLoading, ShowNotification, HideNotification, IsNumber } from '../../common_items/common'
 import { FilePreProcessModel } from '../../models/FilePreProcessModel';
 let _fileModel = new FilePreProcessModel();
 import { ImportWizardState, AppState } from '../../stores/States';
@@ -49,7 +49,7 @@ export class LayerImportWizard extends React.Component<{
         for (let i of state.layer.geoJSON.features) {
             let props = state.layer.geoJSON.features ? i.properties : {};
             for (let h of Object.keys(props)) {
-                let isnumber = !isNaN(parseFloat(props[h]));
+                let isnumber = IsNumber(props[h]);
                 if (isnumber)
                     props[h] = +props[h];
                 let header = state.layer.headers.slice().filter(function(e) { return e.value === h })[0];
@@ -69,6 +69,7 @@ export class LayerImportWizard extends React.Component<{
         this.nextStep();
 
     }
+
 
     setFileDetails() {
         ShowLoading();

@@ -1,5 +1,7 @@
 /** Main class for localization. Contains the necessary definition and the default (english) text*/
 class Strings {
+    clusterTogglePopup: string = 'The dataset contains a large number of map points. Point clustering has been enabled to boost performance. If you wish, you may turn this off in the clustering options';
+    filterMultiSelect: string = 'Allow multiple selections';
     addNewLayer: string = 'Add new layer';
     border: string = 'Border';
     borderRadius: string = 'Border radius';

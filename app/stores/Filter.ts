@@ -33,6 +33,8 @@ export class Filter {
     @observable filteredIndices: number[];
     /** Currently selected number step in the UI*/
     @observable selectedStep: number;
+    /** Can multiple categories be selected at the same time*/
+    @observable allowCategoryMultiSelect: boolean;
     /** Array of currently selected string categories in the UI*/
     @observable selectedCategories: string[];
 
@@ -47,6 +49,9 @@ export class Filter {
 
     @observable show: boolean;
 
+    @observable x: number;
+    @observable y: number;
+
     previousLower: number;
     previousUpper: number;
 
@@ -60,11 +65,14 @@ export class Filter {
         this.currentMin = prev && prev.currentMin !== undefined ? prev.currentMin : undefined;
         this.totalMax = prev && prev.totalMax !== undefined ? prev.totalMax : undefined;
         this.totalMin = prev && prev.totalMin !== undefined ? prev.totalMin : undefined;
+        this.selectedStep = prev && prev.selectedStep !== undefined ? prev.selectedStep : -1;
+        
+        this.x = prev && prev.x !== undefined ? prev.x : 10;
+        this.y = prev && prev.y !== undefined ? prev.y : 10;
         this.steps = prev && prev.steps || [];
         this.categories = prev && prev.categories || [];
         this.remove = prev && prev.remove || false;
         this.filteredIndices = prev && prev.filteredIndices || [];
-        this.selectedStep = prev && prev.selectedStep || -1;
         this.selectedCategories = prev && prev.selectedCategories || [];
         this.locked = prev && prev.locked || false;
         this.show = prev && prev.show || false;

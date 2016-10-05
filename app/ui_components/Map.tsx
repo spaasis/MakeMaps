@@ -143,6 +143,10 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     layerImportSubmit(l: Layer) {
         window.location.hash = 'edit';
         l.getValues()
+        if (l.layerType !== LayerTypes.HeatMap && l.pointFeatureCount > 500) {
+            ShowNotification(strings.clusterTogglePopup);
+            l.clusterOptions.useClustering = true;
+        }
         l.appState = this.props.state;
         l.id = _currentLayerId++;
         l.colorOptions.colorField = l.numberHeaders[0];
@@ -290,7 +294,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             }
             delete e.filterValues; delete e.filteredIndices; delete e.appState;
         });
-
+        console.log(saveData.filters)
         return saveData;
     }
 
@@ -311,10 +315,11 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         (window as any).saveAs(blob, 'MakeMaps_embed.html');
     }
 
-    loadSavedMap(saved?: SaveState) {
+    loadSavedMap(saved: SaveState) {
         window.location.hash = 'edit';
         console.time("LoadSavedMap")
         let headers: Header[];
+        console.log(saved)
         if (saved.baseLayerId) {
             let oldBase = this.props.state.activeBaseLayer;
 

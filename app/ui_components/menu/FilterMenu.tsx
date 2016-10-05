@@ -15,7 +15,7 @@ export class FilterMenu extends React.Component<{
 
         if (val) {
             this.props.state.editingFilter.fieldToFilter = val;
-            this.props.state.editingFilter.title = val.value;
+            this.props.state.editingFilter.title = val.label;
             if (val.type === 'string') {
                 this.props.state.filterMenuState.useCustomSteps = true;
                 this.props.state.filterMenuState.useDistinctValues = true;
@@ -134,6 +134,8 @@ export class FilterMenu extends React.Component<{
         let layer = filter ? this.props.state.layers.filter(function(l) { return l.id == filter.layerId })[0] : null;
         let state = this.props.state.filterMenuState;
 
+
+
         return (this.props.state.layers.slice().length == 0 ? null :
             <div className="makeMaps-options">
                 {filters ?
@@ -190,40 +192,59 @@ export class FilterMenu extends React.Component<{
                                 </label>
                             </div>
                         }
-                        <label forHTML='steps'>
-                            {strings.filterUseSteps}
-                            <input
-                                type='checkbox'
-                                onChange={(e) => {
-                                    state.useCustomSteps = (e.target as any).checked;
-                                    this.calculateSteps();
-                                } }
-                                checked={state.useCustomSteps}
-                                id='steps'
-                                />
-                            <br/>
-                        </label>
-                        {filter.fieldToFilter.type !== 'string' && state.useCustomSteps && filter.totalMin !== undefined && filter.totalMax !== undefined ?
+                        {filter.fieldToFilter ?
                             <div>
-                                <label forHTML='dist'>
-                                    {strings.filterUseDistinctValues}
-                                    <input
-                                        type='checkbox'
-                                        onChange={(e) => {
-                                            filter.steps = [];
-                                            state.useDistinctValues = (e.target as any).checked;
-                                            state.customStepCount = (e.target as any).checked ? layer.uniqueValues[filter.fieldToFilter.value].length - 1 : 5;
-                                            this.calculateSteps();
-                                        } }
-                                        checked={state.useDistinctValues}
-                                        id='dist'
-                                        />
-                                    <br/>
-                                </label>
-                                {this.renderSteps.call(this)}
+                                {filter.fieldToFilter.type !== 'string' ?
+                                    <label forHTML='steps'>
+                                        {strings.filterUseSteps}
+                                        <input
+                                            type='checkbox'
+                                            onChange={(e) => {
+                                                state.useCustomSteps = (e.target as any).checked;
+                                                this.calculateSteps();
+                                            } }
+                                            checked={state.useCustomSteps}
+                                            id='steps'
+                                            />
+                                        <br/>
+                                    </label>
+                                    :
+                                    <label forHTML='multiSelect'>
+                                        {strings.filterMultiSelect}
+                                        <input
+                                            type='checkbox'
+                                            onChange={(e) => {
+                                                filter.allowCategoryMultiSelect = (e.target as any).checked;
+                                            } }
+                                            checked={filter.allowCategoryMultiSelect}
+                                            id='steps'
+                                            />
+                                        <br/>
+                                    </label>
+                                }
+                                {filter.fieldToFilter.type !== 'string' && state.useCustomSteps && filter.totalMin !== undefined && filter.totalMax !== undefined ?
+                                    <div>
+                                        <label forHTML='dist'>
+                                            {strings.filterUseDistinctValues}
+                                            <input
+                                                type='checkbox'
+                                                onChange={(e) => {
+                                                    filter.steps = [];
+                                                    state.useDistinctValues = (e.target as any).checked;
+                                                    state.customStepCount = (e.target as any).checked ? layer.uniqueValues[filter.fieldToFilter.value].length - 1 : 5;
+                                                    this.calculateSteps();
+                                                } }
+                                                checked={state.useDistinctValues}
+                                                id='dist'
+                                                />
+                                            <br/>
+                                        </label>;
+                                        {this.renderSteps.call(this)}
+                                    </div>
+                                    : null
+                                }
                             </div>
-                            : null
-                        }
+                            : null}
                         {layer.layerType === LayerTypes.HeatMap ? null :
                             <div>
                                 <label forHTML='remove'>

@@ -102,6 +102,8 @@ function LoadSavedMap(path: string, onLoad: (string) => void) {
     xhr.send();
 }
 
+function IsNumber(val: string) {
+    return val == '' || !isNaN(+val)
+}
 
-
-export { DefaultProjections, GetSymbolSize, CalculateLimits, GetItemBetweenLimits, LoadExternalMap, ShowLoading, HideLoading, ShowNotification, HideNotification }
+export { DefaultProjections, GetSymbolSize, CalculateLimits, GetItemBetweenLimits, LoadExternalMap, ShowLoading, HideLoading, ShowNotification, HideNotification, IsNumber }

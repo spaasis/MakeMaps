@@ -106,8 +106,11 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
         let categories = filter.selectedCategories;
         let category = filter.categories[i];
         let index = categories.indexOf(category);
-        if (index == -1)
+        if (index == -1) {
+            if (!filter.allowCategoryMultiSelect)
+                categories.splice(0, categories.length);
             categories.push(category);
+        }
         else
             categories.splice(index, 1);
         filter.filterLayer();
@@ -116,7 +119,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
     renderSteps() {
         let rows = [];
         let filter = this.props.filter;
-        if (filter.steps.slice().length > 0) {
+        if (filter.steps && filter.steps.slice().length > 0) {
             let index = 0;
             filter.steps.forEach(function(step) {
                 rows.push(
@@ -139,7 +142,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
             }, this);
 
         }
-        else if (filter.categories.slice().length > 0) {
+        else if (filter.categories && filter.categories.slice().length > 0) {
             let index = 0;
             filter.categories.forEach(function(category) {
                 rows.push(
@@ -178,9 +181,15 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
         let filter = this.props.filter;
         return <Draggable
             handle={'.filterhead'}
+            position={{ x: filter.x, y: filter.y }}
             onDrag={(e) => { e.preventDefault(); e.stopPropagation(); return; } }
+            onStop={(e, data, asd) => {
+                filter.x = data.x;
+                filter.y = data.y;
+            } }
             >
             <div className='filter'
+                id = {'filter' + filter.id}
                 onMouseEnter={(e) => { filter.appState.map.dragging.disable(); } }
                 onMouseLeave={(e) => { filter.appState.map.dragging.enable(); } }
                 onWheel={(e) => { e.stopPropagation(); } }

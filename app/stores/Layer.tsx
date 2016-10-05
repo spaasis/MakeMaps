@@ -160,10 +160,7 @@ export class Layer {
 
             }
             if (this.displayLayer) {
-                if (this.layerType !== LayerTypes.HeatMap && this.pointFeatureCount > 500 && !this.clusterOptions.useClustering) {
-                    ShowNotification('The dataset contains a large number of map points. Point clustering has beeen enabled to boost performance. If you wish, you may turn this off in the clustering options');
-                    this.clusterOptions.useClustering = true;
-                }
+
                 if (this.layerType !== LayerTypes.HeatMap && this.clusterOptions.useClustering) {
 
                     let markers = (L as any).markerClusterGroup({
@@ -288,6 +285,7 @@ export class Layer {
         if (!this.uniqueValues)
             this.uniqueValues = {};
         let pointCount = 0;
+
         this.geoJSON.features.map(function(feat) {
             if (feat.geometry.type == 'Point') {
                 pointCount++;
@@ -319,6 +317,7 @@ export class Layer {
             }
             return a;
         }
+
     }
 
     createClusteredIcon(cluster) {

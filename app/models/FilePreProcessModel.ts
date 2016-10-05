@@ -5,6 +5,7 @@ let togeojson = require('togeojson');
 let wkt = require('wellknown');
 let osmtogeojson = require('osmtogeojson');
 import { Header } from '../stores/Layer';
+import { IsNumber } from '../common_items/common';
 // declare function shp(any): { any }
 export class FilePreProcessModel {
 
@@ -22,33 +23,22 @@ export class FilePreProcessModel {
         let parse = Papa.parse(input, { preview: 1, header: true });
         delim = parse.meta.delimiter;
         for (let field of parse.meta.fields) {
-            if (this.isNumber(field)) {
+            if (IsNumber(field)) {
                 headers = [];
                 return [headers, delim];
             }
-            headers.push({ name: field, type: this.isNumber(parse.data[0][field]) ? 'number' : 'string' });
+            headers.push({ name: field, type: IsNumber(parse.data[0][field]) ? 'number' : 'string' });
         }
-
 
         return [headers, delim];
     }
 
-    private isNumber(val: string) {
-        return val == '' || !isNaN(+val)
-    }
+
 
     /**
      * public - Converts input csv data into GeoJSON object
-     *
-     * @param  input      the import file in text format
-     * @param  latField  latitude field name
-     * @param  lonField  longitude field name
-     * @param  delim     delimiter
-     * @param  headers  layer headers
-     * @return           GeoJSON object
      */
     public ParseCSVToGeoJSON(input: string, latField: string, lonField: string, delim: string, headers: Header[], onComplete: (geoJSON) => void) {
-        let geoJSON: { features: any[], type: string } = null;
         csv2geojson.csv2geojson(input, {
             latfield: latField,
             lonfield: lonField,
@@ -56,17 +46,13 @@ export class FilePreProcessModel {
         },
             function(err, data) {
                 if (!err) {
-                    geoJSON = data;
-
+                    onComplete(data);
                 }
                 else {
                     //TODO
                     console.log(err);
                 }
             });
-
-        onComplete(geoJSON);
-
     }
 
 
@@ -102,6 +88,7 @@ export class FilePreProcessModel {
     }
 
 
+
     /**
      * private - Projects the coordinates from original projection to WGS84
      *
@@ -120,10 +107,4 @@ export class FilePreProcessModel {
         return geoJSON;
 
     }
-
-
-
-
-
-
 }
