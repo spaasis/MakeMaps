@@ -62,7 +62,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     embed() {
         let mapJSON = this.getUrlParameter('mapJSON');
         if (mapJSON) {
-            mapJSON = decodeURIComponent(window.location.href.substring(window.location.href.indexOf('{'))); //Hack: most of the JSON parameter is parsed as hash (because colors are defined as #xxx)
             this.loadSavedMap(JSON.parse(mapJSON))
             return;
         }
@@ -84,12 +83,17 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
      * @return false when not found, value when found
      */
     getUrlParameter(sParam: string) {
-        var sParameterName, i;
+        var sParameterName: string[], i;
         for (i = 0; i < _parameters.length; i++) {
             sParameterName = _parameters[i].split('=');
 
             if (sParameterName[0] === sParam) {
-                return sParameterName[1] === undefined ? false : sParameterName[1];
+                let value: string = '';
+                for (let i = 1; i < sParameterName.length; i++) {
+                    value += sParameterName[i];
+                    if (i < sParameterName.length - 2) value += '=';
+                }
+                return sParameterName[1] === undefined ? '' : value;
             }
         }
     };
@@ -298,7 +302,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
 
     saveEmbedCode() {
-        let script = '<script type="text/javascript">function setSource(){var json =' + JSON.stringify(this.formSaveJSON()) + '; var frame =	document.getElementById("MakeMapsEmbed"); if (!frame.src || frame.src=="") frame.src = "http://makemaps.online?mapJSON="+JSON.stringify(json);}</script>';
+        let script = '<script type="text/javascript">function setSource(){var json =' + JSON.stringify(this.formSaveJSON()) + '; var frame =	document.getElementById("MakeMapsEmbed"); if (!frame.src || frame.src=="") frame.src = "https://makemaps.online?mapJSON="+encodeURIComponent(JSON.stringify(json));}</script>';
         let frame = '<iframe onLoad="setSource()"  id="MakeMapsEmbed" style="height: 100%; width: 100%; border:none;"/>';
 
         let html = script + frame;
