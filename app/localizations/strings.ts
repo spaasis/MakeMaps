@@ -1,7 +1,5 @@
 /** Main class for localization. Contains the necessary definition and the default (english) text*/
 class Strings {
-    clusterTogglePopup: string = 'The dataset contains a large number of map points. Point clustering has been enabled to boost performance. If you wish, you may turn this off in the clustering options';
-    filterMultiSelect: string = 'Allow multiple selections';
     addNewLayer: string = 'Add new layer';
     border: string = 'Border';
     borderRadius: string = 'Border radius';
@@ -19,6 +17,7 @@ class Strings {
     clusterShowAvg: string = 'Show average on hover';
     clusterShowCount: string = 'Show point count on hover';
     clusterShowSum: string = 'Show sum on hover';
+    clusterTogglePopup: string = 'The dataset contains a large number of map points. Point clustering has been enabled to boost performance. If you wish, you may turn this off in the clustering options';
     clusterUseSymbolStyle: string = 'Use symbol style';
     colorMenuStepHelp: string = 'Set the lower limit for each step and a color to match';
     colorMenuTitle: string = 'Colors';
@@ -47,6 +46,7 @@ class Strings {
     filterChangeOpacity: string = 'Change opacity';
     filterDragTip: string = 'TIP: drag the filter on screen by the header to place it where you wish';
     filterMenuTitle: string = 'Filters';
+    filterMultiSelect: string = 'Allow multiple selections';
     filterRemove: string = 'Remove filtered items';
     filterUseDistinctValues: string = 'Use distinct values';
     filterUseSteps: string = 'Use custom steps';

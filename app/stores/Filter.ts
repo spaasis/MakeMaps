@@ -66,7 +66,7 @@ export class Filter {
         this.totalMax = prev && prev.totalMax !== undefined ? prev.totalMax : undefined;
         this.totalMin = prev && prev.totalMin !== undefined ? prev.totalMin : undefined;
         this.selectedStep = prev && prev.selectedStep !== undefined ? prev.selectedStep : -1;
-        
+
         this.x = prev && prev.x !== undefined ? prev.x : 10;
         this.y = prev && prev.y !== undefined ? prev.y : 10;
         this.steps = prev && prev.steps || [];
