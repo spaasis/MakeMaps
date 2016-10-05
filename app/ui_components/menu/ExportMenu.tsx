@@ -47,14 +47,7 @@ export class ExportMenu extends React.Component<{
                 <button className='menuButton' onClick={() => {
                     this.props.saveFile();
                 } }>{strings.saveAsFile}</button>
-                <br/>
-                {strings.or}
-                <br/>
-                <button className='menuButton' onClick={() => {
-                    this.props.saveEmbedCode();
-                } }>{strings.saveEmbedCode}</button>
 
-                <br/>
 
 
             </div>
