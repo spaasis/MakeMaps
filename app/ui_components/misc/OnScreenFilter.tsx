@@ -127,8 +127,8 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
                             cursor: 'pointer',
                             height: 40,
                             lineHeight: '40px',
-                            borderLeft: filter.selectedStep === index ? '6px solid #6891e2' : '',
-                            borderRight: filter.selectedStep === index ? '6px solid #6891e2' : ''
+                            fontWeight: filter.selectedStep === index ? 'bold' : '',
+                            textDecoration: filter.selectedStep === index ? 'underline' : ''
 
                         }}
                         key={step}
@@ -150,8 +150,8 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
                             cursor: 'pointer',
                             width: 200,
                             height: 40,
-                            borderLeft: filter.selectedCategories.indexOf(category) > -1 ? '6px solid #6891e2' : '',
-                            borderRight: filter.selectedCategories.indexOf(category) > -1 ? '6px solid #6891e2' : '',
+                            fontWeight: filter.selectedCategories.indexOf(category) > -1 ? 'bold' : '',
+                            textDecoration: filter.selectedCategories.indexOf(category) > -1 ? 'underline' : '',
                         }}
 
                         key={category}
