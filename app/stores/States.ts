@@ -71,7 +71,7 @@ export class AppState {
 
     @observable infoScreenText: string;
 
-    @observable language: string | null = null;
+    @observable language: string;
     strings: Strings;
 
     map: L.Map;
