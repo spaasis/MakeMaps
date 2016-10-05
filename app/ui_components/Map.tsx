@@ -62,6 +62,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     embed() {
         let mapJSON = this.getUrlParameter('mapJSON');
         if (mapJSON) {
+            mapJSON = decodeURIComponent(window.location.href.substring(window.location.href.indexOf('{'))); //Hack: most of the JSON parameter is parsed as hash (because colors are defined as #xxx)
             this.loadSavedMap(JSON.parse(mapJSON))
             return;
         }
@@ -297,8 +298,8 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     }
 
     saveEmbedCode() {
-        let script = '<script type="text/javascript">function setSource(){var json =' + JSON.stringify(this.formSaveJSON()) + '; var frame =	document.getElementById("MakeMapsEmbed"); if (!frame.src || frame.src=="") frame.src = "http://makemaps.online?mapJSON="+encodeURIComponent(JSON.stringify(json));}</script>';
-        let frame = '<iframe onLoad="setSource()"  id="MakeMapsEmbed" style="height: 800px; width: 800px; border:none;"/>';
+        let script = '<script type="text/javascript">function setSource(){var json =' + JSON.stringify(this.formSaveJSON()) + '; var frame =	document.getElementById("MakeMapsEmbed"); if (!frame.src || frame.src=="") frame.src = "http://makemaps.online?mapJSON="+JSON.stringify(json);}</script>';
+        let frame = '<iframe onLoad="setSource()"  id="MakeMapsEmbed" style="height: 100%; width: 100%; border:none;"/>';
 
         let html = script + frame;
 
