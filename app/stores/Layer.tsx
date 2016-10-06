@@ -162,9 +162,11 @@ export class Layer {
 
             }
             if (this.displayLayer) {
+                console.time('values')
                 if (!this.values) {
                     this.getValues();
                 }
+                console.timeEnd('values')
 
                 if (this.layerType !== LayerTypes.HeatMap && this.clusterOptions.useClustering) {
 
@@ -507,7 +509,7 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
             let vals = [];
             sym.chartFields.map(function(e) {
                 if (feature.properties[e.value] > 0)
-                    vals.push({ feat: e, val: feature.properties[e.value], color: col.chartColors[e.value] });
+                    vals.push({ val: feature.properties[e.value], color: col.chartColors[e.value] });
             });
             let sizeVal = sym.sizeXVar ? feature.properties[sym.sizeXVar.value] : undefined;
             return L.marker(latlng, { icon: getChartIcon(sym, col, 0, vals, sizeVal), opacity: col.opacity });
@@ -618,65 +620,48 @@ function getChartIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: numbe
     let chartHtml = makePieChart({
         fullCircle: sym.chartType === 'pie',
         data: vals,
-        valueFunc: function(d) { return d.val; },
         strokeWidth: col.weight,
         outerRadius: x,
         innerRadius: x / 3,
-        pieClass: function(d) { return d.data.feat },
         pathFillFunc: function(d) { return d.data.color },
         borderColor: col.color,
     });
     return L.divIcon({ iconAnchor: L.point(x, x), popupAnchor: L.point(0, -x), html: chartHtml, className: '' });
 
     function makePieChart(options) {
-        if (!options.data || !options.valueFunc) {
+        if (!options.data) {
             return '';
         }
-        let data = options.data,
-            valueFunc = options.valueFunc,
-            r = options.outerRadius ? options.outerRadius : 28,
+        let r = options.outerRadius ? options.outerRadius : 28,
             rInner = options.innerRadius ? options.innerRadius : r - 10,
-            pathTitleFunc = options.pathTitleFunc ? options.pathTitleFunc : function(d) { return d.data.feat.label + ': ' + d.data.val }, //Title for each path
-            pieLabel = options.pieLabel ? options.pieLabel : '', //Label for the whole chart
             pathFillFunc = options.pathFillFunc,
             border = options.borderColor,
-
             origo = (r + options.strokeWidth), //Center coordinate
             w = origo * 2, //width and height of the svg element
             h = w,
-            donut = d3.layout.pie(),
-            arc = options.fullCircle ? d3.svg.arc().outerRadius(r) : d3.svg.arc().innerRadius(rInner).outerRadius(r);
+            pie = d3.pie().value(function(d) { return d.val; })(options.data),
+            arc = options.fullCircle ? d3.arc().innerRadius(0).outerRadius(r) : d3.arc().innerRadius(rInner).outerRadius(r);
 
         //Create an svg element
-        let svg = document.createElementNS(d3.ns.prefix.svg, 'svg');
+        let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         //Create the pie chart
         let vis = d3.select(svg)
-            .data([data])
             .attr('width', w)
-            .attr('height', h);
-
-        let arcs = vis.selectAll('g.arc')
-            .data(donut.value(valueFunc))
-            .enter().append('svg:g')
-            .attr('class', 'arc')
+            .attr('height', h)
+            .append('g')
             .attr('transform', 'translate(' + origo + ',' + origo + ')');
 
-        arcs.append('svg:path')
+        let arcs = vis.selectAll('arc')
+            .data(pie)
+            .enter().append('g')
+            .attr('class', 'arc')
+
+        arcs.append('path')
+            .attr('d', arc)
             .attr('fill', pathFillFunc)
             .attr('stroke', border)
             .attr('stroke-width', options.strokeWidth)
-            .attr('d', arc)
-            .append('svg:title')
-            .text(pathTitleFunc);
 
-        vis.append('text')
-            .attr('x', origo)
-            .attr('y', origo)
-            .attr('text-anchor', 'middle')
-            //.attr('dominant-baseline', 'central')
-            /*IE doesn't seem to support dominant-baseline, but setting dy to .3em does the trick*/
-            .attr('dy', '.3em')
-            .text(pieLabel);
         //Return the svg-markup rather than the actual element
         if (typeof (window as any).XMLSerializer != "undefined") {
             return (new (window as any).XMLSerializer()).serializeToString(svg);

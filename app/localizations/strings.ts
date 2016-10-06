@@ -126,7 +126,6 @@ class Strings {
     standardLayers: string = 'Standard layers';
     steps: string = 'Steps';
     symboldemoDescription: string = 'This demo shows some of the different symbol options of MakeMaps';
-    symbolMenuChartTip: string = 'TIP: hover over symbol segments to see corresponding value';
     symbolMenuScale1: string = 'Scale ';
     symbolMenuScale2: string = ' by';
     symbolMenuScaleHeight: string = 'Scale height by';

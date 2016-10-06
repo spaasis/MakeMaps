@@ -533,8 +533,6 @@ export class SymbolMenu extends React.Component<{
                             <br/>
 
                         </label>
-                        <br/>
-                        <i>{strings.symbolMenuChartTip}</i>
                     </div>
 
                     : null

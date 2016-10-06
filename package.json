@@ -11,7 +11,7 @@
     "Leaflet.extra-markers": "git+http://github.com/coryasilva/Leaflet.ExtraMarkers",
     "chroma-js": "^1.1.1",
     "csv2geojson": "^5.0.2",
-    "d3": "^3.5.17",
+    "d3": "^4.2.6",
     "dom-to-image": "^2.4.0",
     "impromptu-react-sidemenu": "^0.1.1",
     "leaflet": "^1.0.0",

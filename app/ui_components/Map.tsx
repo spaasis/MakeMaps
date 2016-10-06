@@ -251,6 +251,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         };
 
         saveData.layers.forEach(function(e) {
+            console.log(e)
             e['popupHeaderIds'] = [];
             e.popupHeaders.map(function(h) { e['popupHeaderIds'].push(h.id) });
             delete e.popupHeaders;

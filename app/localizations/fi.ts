@@ -127,7 +127,6 @@ let fi: Strings =
         standardLayers: 'Normaalit tasot',
         steps: 'Askeleet',
         symboldemoDescription: 'Tämä demo esittelee MakeMapsin symbolivaihtoehtoja',
-        symbolMenuChartTip: 'Vinkki: pidä kursoria diagrammin osan päällä nähdäksesi sen arvo',
         symbolMenuScale1: 'Skaalaa ',
         symbolMenuScale2: ' muuttujan perusteella',
         symbolMenuScaleHeight: 'Skaalaa korkeus muuttujan perusteella',
