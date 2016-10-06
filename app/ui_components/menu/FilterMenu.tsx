@@ -195,29 +195,46 @@ export class FilterMenu extends React.Component<{
                         {filter.fieldToFilter ?
                             <div>
                                 {filter.fieldToFilter.type !== 'string' ?
-                                    <label forHTML='steps'>
-                                        {strings.filterUseSteps}
-                                        <input
-                                            type='checkbox'
-                                            onChange={(e) => {
-                                                state.useCustomSteps = (e.target as any).checked;
-                                                this.calculateSteps();
-                                            } }
-                                            checked={state.useCustomSteps}
-                                            id='steps'
-                                            />
-                                        <br/>
-                                    </label>
+                                    <div>
+                                        <label forHTML='steps'>
+                                            {strings.filterUseSteps}
+                                            <input
+                                                type='checkbox'
+                                                onChange={(e) => {
+                                                    state.useCustomSteps = (e.target as any).checked;
+                                                    this.calculateSteps();
+                                                } }
+                                                checked={state.useCustomSteps}
+                                                id='steps'
+                                                />
+                                            <br/>
+                                        </label>
+                                        <label forHTML='showSlider'>
+                                            {strings.filterShowSlider}
+                                            <input
+                                                type='checkbox'
+                                                onChange={(e) => {
+                                                    filter.showSlider = (e.target as any).checked;
+                                                } }
+                                                checked={filter.showSlider}
+                                                id='showSlider'
+                                                />
+                                            <br/>
+                                        </label>
+                                    </div>
                                     :
                                     <label forHTML='multiSelect'>
                                         {strings.filterMultiSelect}
                                         <input
                                             type='checkbox'
                                             onChange={(e) => {
-                                                filter.allowCategoryMultiSelect = (e.target as any).checked;
+                                                let val = (e.target as any).checked;
+                                                filter.allowCategoryMultiSelect = val;
+                                                if (!val && filter.selectedCategories.length > 1)
+                                                    filter.selectedCategories.splice(1, filter.selectedCategories.length)
                                             } }
                                             checked={filter.allowCategoryMultiSelect}
-                                            id='steps'
+                                            id='multiSelect'
                                             />
                                         <br/>
                                     </label>
@@ -238,10 +255,31 @@ export class FilterMenu extends React.Component<{
                                                 id='dist'
                                                 />
                                             <br/>
-                                        </label>;
+                                        </label>
                                         {this.renderSteps.call(this)}
                                     </div>
                                     : null
+                                }
+                                {state.useCustomSteps || filter.fieldToFilter.type === 'string' ?
+                                    <div>
+                                        <label forHTML='noSelect'>
+                                            {strings.filterAllowNoSelection}
+                                            <input
+                                                type='checkbox'
+                                                onChange={(e) => {
+                                                    let val: boolean = (e.target as any).checked;
+                                                    filter.forceSelection = val;
+                                                    if (val) {
+                                                        filter.selectedStep = filter.selectedStep > -1 ? filter.selectedStep : filter.steps.length > 0 ? 0 : -1;
+                                                        filter.selectedCategories = filter.selectedCategories.length > 0 ? filter.selectedCategories : filter.categories.length > 0 ? [filter.categories[0]] : [];
+                                                    }
+                                                } }
+                                                checked={filter.forceSelection}
+                                                id='noSelect'
+                                                />
+                                            <br/>
+                                        </label>
+                                    </div> : null
                                 }
                             </div>
                             : null}

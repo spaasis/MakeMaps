@@ -120,6 +120,7 @@ export class Layer {
             let start = Date.now();
             let that = this;
             let path = false;
+
             this.displayLayer.eachLayer(function(l: any) {
 
                 if (l.setStyle) {
@@ -149,7 +150,7 @@ export class Layer {
                     this.displayLayer = (createHeatLayer(this) as any);
             }
             else {
-                let options: L.GeoJSONOptions = {}
+                console.time('geoJSON')
                 this.displayLayer = L.geoJSON([], {
                     onEachFeature: this.onEachFeature,
                     pointToLayer: getMarker.bind(this, col, sym),
@@ -157,9 +158,13 @@ export class Layer {
                 });
 
                 this.batchAdd(0, 500, this.geoJSON, this.displayLayer);
+                console.timeEnd('geoJSON')
 
             }
             if (this.displayLayer) {
+                if (!this.values) {
+                    this.getValues();
+                }
 
                 if (this.layerType !== LayerTypes.HeatMap && this.clusterOptions.useClustering) {
 
@@ -167,8 +172,9 @@ export class Layer {
                         iconCreateFunction: this.createClusteredIcon.bind(this),
                         // chunkedLoading: true,
                     });
-
                     markers.on('clustermouseover', function(c: any) {
+                        if (c.layer._group._spiderfied) //if cluster has been spiderfied, ignore the event in order to show other popups properly
+                            return;
                         if (this.showPopUpInPlace)
                             c.layer.openPopup();
                         else
@@ -182,13 +188,13 @@ export class Layer {
                             this.appState.infoScreenText = null;
 
                     }, this);
-                    markers.on('click', function(a) {
-                        a.layer.closePopup();
+                    markers.on('click', function(c) {
+                        c.layer.closePopup();
                     });
 
-                    markers.on('clusterclick', function(a) {
+                    markers.on('clusterclick', function(c) {
                         // a.layer is actually a cluster
-                        a.layer.closePopup();
+                        c.layer.closePopup();
                     });
 
                     this.batchAdd(0, 500, this.displayLayer.getLayers(), markers);
@@ -197,12 +203,14 @@ export class Layer {
 
 
                 }
+                console.time('addLayer')
                 this.appState.map.addLayer(this.displayLayer);
-
+                this.initFilters();
                 this.refreshFilters();
-                if (!this.values) {
-                    this.getValues();
-                }
+
+                console.timeEnd('addLayer')
+
+
                 this.toggleRedraw = false;
 
             }
@@ -211,7 +219,7 @@ export class Layer {
 
         if (this.layerType !== LayerTypes.HeatMap) {
             if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
-                this.symbolOptions.symbolType === SymbolTypes.Simple) {
+                this.symbolOptions.symbolType === SymbolTypes.Simple && this.symbolOptions.symbolType === SymbolTypes.Chart) {
                 getScaleSymbolMaxValues.call(this);
             }
         }
@@ -219,10 +227,17 @@ export class Layer {
     }
 
 
+    initFilters() {
+        let filters = this.appState.filters.filter((f) => { return f.layerId === this.id });
+        for (let filter of filters) {
+            filter.init(true);
+        }
+    }
+
     refreshFilters() {
         let filters = this.appState.filters.filter((f) => { return f.layerId === this.id });
-        for (let i in filters) {
-            filters[i].init(true);
+        for (let filter of filters) {
+            filter.filterLayer();
         }
     }
 
@@ -473,7 +488,7 @@ export class Layer {
         if (source.features ? i >= source.features.length : i >= source.length)
             return;
         else {
-            setTimeout(this.batchAdd(i, i + 500, source, target), 10);
+            setTimeout(this.batchAdd(i, i + 500, source, target), 20);
         }
     }
 }

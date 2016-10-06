@@ -43,11 +43,13 @@ class Strings {
     fileDetailsViewHeader: string = 'Just a few more details';
     fileTypeSupportInfo: string = 'More info about supported file types';
     fillColor: string = 'Fill';
+    filterAllowNoSelection: string = 'At least one element must be selected';
     filterChangeOpacity: string = 'Change opacity';
     filterDragTip: string = 'TIP: drag the filter on screen by the header to place it where you wish';
     filterMenuTitle: string = 'Filters';
     filterMultiSelect: string = 'Allow multiple selections';
     filterRemove: string = 'Remove filtered items';
+    filterShowSlider: string = 'Show slider';
     filterUseDistinctValues: string = 'Use distinct values';
     filterUseSteps: string = 'Use custom steps';
     finishImport: string = 'Make a map!';

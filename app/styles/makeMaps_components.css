@@ -259,7 +259,6 @@ hr{
 .filter{
   max-height: 100%;
   z-index: 600;
-  overflow-y: auto;
 }
 
 .marker-hidden{

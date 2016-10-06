@@ -7,6 +7,16 @@ import { observer } from 'mobx-react';
 
 @observer
 export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
+    componentDidMount() {
+        let filter = this.props.filter;
+        setTimeout(function() {
+            filter.x = Math.min(filter.x, window.innerWidth - +document.getElementById('filter' + filter.id).offsetWidth); //place within bounds
+            filter.y = Math.min(filter.y, window.innerWidth - +document.getElementById('filter' + filter.id).offsetHeight);
+
+        }, 10)
+
+    }
+
     advanceSliderWhenLocked = (lower, upper) => {
         let filter = this.props.filter;
         let minValDiff = filter.currentMin - lower;
@@ -84,12 +94,34 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
         this.props.filter.filterLayer();
 
     }
+    onKeyDown = (e) => {
+        let filter = this.props.filter;
+        let up = e.keyCode == 38;
+        let down = e.keyCode == 40;
+        if (up || down) {
+            if (filter.categories.length > 0) {
+                let index = filter.categories.indexOf(filter.selectedCategories[filter.selectedCategories.length - 1]);
+                index += up ? -1 : 1;
+                this.onCustomCategoryClick(index == -1 ? 0 : index)
+            }
+            else if (filter.steps.length > 0) {
+                let index = filter.selectedStep + (up ? -1 : 1);
+                if (index > -1 && index < filter.steps.length)
+                    this.onCustomStepClick(index);
+                else
+                    this.onCustomStepClick(0)
+            }
+        }
+    }
+
     onCustomStepClick = (i: number) => {
         let filter = this.props.filter;
         if (filter.selectedStep == i) {
-            filter.selectedStep = -1;
-            filter.currentMin = filter.totalMin;
-            filter.currentMax = filter.totalMax;
+            if (!filter.forceSelection) {
+                filter.selectedStep = -1;
+                filter.currentMin = filter.totalMin;
+                filter.currentMax = filter.totalMax;
+            }
         }
         else {
             let minVal = filter.steps[i][0];
@@ -112,10 +144,60 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
             categories.push(category);
         }
         else
-            categories.splice(index, 1);
+            if (!filter.forceSelection || (filter.forceSelection && categories.length > 1))
+                categories.splice(index, 1);
         filter.filterLayer();
 
     }
+
+
+    render() {
+        let filter = this.props.filter;
+        let map = filter.appState.map;
+        return <Draggable
+            handle={'.filterhead'}
+            position={{ x: filter.x, y: filter.y }}
+            onStop={(e, data) => {
+                filter.x = data.x;
+                filter.y = data.y;
+            } }
+            bounds={'parent'}
+            >
+            <div className='filter'
+                id = {'filter' + filter.id}
+                onMouseEnter={(e) => { map.dragging.disable(); map.scrollWheelZoom.disable(); map.keyboard.disable(); document.onkeydown = this.onKeyDown.bind(this); } }
+                onMouseLeave={(e) => { map.dragging.enable(); map.scrollWheelZoom.enable(); map.keyboard.enable(); document.onkeydown = null; } }
+                onKeyDown={this.onKeyDown.bind(this)}
+                >
+                <div className='filterhead' style ={{ position: 'sticky' }}>
+                    <h3 >{filter.title}</h3>
+                </div>
+                {this.renderSteps.call(this)}
+                {filter.fieldToFilter.type == 'number' && filter.showSlider ?
+                    <div style={{ display: 'inline-flex' }}                    >
+                        <input type='number' style={{ width: '70px' }} value={filter.currentMin.toFixed(0)} onChange={this.onCurrentMinChange}/>
+                        <Slider className='horizontal-slider'
+                            onAfterChange={(e) => { this.onFilterScaleChange(e); filter.selectedStep = -1; } }
+                            value={[filter.currentMin, filter.currentMax]}
+                            min={filter.totalMin}
+                            max={filter.totalMax}
+                            withBars>
+                            <div className='minHandle'></div>
+                            <div className='maxHandle'></div>
+                        </Slider>
+                        <input type='number' style={{ width: '70px' }} value={filter.currentMax.toFixed(0)} onChange={this.onCurrentMaxChange}/>
+                        <div style={{ display: 'inline-block', cursor: 'pointer' }} onClick={() => {
+                            filter.locked = !filter.locked;
+                            filter.lockedDistance = filter.currentMax - filter.currentMin;
+                        } }>
+                            <i style={{ color: 'cecece', fontSize: 20, padding: 4 }} className={!filter.locked ? 'fa fa-unlock-alt' : 'fa fa-lock'}/>
+                        </div>
+                    </div>
+                    : null}
+            </div>
+        </Draggable>
+    }
+
     renderSteps() {
         let rows = [];
         let filter = this.props.filter;
@@ -176,48 +258,4 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
         return <div> {rows.map(function(e) { return e })} </div>
     }
 
-
-    render() {
-        let filter = this.props.filter;
-        return <Draggable
-            handle={'.filterhead'}
-            position={{ x: filter.x, y: filter.y }}
-            onDrag={(e) => { e.preventDefault(); e.stopPropagation(); return; } }
-            onStop={(e, data, asd) => {
-                filter.x = data.x;
-                filter.y = data.y;
-            } }
-            >
-            <div className='filter'
-                id = {'filter' + filter.id}
-                onMouseEnter={(e) => { filter.appState.map.dragging.disable(); } }
-                onMouseLeave={(e) => { filter.appState.map.dragging.enable(); } }
-                onWheel={(e) => { e.stopPropagation(); } }
-                >
-                <h3 className='filterhead'>{filter.title}</h3>
-                {this.renderSteps.call(this)}
-                {filter.fieldToFilter.type == 'number' ?
-                    <div style={{ display: 'inline-flex' }}                    >
-                        <input type='number' style={{ width: '70px' }} value={filter.currentMin.toFixed(0)} onChange={this.onCurrentMinChange}/>
-                        <Slider className='horizontal-slider'
-                            onAfterChange={(e) => { this.onFilterScaleChange(e); filter.selectedStep = -1; } }
-                            value={[filter.currentMin, filter.currentMax]}
-                            min={filter.totalMin}
-                            max={filter.totalMax}
-                            withBars>
-                            <div className='minHandle'></div>
-                            <div className='maxHandle'></div>
-                        </Slider>
-                        <input type='number' style={{ width: '70px' }} value={filter.currentMax.toFixed(0)} onChange={this.onCurrentMaxChange}/>
-                        <div style={{ display: 'inline-block', cursor: 'pointer' }} onClick={() => {
-                            filter.locked = !filter.locked;
-                            filter.lockedDistance = filter.currentMax - filter.currentMin;
-                        } }>
-                            <i style={{ color: 'cecece', fontSize: 20, padding: 4 }} className={!filter.locked ? 'fa fa-unlock-alt' : 'fa fa-lock'}/>
-                        </div>
-                    </div>
-                    : null}
-            </div>
-        </Draggable>
-    }
 }

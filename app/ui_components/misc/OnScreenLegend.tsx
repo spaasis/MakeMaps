@@ -401,8 +401,8 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         let classExtension = legend.right ? (state.visibleMenu > 0 ? ' legendRightAnimate' : ' legendLeftAnimate') : '';
         return (
             <div className={'legend' + classExtension} //animate with menu open/close
-                onMouseEnter={(e) => { state.map.dragging.disable(); } }
-                onMouseLeave={(e) => { state.map.dragging.enable(); } }
+                onMouseEnter={(e) => { state.map.dragging.disable(); state.map.scrollWheelZoom.disable(); } }
+                onMouseLeave={(e) => { state.map.dragging.enable(); state.map.scrollWheelZoom.enable(); } }
                 style={{
                     width: 'auto',
                     textAlign: 'center',

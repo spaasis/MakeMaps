@@ -114,7 +114,9 @@ export class ClusterMenu extends React.Component<{
                             </div>
                             : <i>{strings.clusterInfoHelpText}</i>}
                     </div> :
-                    <i>{strings.clusterHelpText}</i>
+                    <div>
+                        <i>{strings.clusterHelpText}</i>
+                    </div>
                 }
 
             </div>

@@ -62,6 +62,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
     embed() {
         let mapJSON = this.getUrlParameter('mapJSON');
         if (mapJSON) {
+            ShowLoading();
             this.loadSavedMap(JSON.parse(mapJSON))
             return;
         }
@@ -69,6 +70,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         //URL to get a .makeMaps-file
         let mapURL = this.getUrlParameter("mapURL");
         if (mapURL) {
+            ShowLoading();
             LoadExternalMap(mapURL, this.loadSavedMap.bind(this));
             return;
         }
@@ -294,7 +296,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
             }
             delete e.filterValues; delete e.filteredIndices; delete e.appState;
         });
-        console.log(saveData.filters)
         return saveData;
     }
 
@@ -319,7 +320,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         window.location.hash = 'edit';
         console.time("LoadSavedMap")
         let headers: Header[];
-        console.log(saved)
         if (saved.baseLayerId) {
             let oldBase = this.props.state.activeBaseLayer;
 

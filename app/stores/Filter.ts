@@ -37,7 +37,6 @@ export class Filter {
     @observable allowCategoryMultiSelect: boolean;
     /** Array of currently selected string categories in the UI*/
     @observable selectedCategories: string[];
-
     /** Keep the distance between the min and max the same when the slider is being moved.
      * Useful for keeping a locked range to filter
      */
@@ -45,15 +44,21 @@ export class Filter {
     /** Distance between the locked limits (max - min) */
     lockedDistance: number;
 
-    appState: AppState;
-
+    /** Visible on the screen*/
     @observable show: boolean;
-
+    /** x(left) position on the screen*/
     @observable x: number;
+    /** y(right) position on the screen*/
     @observable y: number;
+    /** Is slider shown*/
+    @observable showSlider: boolean;
+    /** Allow for no step/category to be selected*/
+    @observable forceSelection: boolean;
 
     previousLower: number;
     previousUpper: number;
+    appState: AppState;
+
 
     constructor(appState: AppState, prev?: Filter) {
         this.id = prev && prev.id !== undefined ? prev.id : undefined;;
@@ -66,7 +71,6 @@ export class Filter {
         this.totalMax = prev && prev.totalMax !== undefined ? prev.totalMax : undefined;
         this.totalMin = prev && prev.totalMin !== undefined ? prev.totalMin : undefined;
         this.selectedStep = prev && prev.selectedStep !== undefined ? prev.selectedStep : -1;
-
         this.x = prev && prev.x !== undefined ? prev.x : 10;
         this.y = prev && prev.y !== undefined ? prev.y : 10;
         this.steps = prev && prev.steps || [];
@@ -76,7 +80,10 @@ export class Filter {
         this.selectedCategories = prev && prev.selectedCategories || [];
         this.locked = prev && prev.locked || false;
         this.show = prev && prev.show || false;
+        this.show = prev && prev.show || false;
         this.appState = prev && prev.appState || appState;
+        this.showSlider = prev && prev.showSlider || false;
+        this.forceSelection = prev && prev.forceSelection !== undefined ? prev.forceSelection : true;
 
     }
 
@@ -87,6 +94,7 @@ export class Filter {
         this.filterValues = {};
         this.filteredIndices = [];
         let id = this.layerId;
+        let count = 0;
         let layer = this.appState.layers.filter(function(l) { return l.id == id })[0];
         if (layer.layerType !== LayerTypes.HeatMap) {
             layer.displayLayer.eachLayer(function(lyr: any) {
@@ -100,12 +108,7 @@ export class Filter {
         }
         this.previousLower = this.totalMin;
         this.previousUpper = this.totalMax;
-        if (layerUpdate) {
-            this.filterLayer(); //hack-ish way to make sure that all of the layers are displayed after update
-        }
-
         this.show = true;
-
     }
 
     /**
@@ -184,7 +187,6 @@ export class Filter {
                     lyr.setOpacity(0.2);
                 else
                     lyr.setStyle({ fillOpacity: 0.2, opacity: 0.2 })
-
                 if (lyr._icon) {
                     lyr._icon.style.display = this.remove ? 'none' : '';
                     if (lyr._shadow) {
@@ -194,15 +196,17 @@ export class Filter {
                 else if (lyr._path) {
                     lyr._path.style.display = this.remove ? 'none' : '';
                 }
-                else //clustered markers don't have _icon
-                    if (lyr.options.icon) {
-                        lyr.options.icon.options.className += ' marker-hidden';
-                        lyr.setIcon(lyr.options.icon);
-                    }
+                else if (lyr.options.icon && lyr.options.icon.options.className.indexOf('marker-hidden') == -1) {
+
+                    lyr.options.icon.options.className += ' marker-hidden';
+                    lyr.setIcon(lyr.options.icon);
+                }
+
+
             }, this);
         }
 
-        function show(val: any, layer) {
+        function show(val: any, layer: Layer) {
             this.filterValues[val].map(function(lyr: any) {
                 if (shouldLayerBeAdded.call(this, lyr)) {
                     if (lyr.setOpacity)
@@ -216,15 +220,14 @@ export class Filter {
                             lyr._shadow.style.display = '';
                         }
                     }
-
                     else if (lyr._path) {
                         lyr._path.style.display = '';
                     }
-                    else
-                        if (lyr.options.icon) {
-                            lyr.options.icon.options.className = lyr.options.icon.options.className.replace(' marker-hidden', '');
-                            lyr.setIcon(lyr.options.icon);
-                        }
+                    let className: string = lyr.options.icon ? lyr.options.icon.options.className : null;
+                    if (className && className.indexOf('marker-hidden') > -1) {
+                        lyr.options.icon.options.className = className.replace(' marker-hidden', '');
+                        lyr.setIcon(lyr.options.icon);
+                    }
                 }
             }, this);
         }
@@ -235,11 +238,15 @@ export class Filter {
          */
         function shouldLayerBeAdded(layer) {
             let filters: Filter[] = this.appState.filters.filter((f) => { return f.id !== this.id && f.layerId === this.layerId });
+
             let canUnFilter = true;
-            for (let i in filters) {
-                let filter = filters[i];
+            for (let filter of filters) {
                 let val = layer.feature.properties[filter.fieldToFilter.value];
-                canUnFilter = val <= filter.currentMax && val >= filter.currentMin;
+                if (filter.fieldToFilter.type == 'number') {
+                    canUnFilter = val <= filter.currentMax && val >= filter.currentMin;
+                }
+                else
+                    canUnFilter = filter.selectedCategories.indexOf(val) > -1;
             }
             return canUnFilter;
         }
