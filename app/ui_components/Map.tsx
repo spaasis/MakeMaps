@@ -154,6 +154,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         l.colorOptions.colorField = l.numberHeaders[0];
         l.colorOptions.useMultipleFillColors = true;
         l.getColors();
+
         setTimeout(function() { l.init() }, 10);
         this.props.state.layers.push(l);
         if (l.layerType === LayerTypes.HeatMap)
@@ -163,7 +164,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         this.props.state.importWizardShown = false;
         this.props.state.editingLayer = l;
         this.props.state.menuShown = true;
-        HideLoading();
     }
     /** changeLayerOrder - Redraws the layers in the order given */
     changeLayerOrder() {

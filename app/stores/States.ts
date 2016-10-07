@@ -112,6 +112,7 @@ export class ImportWizardState {
     @observable longitudeField: string;
     /** The name of the coordinate system */
     @observable coordinateSystem: string;
+    @observable useCustomProjection: boolean;
     /** Is the file in GeoJSON? If so, don't show lat-lon-selection*/
     @computed get isGeoJSON() {
         return this.layer.geoJSON ? true : false;

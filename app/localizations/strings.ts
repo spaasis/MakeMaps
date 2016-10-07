@@ -27,7 +27,7 @@ class Strings {
     colorStepQuantiles: string = 'Quantiles';
     continue: string = 'Continue';
     coordSystemHelp: string = 'Not sure? Try with the default (WGS84) and see if the data lines up.';
-    coordSystemMissing: string = 'Coordinate system missing? Get the Proj4-string for your system from ';
+    coordSystemMissing: string = 'Get the Proj4-string for your system from ';
     createNewFilter: string = 'Create new filter';
     createNewMap: string = ' Create a new map';
     currentlySupportedTypes: string = 'Currently supported file types';
@@ -140,6 +140,7 @@ class Strings {
     uploadSavedMap: string = 'Upload saved map';
     uploadViewHeader: string = 'Upload the file containing the data';
     useClustering: string = 'Use clustering';
+    useCustomProjectionButton: string = 'The coordinate system is not on the list';
     useMultipleFillColors: string = 'Use multiple fill colors';
     useMultipleIcons: string = 'Use multiple icons';
     welcomeAccessibility: string = 'Accessibility';

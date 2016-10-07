@@ -179,7 +179,7 @@ export class Layer {
                     style: style.bind(this, col),
                 });
 
-                this.batchAdd(0, 1000, this.geoJSON, this.displayLayer, this.partialDraw.bind(this), this.finishDraw.bind(this));
+                this.batchAdd(0, this.geoJSON, this.displayLayer, this.partialDraw.bind(this), this.finishDraw.bind(this));
 
             }
 
@@ -244,7 +244,7 @@ export class Layer {
             let displayLayer = this.displayLayer;
 
 
-            setTimeout(function() { add(i, i + 1000, geoJSON, displayLayer, null, finish) }, 50); //if clustering is enabled, calling this here makes sure the references are ok
+            setTimeout(function() { add(i, geoJSON, displayLayer, null, finish) }, 10); //if clustering is enabled, calling this here makes sure the references are ok
 
         }
 
@@ -503,11 +503,12 @@ export class Layer {
         return icon;
     }
     /** Add the determined amount of feature layers to displayLayer and let the UI refresh in between*/
-    batchAdd(start: number, end: number, source: any, target: any, partialCallback: (i: number) => void, finishedCallback: () => void) {
-        let i;
+    batchAdd(start: number, source: any, target: any, partialCallback: (i: number) => void, finishedCallback: () => void) {
+        let i = start;
         let layers = []
-        for (i = start; i < end; i++) {
-            if (source.features[i]) {
+        let time = Date.now();
+        while (true) {
+            if ((Date.now() - time) < 200 && source.features[i]) {
                 if (target.addData) {
                     target.addData(source.features[i]);
                 }
@@ -516,8 +517,10 @@ export class Layer {
                         onEachFeature: this.onEachFeature,
                         pointToLayer: getMarker.bind(this, this.colorOptions, this.symbolOptions),
                     }));
+                i++
             }
-            else break;
+            else
+                break;
         }
         if (layers.length > 0) {
             target.addLayers(layers);
@@ -530,8 +533,7 @@ export class Layer {
             }
             else {
                 let add = this.batchAdd.bind(this);
-                setTimeout(function() { add(i, i + 1000, source, target, null, finishedCallback) }, 50);
-
+                setTimeout(function() { add(i, source, target, null, finishedCallback) }, 10);
             }
         }
         else {
