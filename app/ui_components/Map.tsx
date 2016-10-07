@@ -360,7 +360,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         }, this)
         for (let i in this.props.state.layers.slice()) {
             let lyr = this.props.state.layers[i];
-            lyr.init();
+            setTimeout(function() { lyr.init(); }, 10);
         }
         this.props.state.legend = new Legend(saved.legend);
 
