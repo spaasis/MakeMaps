@@ -521,6 +521,8 @@ export class Layer {
         }
         if (layers.length > 0) {
             target.addLayers(layers);
+            if (target.getBounds)
+                this.appState.map.fitBounds(target.getBounds(), {});
         }
         if (i < source.features.length) {
             if (partialCallback) {

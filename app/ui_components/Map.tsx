@@ -154,8 +154,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         l.colorOptions.colorField = l.numberHeaders[0];
         l.colorOptions.useMultipleFillColors = true;
         l.getColors();
-        setTimeout(function() { l.init }, 10);
-        this.props.state.map.fitBounds(l.layerType === LayerTypes.HeatMap ? ((l.displayLayer as any)._latlngs as L.LatLngBounds) : l.displayLayer.getBounds(), {}); //leaflet.heat doesn't utilize getBounds, so get it directly
+        setTimeout(function() { l.init() }, 10);
         this.props.state.layers.push(l);
         if (l.layerType === LayerTypes.HeatMap)
             this.props.state.layerMenuState.heatLayerOrder.push({ id: l.id });
