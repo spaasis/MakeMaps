@@ -154,7 +154,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         l.colorOptions.colorField = l.numberHeaders[0];
         l.colorOptions.useMultipleFillColors = true;
         l.getColors();
-        setTimeout(l.refresh(), 10);
+        setTimeout(function() { l.init }, 10);
         this.props.state.map.fitBounds(l.layerType === LayerTypes.HeatMap ? ((l.displayLayer as any)._latlngs as L.LatLngBounds) : l.displayLayer.getBounds(), {}); //leaflet.heat doesn't utilize getBounds, so get it directly
         this.props.state.layers.push(l);
         if (l.layerType === LayerTypes.HeatMap)
@@ -251,7 +251,6 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         };
 
         saveData.layers.forEach(function(e) {
-            console.log(e)
             e['popupHeaderIds'] = [];
             e.popupHeaders.map(function(h) { e['popupHeaderIds'].push(h.id) });
             delete e.popupHeaders;
@@ -288,7 +287,7 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
                 delete e.colorOptions.colors;
                 delete e.colorOptions.steps;
             }
-            delete e.appState; delete e.displayLayer; delete e.values; delete e.uniqueValues; delete e.pointFeatureCount; delete e.toggleRedraw;
+            delete e.appState; delete e.displayLayer; delete e.values; delete e.uniqueValues; delete e.pointFeatureCount;;
         });
         saveData.filters.forEach(function(e) {
             if (e.fieldToFilter) {
@@ -361,15 +360,13 @@ export class MapMain extends React.Component<{ state: AppState }, {}>{
         }, this)
         for (let i in this.props.state.layers.slice()) {
             let lyr = this.props.state.layers[i];
-            lyr.refresh();
-            this.props.state.map.fitBounds(lyr.layerType === LayerTypes.HeatMap ? ((lyr.displayLayer as any)._latlngs as L.LatLngBounds) : lyr.displayLayer.getBounds(), {}); //leaflet.heat doesn't utilize getBounds, so get it directly
+            lyr.init();
         }
         this.props.state.legend = new Legend(saved.legend);
 
         this.props.state.welcomeShown = false;
         this.props.state.editingLayer = this.props.state.layers[0];
         this.props.state.menuShown = !this.props.state.embed;
-        HideLoading();
         console.timeEnd("LoadSavedMap")
     }
 

@@ -1,6 +1,7 @@
 /** Main class for localization. Contains the necessary definition and the default (english) text*/
 class Strings {
     addNewLayer: string = 'Add new layer';
+    autoRefreshDisabled: string = 'An update operation seems to be taking too long. Automatic refreshing has been disabled.';
     border: string = 'Border';
     borderRadius: string = 'Border radius';
     cancel: string = 'Cancel';

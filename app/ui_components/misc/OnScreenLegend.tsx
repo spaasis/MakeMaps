@@ -15,8 +15,8 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         let col = options.colorOptions;
         let sym = options.symbolOptions;
         let isHeat = layer.layerType === LayerTypes.HeatMap;
-
-        if (col.colors && col.colors.length !== 0 && col.useMultipleFillColors && sym.symbolType !== SymbolTypes.Chart && (isHeat || sym.symbolType !== SymbolTypes.Icon || sym.iconField !== col.colorField)) {
+        let isChart = layer.layerType == LayerTypes.Standard && layer.symbolOptions.symbolType === SymbolTypes.Chart;
+        if (col.colors && col.colors.length !== 0 && !isChart && (isHeat || sym.symbolType !== SymbolTypes.Icon || sym.iconField !== col.colorField)) {
             let percentages: number[] = this.props.state.legend.showPercentages ? this.getStepPercentages(layer.values[col.colorField.value], col.limits) : [];
             choroLegend = this.createMultiColorLegend(options, percentages);
         }

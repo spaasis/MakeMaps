@@ -1,5 +1,5 @@
 import { observable, computed } from 'mobx';
-import { GetSymbolSize, GetItemBetweenLimits, ShowNotification } from '../common_items/common';
+import { GetSymbolSize, GetItemBetweenLimits, ShowNotification, HideLoading } from '../common_items/common';
 import { AppState } from './States';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -47,8 +47,6 @@ export class Layer {
     @observable symbolOptions: SymbolOptions = new SymbolOptions();
     @observable clusterOptions: ClusterOptions = new ClusterOptions();
     appState: AppState;
-    /** Is clustering being toggled on/off? If so, redraw by removing and adding the layer once*/
-    toggleRedraw: boolean = true;
     pointFeatureCount: number = 0;
     values: { [field: string]: any[]; } = undefined;
     uniqueValues: { [field: string]: any[]; } = undefined;
@@ -96,7 +94,6 @@ export class Layer {
 
     }
 
-    /** Update layer based on changed options and properties. */
     refresh() {
         let col: ColorOptions = this.colorOptions;
         let sym: SymbolOptions = this.symbolOptions;
@@ -113,10 +110,7 @@ export class Layer {
                 weight: col.weight,
             }
         }
-        if (this.displayLayer && (this.toggleRedraw || this.layerType === LayerTypes.HeatMap)) {
-            this.appState.map.removeLayer(this.displayLayer);
-        }
-        if (this.displayLayer && this.layerType !== LayerTypes.HeatMap && !this.toggleRedraw) {
+        if (this.layerType !== LayerTypes.HeatMap) {
             let start = Date.now();
             let that = this;
             let path = false;
@@ -138,82 +132,54 @@ export class Layer {
             let end = Date.now();
             if (end - start > 500) {
                 if (this.appState.autoRefresh) {
-                    ShowNotification('An update operation seems to be taking too long. Automatic refreshing has been disabled.');
+                    ShowNotification(this.appState.strings.autoRefreshDisabled);
                     this.appState.autoRefresh = false;
                 }
             }
         }
-        else if (this.geoJSON) {
+        else {
+            this.reDraw();
+        }
+    }
 
-            if (this.layerType === LayerTypes.HeatMap) {
-                if (this.colorOptions.colorField)
-                    this.displayLayer = (createHeatLayer(this) as any);
+    /** Remove and initialize the layer. Used when toggling between heat and standard layer type*/
+    reDraw() {
+        this.appState.map.removeLayer(this.displayLayer);
+        this.init();
+    }
+
+    init() {
+        let col: ColorOptions = this.colorOptions;
+        let sym: SymbolOptions = this.symbolOptions;
+        let style = function(col: ColorOptions, feature) {
+            return {
+                fillOpacity: col.fillOpacity,
+                opacity: col.opacity,
+                fillColor: col.colors.slice().length == 0 || !col.useMultipleFillColors ?
+                    col.fillColor :
+                    col.colorField.type == 'number' ?
+                        GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value])
+                        : col.colors[col.limits.indexOf(feature.properties[col.colorField.value])],
+                color: col.color,
+                weight: col.weight,
+            }
+        }
+        if (this.geoJSON) {
+
+            if (this.layerType === LayerTypes.HeatMap && this.colorOptions.colorField) {
+                this.displayLayer = (createHeatLayer(this) as any);
+                this.appState.map.addLayer(this.displayLayer);
+                this.finishDraw();
             }
             else {
-                console.time('geoJSON')
+                console.time('start')
                 this.displayLayer = L.geoJSON([], {
                     onEachFeature: this.onEachFeature,
                     pointToLayer: getMarker.bind(this, col, sym),
                     style: style.bind(this, col),
                 });
 
-                this.batchAdd(0, 500, this.geoJSON, this.displayLayer);
-                console.timeEnd('geoJSON')
-
-            }
-            if (this.displayLayer) {
-                console.time('values')
-                if (!this.values) {
-                    this.getValues();
-                }
-                console.timeEnd('values')
-
-                if (this.layerType !== LayerTypes.HeatMap && this.clusterOptions.useClustering) {
-
-                    let markers = (L as any).markerClusterGroup({
-                        iconCreateFunction: this.createClusteredIcon.bind(this),
-                        // chunkedLoading: true,
-                    });
-                    markers.on('clustermouseover', function(c: any) {
-                        if (c.layer._group._spiderfied) //if cluster has been spiderfied, ignore the event in order to show other popups properly
-                            return;
-                        if (this.showPopUpInPlace)
-                            c.layer.openPopup();
-                        else
-                            this.appState.infoScreenText = c.layer.getPopup().getContent();
-
-                    }, this);
-                    markers.on('clustermouseout', function(c: any) {
-                        if (this.showPopUpInPlace)
-                            c.layer.closePopup();
-                        else
-                            this.appState.infoScreenText = null;
-
-                    }, this);
-                    markers.on('click', function(c) {
-                        c.layer.closePopup();
-                    });
-
-                    markers.on('clusterclick', function(c) {
-                        // a.layer is actually a cluster
-                        c.layer.closePopup();
-                    });
-
-                    this.batchAdd(0, 500, this.displayLayer.getLayers(), markers);
-                    // markers.addLayer(this.displayLayer);
-                    this.displayLayer = markers as any;
-
-
-                }
-                console.time('addLayer')
-                this.appState.map.addLayer(this.displayLayer);
-                this.initFilters();
-                this.refreshFilters();
-
-                console.timeEnd('addLayer')
-
-
-                this.toggleRedraw = false;
+                this.batchAdd(0, 1000, this.geoJSON, this.displayLayer, this.partialDraw.bind(this), this.finishDraw.bind(this));
 
             }
 
@@ -228,6 +194,73 @@ export class Layer {
 
     }
 
+
+    partialDraw(i: number) {
+        if (this.displayLayer) {
+            if (this.layerType !== LayerTypes.HeatMap && this.clusterOptions.useClustering) {
+
+                let markers = (L as any).markerClusterGroup({
+                    iconCreateFunction: this.createClusteredIcon.bind(this),
+                    chunkedLoading: true,
+                });
+                markers.on('clustermouseover', function(c: any) {
+                    if (c.layer._group._spiderfied) //if cluster has been spiderfied, ignore the event in order to show other popups properly
+                        return;
+                    if (this.showPopUpInPlace)
+                        c.layer.openPopup();
+                    else
+                        this.appState.infoScreenText = c.layer.getPopup().getContent();
+
+                }, this);
+                markers.on('clustermouseout', function(c: any) {
+                    if (this.showPopUpInPlace)
+                        c.layer.closePopup();
+                    else
+                        this.appState.infoScreenText = null;
+
+                }, this);
+                markers.on('click', function(c) {
+                    c.layer.closePopup();
+                });
+
+                markers.on('clusterclick', function(c) {
+                    // a.layer is actually a cluster
+                    c.layer.closePopup();
+                });
+
+                markers.addLayer(this.displayLayer);
+                this.displayLayer = markers;
+            }
+
+            let bounds: L.LatLngBounds = this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();
+            this.appState.map.fitBounds(bounds, {}); //leaflet.heat doesn't utilize getBounds, so get it directly
+
+            this.appState.map.addLayer(this.displayLayer);
+
+
+            let add = this.batchAdd.bind(this);
+            let finish = this.finishDraw.bind(this);
+            let geoJSON = this.geoJSON;
+            let displayLayer = this.displayLayer;
+
+
+            setTimeout(function() { add(i, i + 1000, geoJSON, displayLayer, null, finish) }, 50); //if clustering is enabled, calling this here makes sure the references are ok
+
+        }
+
+    }
+
+    finishDraw() {
+        this.getValues();
+        this.initFilters();
+        this.refreshFilters();
+        let bounds: L.LatLngBounds = this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();
+        this.appState.map.fitBounds(bounds, {}); //leaflet.heat doesn't utilize getBounds, so get it directly
+        HideLoading();
+
+        console.timeEnd('start')
+
+    }
 
     initFilters() {
         let filters = this.appState.filters.filter((f) => { return f.layerId === this.id });
@@ -282,8 +315,7 @@ export class Layer {
 
     setOpacity() {
         if (this.layerType === LayerTypes.HeatMap) {
-            this.toggleRedraw = true;
-            this.refresh();
+            this.reDraw();
             return;
         }
         for (let lyr of this.displayLayer.getLayers()) {
@@ -471,27 +503,41 @@ export class Layer {
         return icon;
     }
     /** Add the determined amount of feature layers to displayLayer and let the UI refresh in between*/
-    batchAdd(start: number, end: number, source, target) {
+    batchAdd(start: number, end: number, source: any, target: any, partialCallback: (i: number) => void, finishedCallback: () => void) {
         let i;
+        let layers = []
         for (i = start; i < end; i++) {
-            if (source.features) {
-                if (source.features[i])
+            if (source.features[i]) {
+                if (target.addData) {
                     target.addData(source.features[i]);
-                else
-                    return;
+                }
+                else if (target.addLayer)
+                    layers.push(L.geoJSON(source.features[i], {
+                        onEachFeature: this.onEachFeature,
+                        pointToLayer: getMarker.bind(this, this.colorOptions, this.symbolOptions),
+                    }));
             }
-            else if (source) {
-                if (source[i])
-                    target.addLayer(source[i]);
-                else
-                    return;
+            else break;
+        }
+        if (layers.length > 0) {
+            target.addLayers(layers);
+        }
+        if (i < source.features.length) {
+            if (partialCallback) {
+                partialCallback(i);
+            }
+            else {
+                let add = this.batchAdd.bind(this);
+                setTimeout(function() { add(i, i + 1000, source, target, null, finishedCallback) }, 50);
+
             }
         }
-        if (source.features ? i >= source.features.length : i >= source.length)
-            return;
         else {
-            setTimeout(this.batchAdd(i, i + 500, source, target), 20);
+            if (start == 0)
+                partialCallback(i)//if is completed on first iteration, trigger both callbacks
+            finishedCallback();
         }
+
     }
 }
 

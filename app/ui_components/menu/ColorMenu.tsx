@@ -233,7 +233,7 @@ export class ColorMenu extends React.Component<{
                 left: '',
             }
         }
-        let isChart = layer.symbolOptions.symbolType === SymbolTypes.Chart;
+        let isChart = layer.layerType == LayerTypes.Standard && layer.symbolOptions.symbolType === SymbolTypes.Chart;
         let isHeat = layer.layerType === LayerTypes.HeatMap;
         let fieldIsString = col.colorField ? col.colorField.type == 'string' : false;
 

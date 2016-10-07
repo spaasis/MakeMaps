@@ -18,9 +18,11 @@ export class ClusterMenu extends React.Component<{
             <div className='makeMaps-options'>
                 <label htmlFor='useClustering'>{strings.useClustering}
                     <input id='useClustering' type='checkbox' checked={options.useClustering} onChange={(e) => {
-                        options.useClustering = (e.currentTarget as any).checked;
-                        layer.toggleRedraw = true;
-                        layer.refresh();
+                        let val = (e.currentTarget as any).checked;
+                        if (options.useClustering != val) {
+                            options.useClustering = val;
+                            layer.reDraw()
+                        }
                     } }/>
                 </label>
                 {options.useClustering ?

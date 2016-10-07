@@ -146,8 +146,7 @@ export class LayerMenu extends React.Component<{
                                         layer.colorOptions.fillOpacity = 0.8;
                                         menuState.heatLayerOrder = menuState.heatLayerOrder.filter(function(l) { return l.id !== layer.id });
                                         menuState.standardLayerOrder.push({ id: layer.id });
-                                        layer.toggleRedraw = true;
-                                        layer.refresh();
+                                        layer.reDraw();
                                     }
                                 } }
                                 checked={layer.layerType === LayerTypes.Standard}
@@ -167,10 +166,9 @@ export class LayerMenu extends React.Component<{
                                         layer.colorOptions.colorField = layer.colorOptions.colorField || layer.numberHeaders[0];
                                         layer.colorOptions.opacity = 0.3;
                                         layer.colorOptions.fillOpacity = 0.3;
-                                        layer.toggleRedraw = true;
                                         menuState.standardLayerOrder = menuState.standardLayerOrder.filter(function(l) { return l.id !== layer.id });
                                         menuState.heatLayerOrder.push({ id: layer.id });
-                                        layer.refresh();
+                                        layer.reDraw();
                                     }
                                 } }
                                 checked={layer.layerType === LayerTypes.HeatMap}

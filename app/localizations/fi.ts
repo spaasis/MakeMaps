@@ -2,6 +2,7 @@ import { Strings } from './strings';
 let fi: Strings =
     {
         addNewLayer: 'Lisää uusi taso',
+        autoRefreshDisabled: 'Kartan päivittämisessä näyttää kestävän liian pitkään. Automaattinen päivitys on poistettu käytöstä',
         border: 'Reunat',
         borderRadius: 'Reunan säde(pyöreys)',
         cancel: 'Peruuta',
