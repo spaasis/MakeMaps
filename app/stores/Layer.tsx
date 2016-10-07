@@ -524,8 +524,15 @@ export class Layer {
         }
         if (layers.length > 0) {
             target.addLayers(layers);
-            if (target.getBounds)
-                this.appState.map.fitBounds(target.getBounds(), {});
+            if (target.getBounds) {
+                try {
+                    this.appState.map.fitBounds(target.getBounds(), {});
+                }
+                catch (e) {
+                    console.log(target.getBounds())
+                    console.log(e)
+                }
+            }
         }
         if (i < source.features.length) {
             if (partialCallback) {
