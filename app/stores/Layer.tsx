@@ -36,7 +36,7 @@ export class Layer {
     @observable popupHeaders: Header[] = [];
     @observable showPopUpOnHover: boolean;
     /** Open popup on top of the layer it is bound to, or in a separate element. Default true*/
-    @observable showPopUpInPlace: boolean = true;
+    @observable showPopUpInPlace: boolean;
     /** The Leaflet layer. Will be modified by changing options*/
     displayLayer: L.GeoJSON;
     /** The function to run on every feature of the layer. Is used to place pop-ups to map features */
@@ -48,8 +48,9 @@ export class Layer {
     @observable clusterOptions: ClusterOptions = new ClusterOptions();
     appState: AppState;
     pointFeatureCount: number = 0;
-    values: { [field: string]: any[]; } = undefined;
-    uniqueValues: { [field: string]: any[]; } = undefined;
+    values: { [field: string]: any[]; };
+    uniqueValues: { [field: string]: any[]; };
+    bounds: L.LatLngBounds;
 
 
     constructor(state: AppState, prev?: Layer) {
@@ -63,6 +64,7 @@ export class Layer {
         this.colorOptions = prev && prev.colorOptions ? new ColorOptions(prev.colorOptions) : new ColorOptions();
         this.symbolOptions = prev && prev.symbolOptions ? new SymbolOptions(prev.symbolOptions) : new SymbolOptions();
         this.clusterOptions = prev && prev.clusterOptions ? new ClusterOptions(prev.clusterOptions) : new ClusterOptions();
+        this.bounds = prev && prev.bounds || undefined;
         this.headers = []
         if (prev && prev.headers) {
             for (let header of prev.headers) {
@@ -191,6 +193,10 @@ export class Layer {
                 getScaleSymbolMaxValues.call(this);
             }
         }
+        if (this.bounds) {
+            let bounds = L.latLngBounds((this.bounds as any)._southWest, (this.bounds as any)._northEast);
+            this.appState.map.fitBounds(bounds, {});
+        }
 
     }
 
@@ -232,9 +238,10 @@ export class Layer {
                 this.displayLayer = markers;
             }
 
-            let bounds: L.LatLngBounds = this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();
-            this.appState.map.fitBounds(bounds, {}); //leaflet.heat doesn't utilize getBounds, so get it directly
-
+            if (!this.bounds) {
+                let bounds: L.LatLngBounds = this.bounds || this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();
+                this.appState.map.fitBounds(bounds, {}); //leaflet.heat doesn't utilize getBounds, so get it directly
+            }
             this.appState.map.addLayer(this.displayLayer);
 
 
@@ -254,8 +261,11 @@ export class Layer {
         this.getValues();
         this.initFilters();
         this.refreshFilters();
-        let bounds: L.LatLngBounds = this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();
-        this.appState.map.fitBounds(bounds, {}); //leaflet.heat doesn't utilize getBounds, so get it directly
+        if (!this.bounds) {
+            let bounds: L.LatLngBounds = this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();
+            this.appState.map.fitBounds(bounds, {}); //leaflet.heat doesn't utilize getBounds, so get it directly
+            this.bounds = bounds;
+        }
         HideLoading();
 
         console.timeEnd('start')
@@ -378,7 +388,6 @@ export class Layer {
         let sym = this.symbolOptions;
         let count = 0;
         let markers = cluster.getAllChildMarkers();
-
         let relevantHeaders: Header[] = [];
         if (col.colorField)
             relevantHeaders.push(col.colorField);
@@ -524,15 +533,6 @@ export class Layer {
         }
         if (layers.length > 0) {
             target.addLayers(layers);
-            if (target.getBounds) {
-                try {
-                    this.appState.map.fitBounds(target.getBounds(), {});
-                }
-                catch (e) {
-                    console.log(target.getBounds())
-                    console.log(e)
-                }
-            }
         }
         if (i < source.features.length) {
             if (partialCallback) {
@@ -545,7 +545,7 @@ export class Layer {
         }
         else {
             if (start == 0)
-                partialCallback(i)//if is completed on first iteration, trigger both callbacks
+                partialCallback(i)//if completed on first iteration, trigger both callbacks
             finishedCallback();
         }
 
