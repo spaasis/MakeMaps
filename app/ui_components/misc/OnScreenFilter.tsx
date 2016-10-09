@@ -213,12 +213,11 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
                             height: 40,
                             lineHeight: '40px',
                             fontWeight: filter.selectedStep === index ? 'bold' : '',
-                            textDecoration: filter.selectedStep === index ? 'underline' : ''
-
+                            textDecoration: filter.selectedStep === index ? 'underline' : '',
                         }}
                         key={step}
                         onClick={this.onCustomStepClick.bind(this, index)}
-                        >{step[0] + '-' + step[1]}
+                        >{step[0] + (!filter.useDistinctValues ? ('-' + step[1]) : '')}
                     </div>)
                 index++;
             }, this);

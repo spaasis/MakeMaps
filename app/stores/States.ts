@@ -156,8 +156,6 @@ export class FilterMenuState {
     @observable customStepCount: number = 5;
     /** The custom steps (minVal-maxVal)[]*/
     @observable customSteps: [number, number][] = [];
-    /** Use distinct values as steps*/
-    @observable useDistinctValues: boolean;
 }
 
 export class LegendMenuState {

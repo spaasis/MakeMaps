@@ -27,12 +27,16 @@ export class LegendMenu extends React.Component<{
                         this.props.state.legend.title = (e.target as any).value;
                     } }/>
                     <br/>
-                    <label htmlFor='showEdit'>{strings.legendEditShow}
-                        <input id='showEdit' type='checkbox' checked={legend.edit} onChange={(e) => {
-                            legend.edit = (e.currentTarget as any).checked;
-                        } }/>
-                    </label>
-                    <br/>
+                    <label>{strings.legendMeta}</label>
+                    <div style={{ background: 'white', border: '1px solid #cecece' }}>
+                        <TextEditor
+                            style={{ width: '100%', minHeight: '80px' }}
+                            content={legend.meta}
+                            onChange={(e) => {
+                                legend.meta = e.target.value;
+                            } }
+                            edit={true}/>
+                    </div>
                     <label htmlFor='showPercentages'>{strings.legendDistShow}
                         <input id='showPercentages' type='checkbox' checked={legend.showPercentages} onChange={(e) => {
                             this.props.state.legend.showPercentages = (e.currentTarget as any).checked;

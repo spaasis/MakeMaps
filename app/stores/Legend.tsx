@@ -11,7 +11,6 @@ export class Legend {
     @observable visible: boolean;
     @observable showPercentages: boolean;
     @observable showVariableNames: boolean;
-    @observable edit: boolean;
     @observable top: boolean;
     @observable bottom: boolean;
     @observable left: boolean;
@@ -26,7 +25,6 @@ export class Legend {
         this.visible = prev && prev.visible !== undefined ? prev.visible : true;
         this.showPercentages = prev && prev.showPercentages || false;
         this.showVariableNames = prev && prev.showVariableNames || false;
-        this.edit = prev && prev.edit || false;
         this.top = prev && prev.top !== undefined ? prev.top : false;
         this.bottom = prev && prev.bottom !== undefined ? prev.bottom : true;
         this.left = prev && prev.left !== undefined ? prev.left : true;

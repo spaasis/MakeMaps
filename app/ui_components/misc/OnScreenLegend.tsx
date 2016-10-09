@@ -388,11 +388,6 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         })).sort(function(a, b) { return a == b ? 0 : a < b ? -1 : 1 });
     }
 
-    onMetaChange = (e) => {
-        this.props.state.legend.meta = e.target.value;
-    }
-
-
     render() {
         let state = this.props.state;
         let layers = state.layers;
@@ -425,13 +420,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                     }
 
                 </div>
-                <div style={{ clear: 'both' }}>
-                    <TextEditor
-                        style={{ width: '100%', minHeight: legend.edit ? '40px' : '' }}
-                        content={legend.meta}
-                        onChange={this.onMetaChange}
-                        edit={legend.edit}/>
-                </div>
+                <div style={{ clear: 'both' }} dangerouslySetInnerHTML={{ __html: legend.meta }}/>
             </div >
 
 

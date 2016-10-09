@@ -54,6 +54,8 @@ export class Filter {
     @observable showSlider: boolean;
     /** Allow for no step/category to be selected*/
     @observable forceSelection: boolean;
+    /** Use distinct values as steps*/
+    @observable useDistinctValues: boolean;
 
     previousLower: number;
     previousUpper: number;
@@ -84,7 +86,7 @@ export class Filter {
         this.appState = prev && prev.appState || appState;
         this.showSlider = prev && prev.showSlider || false;
         this.forceSelection = prev && prev.forceSelection !== undefined ? prev.forceSelection : true;
-
+        this.useDistinctValues = prev && prev.useDistinctValues || false;
     }
 
     /**

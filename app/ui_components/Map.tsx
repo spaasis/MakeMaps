@@ -20,7 +20,6 @@ import 'leaflet';
 import 'Leaflet.extra-markers';
 import 'leaflet-fullscreen';
 import 'leaflet.markercluster'
-
 let Modal = require('react-modal');
 let d3 = require('d3');
 let chroma = require('chroma-js');
