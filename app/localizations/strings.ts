@@ -1,6 +1,5 @@
 /** Main class for localization. Contains the necessary definition and the default (english) text*/
 class Strings {
-    legendMeta: string = 'Description';
     addNewLayer: string = 'Add new layer';
     autoRefreshDisabled: string = 'An update operation seems to be taking too long. Automatic refreshing has been disabled.';
     border: string = 'Border';
@@ -73,6 +72,7 @@ class Strings {
     legendAlignHorizontal: string = 'Align horizontally';
     legendDistShow: string = 'Show distribution';
     legendMenuTitle: string = 'Legend';
+    legendMeta: string = 'Description';
     legendPosition: string = 'Legend position';
     legendTitle: string = 'Title';
     legendVarShow: string = 'Show variable names';
