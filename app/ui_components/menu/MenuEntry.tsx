@@ -7,7 +7,9 @@ export class MenuEntry extends React.Component<{ text: string, fa: string, id: n
         else
             return <div className='menuHeaderDiv' style={{ backgroundColor: this.props.active ? '#ededed' : '#fefefe' }} onClick = {() => this.props.onClick(this.props.id)}>
                 <i className={"menuHeader fa fa-" + this.props.fa}/>
-                <span className='menuHover'>{this.props.text}</span>
+                <div className='menuHover'>
+                    <span className='rotate'>{this.props.text}</span>
+                </div>
             </div>
     }
 

@@ -96,10 +96,6 @@ export class WelcomeScreen extends React.Component<{
 
     render() {
         let strings = this.props.strings;
-        let dropStyle = {
-            width: 300,
-            marginRight: 5,
-        }
         let blockHeaderStyle = { display: 'block', fontFamily: 'dejavu_sansextralight' };
         let infoDivStyle = { width: 200, border: '1px solid #cecece', borderRadius: '15px', padding: 10 }
 
@@ -111,7 +107,7 @@ export class WelcomeScreen extends React.Component<{
 
 
         let infoBlocks =
-            <div style={{ display: 'inline-flex', flexWrap: 'wrap', maxWidth: '85%' }}>
+            <div style={{ display: 'inline-flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '85%' }}>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeOpenness}</b>
                     <a style={{ textDecoration: 'none' }} target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps"><i className='fa fa-github-square' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/></a>
@@ -167,16 +163,16 @@ export class WelcomeScreen extends React.Component<{
 
             </div>
             <hr/>
-            <div style={{ display: 'inline-flex', flexWrap: 'wrap', padding: 20 }}>
+            <div style={{ display: 'inline-flex', flexWrap: 'wrap', justifyContent: 'center', padding: 20 }}>
                 <Dropzone
                     className='primaryButton dropButton'
-                    style={dropStyle}
+                    style={{ width: 300, margin: 5 }}
                     onDrop={this.onDrop.bind(this)}
                     accept={'.mmap'}
                     >
                     {strings.uploadSavedMap}
                 </Dropzone>
-                <button style={{ width: 300, marginLeft: 5 }} className='primaryButton' onClick={this.createNewMap.bind(this)}>{strings.createNewMap}</button>
+                <button style={{ width: 300, margin: 5 }} className='primaryButton' onClick={this.createNewMap.bind(this)}>{strings.createNewMap}</button>
             </div>
             <br/>
             {infoBlocks}

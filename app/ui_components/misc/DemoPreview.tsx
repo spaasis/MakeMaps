@@ -26,7 +26,7 @@ export class DemoPreview extends React.Component<{
             border: '1px solid #c1c1c1',
             borderRadius: 15,
             position: 'absolute',
-            width: 400,
+            maxWidth: 400,
             whiteSpace: 'normal',
             zIndex: 90,
             background: 'white',

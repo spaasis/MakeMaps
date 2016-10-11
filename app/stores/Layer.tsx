@@ -144,7 +144,7 @@ export class Layer {
         }
     }
 
-    /** Remove and initialize the layer. Used when toggling between heat and standard layer type*/
+    /** Remove and initialize the layer. Used when toggling between heat and standard layer type or when updating a heatmap*/
     reDraw() {
         this.appState.map.removeLayer(this.displayLayer);
         this.init();
@@ -167,11 +167,13 @@ export class Layer {
             }
         }
         if (this.geoJSON) {
+            this.getValues();
 
             if (this.layerType === LayerTypes.HeatMap && this.colorOptions.colorField) {
                 this.displayLayer = (createHeatLayer(this) as any);
                 this.appState.map.addLayer(this.displayLayer);
                 this.finishDraw();
+                return;
             }
             else {
                 console.time('start')
@@ -194,6 +196,7 @@ export class Layer {
             }
         }
         if (this.bounds) {
+            console.log(this.bounds)
             let bounds = L.latLngBounds((this.bounds as any)._southWest, (this.bounds as any)._northEast);
             this.appState.map.fitBounds(bounds, {});
         }
@@ -258,13 +261,12 @@ export class Layer {
     }
 
     finishDraw() {
-        this.getValues();
         this.initFilters();
         this.refreshFilters();
         if (!this.bounds) {
-            let bounds: L.LatLngBounds = this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();
-            this.appState.map.fitBounds(bounds, {}); //leaflet.heat doesn't utilize getBounds, so get it directly
-            this.bounds = bounds;
+            let bounds: L.LatLngBounds = this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();//leaflet.heat doesn't utilize getBounds, so get it directly
+            this.appState.map.fitBounds(bounds, {});
+            this.bounds = this.appState.map.getBounds();
         }
         HideLoading();
 
