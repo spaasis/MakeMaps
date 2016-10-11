@@ -1,4 +1,4 @@
-import { Strings } from './strings';
+import { Strings } from './Strings';
 let fi: Strings =
     {
         addNewLayer: 'Lisää uusi taso',

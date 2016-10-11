@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { Filter } from '../../stores/Filter';
+import { AppState } from '../../stores/States';
 
 let Slider = require('react-slider');
 let Draggable = require('react-draggable');
 import { observer } from 'mobx-react';
 
 @observer
-export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
+export class OnScreenFilter extends React.Component<{ filter: Filter, state: AppState }, {}>{
     componentDidMount() {
         let filter = this.props.filter;
         setTimeout(function() {
@@ -154,6 +155,8 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
     render() {
         let filter = this.props.filter;
         let map = filter.appState.map;
+        let header = this.props.state.layers.filter((layer) => { return layer.id == filter.layerId })[0].getHeaderById(filter.filterHeaderId);
+
         return <Draggable
             handle={'.filterhead'}
             position={{ x: filter.x, y: filter.y }}
@@ -173,7 +176,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
                     <h3 >{filter.title}</h3>
                 </div>
                 {this.renderSteps.call(this)}
-                {filter.fieldToFilter.type == 'number' && filter.showSlider ?
+                {header.type == 'number' && filter.showSlider ?
                     <div style={{ display: 'inline-flex' }}                    >
                         <input type='number' style={{ width: '70px' }} value={filter.currentMin.toFixed(0)} onChange={this.onCurrentMinChange}/>
                         <Slider className='horizontal-slider'
@@ -212,10 +215,10 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
                             cursor: 'pointer',
                             height: 40,
                             lineHeight: '40px',
-                            fontWeight: filter.selectedStep === index ? 'bold' : '',
+                            fontWeight: filter.selectedStep === index ? 'bold' : 'normal',
                             textDecoration: filter.selectedStep === index ? 'underline' : '',
                         }}
-                        key={step}
+                        key={step[0]}
                         onClick={this.onCustomStepClick.bind(this, index)}
                         >{step[0] + (!filter.useDistinctValues ? ('-' + step[1]) : '')}
                     </div>)
@@ -234,7 +237,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter }, {}>{
                             cursor: 'pointer',
                             width: 200,
                             height: 40,
-                            fontWeight: filter.selectedCategories.indexOf(category) > -1 ? 'bold' : '',
+                            fontWeight: filter.selectedCategories.indexOf(category) > -1 ? 'bold' : 'normal',
                             textDecoration: filter.selectedCategories.indexOf(category) > -1 ? 'underline' : '',
                         }}
 

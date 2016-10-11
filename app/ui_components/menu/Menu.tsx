@@ -19,13 +19,6 @@ let Select = require('react-select');
 export class MakeMapsMenu extends React.Component<{
     /** Application state*/
     state: AppState,
-    /** Reorder the layers on the map*/
-    changeLayerOrder: () => void,
-    /** Add a new layer (by opening import wizard)*/
-    addLayer: () => void,
-    saveImage: () => void,
-    saveFile: () => void,
-    saveEmbedCode: () => void,
 }, {}>{
     componentWillMount() {
         this.props.state.visibleMenu = 0;
@@ -36,54 +29,26 @@ export class MakeMapsMenu extends React.Component<{
         this.props.state.visibleMenu = this.props.state.visibleMenu === item ? 0 : item;
     }
 
-    addNewLayer = () => {
-        this.props.state.editingLayer = null;
-        this.props.state.visibleMenu = 0;
-        this.props.addLayer();
-    }
-
-
     getActiveMenu() {
         switch (this.props.state.visibleMenu) {
             case 0:
                 return;
             case 1:
-                return <LayerMenu
-                    state={this.props.state}
-                    saveOrder={() => {
-                        this.props.changeLayerOrder();
-                    } }
-                    addNewLayer = {this.addNewLayer}
-                    />;
+                return <LayerMenu state = {this.props.state}/>;
             case 2:
                 return <ColorMenu state = {this.props.state}/>;
             case 3:
                 return <SymbolMenu state = {this.props.state}/>;
             case 4:
-                return <FilterMenu state={this.props.state} />;
+                return <FilterMenu state = {this.props.state}/>;
             case 5:
-                return <LegendMenu state = {this.props.state}  />;
+                return <LegendMenu state = {this.props.state}/>;
             case 6:
-                return <ClusterMenu
-                    state = {this.props.state}
-                    />;
+                return <ClusterMenu state = {this.props.state}/>;
             case 7:
-                return <PopUpMenu
-                    state = {this.props.state}
-                    />;
+                return <PopUpMenu state = {this.props.state}/>;
             case 8:
-                return <ExportMenu
-                    state={this.props.state}
-                    saveImage = {() => {
-                        this.props.saveImage();
-                    } }
-                    saveFile = {() => {
-                        this.props.saveFile();
-                    } }
-                    saveEmbedCode = {() => {
-                        this.props.saveEmbedCode();
-                    } }
-                    />;
+                return <ExportMenu state={this.props.state}/>;
 
         }
     }

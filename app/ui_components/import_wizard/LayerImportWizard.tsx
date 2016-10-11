@@ -11,10 +11,6 @@ import { observer } from 'mobx-react';
 @observer
 export class LayerImportWizard extends React.Component<{
     state: AppState,
-    /** Function to upload the data to the map */
-    submit: (Layer) => void,
-    /** Function to signal the cancellation of the import.  */
-    cancel: () => void,
 }, {}>{
     nextStep() {
         this.props.state.importWizardState.step++;
@@ -91,17 +87,34 @@ export class LayerImportWizard extends React.Component<{
             this.submit();
     }
 
-    /**
-     * submit - Pass the layer to map
-     */
     submit() {
         let state = this.props.state.importWizardState;
-        let layer = state.layer;
-        layer.headers = layer.headers.filter(function(val) { return val.label !== state.longitudeField && val.label !== state.latitudeField });
+        let l = state.layer;
+        l.headers = l.headers.filter(function(val) { return val.label !== state.longitudeField && val.label !== state.latitudeField });
         if (state.coordinateSystem && state.coordinateSystem !== 'WGS84') {
-            layer.geoJSON = _fileModel.ProjectCoords(layer.geoJSON, state.coordinateSystem);
+            l.geoJSON = _fileModel.ProjectCoords(l.geoJSON, state.coordinateSystem);
         }
-        this.props.submit(layer);
+        window.location.hash = 'edit';
+        l.getValues()
+        if (l.layerType !== LayerTypes.HeatMap && l.pointFeatureCount > 500) {
+            ShowNotification(this.props.state.strings.clusterTogglePopup);
+            l.clusterOptions.useClustering = true;
+        }
+        l.appState = this.props.state;
+        l.id = this.props.state.currentLayerId++;
+        l.colorOptions.colorField = l.numberHeaders[0];
+        l.colorOptions.useMultipleFillColors = true;
+        l.getColors();
+
+        setTimeout(function() { l.init() }, 10);
+        this.props.state.layers.push(l);
+        if (l.layerType === LayerTypes.HeatMap)
+            this.props.state.heatLayerOrder.push({ id: l.id });
+        else
+            this.props.state.standardLayerOrder.push({ id: l.id });
+        this.props.state.importWizardShown = false;
+        this.props.state.editingLayer = l;
+        this.props.state.menuShown = true;
 
     }
 
@@ -117,7 +130,13 @@ export class LayerImportWizard extends React.Component<{
                         setTimeout(setInfo, 10)
                     } }
                     cancel = {() => {
-                        this.props.cancel();
+                        this.props.state.importWizardShown = false;
+                        if (this.props.state.layers.length == 0)
+                            this.props.state.welcomeShown = true;
+                        else {
+                            this.props.state.menuShown = true;
+                            this.props.state.editingLayer = this.props.state.layers[0];
+                        }
                     } }
                     />
             case 1:

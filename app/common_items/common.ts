@@ -1,3 +1,8 @@
+import { AppState, SaveState } from '../stores/States';
+import { Filter } from '../stores/Filter';
+import { Layer, Header, LayerTypes } from '../stores/Layer';
+import { Legend } from '../stores/Legend';
+
 declare var XDomainRequest;
 
 /** Projection names to show in import wizard */
@@ -64,23 +69,13 @@ function GetItemBetweenLimits(limits: any[], items: any[], value: number) {
     }
 }
 
-/**
- * LoadExternalMap - Load a .mmap file from external URL
- *
- * @param  URL      File URL
- * @param  onLoad     function to run on load complete
- */
-function LoadExternalMap(URL: string, onLoad: (string) => void) {
-
-    LoadSavedMap(URL, onLoad);
-}
 
 /**
  * LoadSavedMap - Loads a specified .mmap-file
  * @param  path      File path
  * @param  onLoad     function to run on load complete
  */
-function LoadSavedMap(path: string, onLoad: (string) => void) {
+function FetchSavedMap(path: string, appState: AppState) {
     var xhr = new XMLHttpRequest();
     if ("withCredentials" in xhr) {
         xhr.open('GET', path, true);
@@ -94,7 +89,7 @@ function LoadSavedMap(path: string, onLoad: (string) => void) {
     xhr.onload = function() {
         if (xhr.readyState === 4) {
             if (xhr.status === 200 || xhr.status == 0) {
-                onLoad(JSON.parse(xhr.responseText));
+                LoadSavedMap(JSON.parse(xhr.responseText), appState);
             }
         }
     }
@@ -102,8 +97,61 @@ function LoadSavedMap(path: string, onLoad: (string) => void) {
     xhr.send();
 }
 
+function LoadSavedMap(saved: SaveState, appState: AppState) {
+    window.location.hash = 'edit';
+    console.time("LoadSavedMap")
+    let headers: Header[];
+    if (saved.baseLayerId) {
+        let oldBase = appState.activeBaseLayer;
+
+        if (saved.baseLayerId !== oldBase.id) {
+            let newBase = { id: saved.baseLayerId, layer: appState.baseLayers.filter(l => l.id === saved.baseLayerId)[0].layer };
+            if (newBase) {
+                appState.map.removeLayer(oldBase.layer);
+                appState.map.addLayer(newBase.layer);
+                appState.activeBaseLayer = newBase;
+            }
+        }
+    }
+
+    for (let lyr of saved.layers) {
+        let newLayer = new Layer(appState, lyr);
+        newLayer.headers = [];
+        for (let j of lyr.headers) {
+            newLayer.headers.push(new Header(j));
+        }
+        newLayer.colorOptions.colorField = newLayer.getHeaderById(lyr.colorOptions['colorHeaderId']);
+        newLayer.symbolOptions.iconField = newLayer.getHeaderById(lyr.symbolOptions['iconHeaderId']);
+        newLayer.symbolOptions.blockSizeVar = newLayer.getHeaderById(lyr.symbolOptions['blockHeaderId']);
+        newLayer.symbolOptions.sizeXVar = newLayer.getHeaderById(lyr.symbolOptions['xHeaderId']);
+        newLayer.symbolOptions.sizeYVar = newLayer.getHeaderById(lyr.symbolOptions['yHeaderId']);
+        appState.layers.push(newLayer);
+        if (newLayer.layerType === LayerTypes.HeatMap)
+            appState.heatLayerOrder.push({ id: newLayer.id });
+        else
+            appState.standardLayerOrder.push({ id: newLayer.id });
+        appState.currentLayerId = Math.max(appState.currentLayerId, lyr.id);
+    }
+    appState.currentLayerId++;
+    let layers = appState.layers;
+    saved.filters.map(function(f) {
+        appState.filters.push(new Filter(appState, f));
+    })
+    for (let i in appState.layers.slice()) {
+        let lyr = appState.layers[i];
+        lyr.init();
+    }
+    appState.legend = new Legend(saved.legend);
+
+    appState.welcomeShown = false;
+    appState.editingLayer = appState.layers[0];
+    appState.menuShown = !appState.embed;
+    console.timeEnd("LoadSavedMap")
+}
+
+
 function IsNumber(val: string) {
     return val == '' || !isNaN(+val)
 }
 
-export { DefaultProjections, GetSymbolSize, CalculateLimits, GetItemBetweenLimits, LoadExternalMap, ShowLoading, HideLoading, ShowNotification, HideNotification, IsNumber }
+export { DefaultProjections, GetSymbolSize, CalculateLimits, GetItemBetweenLimits, FetchSavedMap, LoadSavedMap, ShowLoading, HideLoading, ShowNotification, HideNotification, IsNumber }

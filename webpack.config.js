@@ -5,7 +5,7 @@ var BUILD_DIR = path.resolve(__dirname, 'release');
 var APP_DIR = path.resolve(__dirname, 'app');
 
 module.exports = {
-  entry: APP_DIR + '/ui_components/Map.js',
+  entry: APP_DIR + '/ui_components/View.js',
   output: {
     path: BUILD_DIR,
     filename: 'MakeMaps.js'

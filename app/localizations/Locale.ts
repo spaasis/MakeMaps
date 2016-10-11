@@ -1,12 +1,12 @@
 import * as LocalizedStrings from 'react-localization';
-import { Strings } from './strings';
+import { Strings } from './Strings';
 import { fi } from './fi';
 
 let en = new Strings();
 
-let locale = new LocalizedStrings({
+let Locale = new LocalizedStrings({
     fi,
     en,
 });
 
-export { locale }
+export { Locale }

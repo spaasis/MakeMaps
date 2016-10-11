@@ -2,7 +2,7 @@ import { observable, computed, autorun } from 'mobx';
 import { Layer, LayerTypes, Header } from './Layer';
 import { Filter } from './Filter';
 import { Legend } from './Legend';
-import { Strings } from '../localizations/strings';
+import { Strings } from '../localizations/Strings';
 
 let mobx = require('mobx');
 
@@ -28,6 +28,11 @@ export class AppState {
     @observable activeBaseLayer: { id: string, layer: L.TileLayer };
     /** The layers of the map.*/
     @observable layers: Layer[] = [];
+    /** The current order of layers */
+    @observable standardLayerOrder: { id: number }[] = [];
+    /** The current order of heatmap layers */
+    @observable heatLayerOrder: { id: number }[] = [];
+
     /** The data filters of the map.*/
     @observable filters: Filter[] = [];
 
@@ -36,6 +41,8 @@ export class AppState {
     }
     /** The active legend of the map*/
     @observable legend: Legend = new Legend();
+
+    @observable currentLayerId: number = 0;
     /** Currently selected layer on the menu*/
     @observable editingLayer: Layer;
     /** Currently open submenu index. 0=none*/
@@ -72,6 +79,7 @@ export class AppState {
     @observable infoScreenText: string;
 
     @observable language: string;
+
     strings: Strings;
 
     map: L.Map;
@@ -122,8 +130,8 @@ export class ImportWizardState {
         return this.layer.layerType === LayerTypes.HeatMap;
     }
 
-    constructor(layer: Layer) {
-        this.layer = layer;
+    constructor(state: AppState) {
+        this.layer = new Layer(state);
     }
 }
 
@@ -151,7 +159,7 @@ export class FilterMenuState {
     /** The title of the filter to be rendered*/
     @observable filterTitle: string;
     /** Let the user define custom steps for the filter */
-    @observable useCustomSteps: boolean;
+    @observable useCustomSteps: boolean = false;
     /** Amount of steps. Default 5*/
     @observable customStepCount: number = 5;
     /** The custom steps (minVal-maxVal)[]*/
@@ -164,17 +172,12 @@ export class LegendMenuState {
 }
 
 export class LayerMenuState {
-    /** The current order of layers */
-    @observable standardLayerOrder: { id: number }[] = [];
-    /** The current order of heatmap layers */
-    @observable heatLayerOrder: { id: number }[] = [];
-    @observable editingLayer: Layer;
-
+    @observable editingLayerId: number;
 }
 
 export class ExportMenuState {
-    @observable showLegend: boolean;
-    @observable showFilters: boolean;
+    @observable showLegend: boolean = true;
+    @observable showFilters: boolean = false;
     @observable imageName: boolean;
 }
 

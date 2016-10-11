@@ -258,7 +258,7 @@ export class ColorMenu extends React.Component<{
 
         let stepModes = <div>
             {strings.selectStepCalculationMode}
-            <label forHTML='quantiles'>
+            <label htmlFor='quantiles'>
                 {strings.colorStepQuantiles}
                 <input
                     type='radio'
@@ -269,7 +269,7 @@ export class ColorMenu extends React.Component<{
                     />
                 <br/>
             </label>
-            <label forHTML='kmeans'>
+            <label htmlFor='kmeans'>
                 {strings.colorStepKMeans}
                 <input
                     type='radio'
@@ -281,7 +281,7 @@ export class ColorMenu extends React.Component<{
                 <br/>
 
             </label>
-            <label forHTML='equidistant'>
+            <label htmlFor='equidistant'>
                 {strings.colorStepEquidistant}
                 <input
                     type='radio'
@@ -304,7 +304,7 @@ export class ColorMenu extends React.Component<{
                 <div className='colorBlock'
                     style={{ background: col.color, border: '1px solid ' + col.color, cursor: 'pointer' }}
                     onClick={this.toggleColorPick.bind(this, 'borderColor')}>{strings.border}
-                    <input type='number' min={0} max={15} step={1} value={col.weight} style={{ position: 'absolute', right: 0, width: 50 }}
+                    <input type='number' min={0} max={15} step={1} value={col.weight.toString()} style={{ position: 'absolute', right: 0, width: 50 }}
                         onClick={(e) => { e.stopPropagation(); } }
                         onChange={(e) => {
                             let val: number = (e.currentTarget as any).valueAsNumber
@@ -378,7 +378,7 @@ export class ColorMenu extends React.Component<{
                                     layer.setOpacity();
                             }
                         } }
-                        value={col.opacity}/>
+                        value={col.opacity.toString()}/>
                 </label>
                 {colorPicker}
 
@@ -428,7 +428,7 @@ export class ColorMenu extends React.Component<{
                                                 this.calculateValues();
                                             }
                                         } }
-                                        value={col.steps}/>
+                                        value={col.steps.toString()}/>
                                     {col.useCustomScheme ?
                                         <div>
                                             {strings.colorMenuStepHelp}
@@ -453,7 +453,7 @@ export class ColorMenu extends React.Component<{
                                                             layer.refresh();
                                                     }
                                                 } }
-                                                value={col.heatMapRadius}/>
+                                                value={col.heatMapRadius.toString()}/>
                                         </div>
                                         : null}
                                 </div>
@@ -517,7 +517,7 @@ export class ColorMenu extends React.Component<{
                         <input
                             id={row + 'min'}
                             type='number'
-                            value={limits[row]}
+                            value={limits[row].toString()}
                             onChange={this.onCustomLimitChange.bind(this, row)}
                             onBlur={this.onCustomLimitBlur.bind(this, row)}
                             style={{

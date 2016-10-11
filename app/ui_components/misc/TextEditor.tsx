@@ -1,7 +1,7 @@
 import * as React from 'react';
 let oldHTML: string;
 export class TextEditor extends React.Component<{
-    content: string, style: any, onChange: (target: any) => void, edit: boolean
+    content: string, style: any, onChange: (target: any) => void
 }, {}>{
 
     componentWillMount() {
@@ -21,7 +21,7 @@ export class TextEditor extends React.Component<{
     }
 
     shouldComponentUpdate(nextProps) {
-        return nextProps.content !== oldHTML || nextProps.edit !== this.props.edit;
+        return nextProps.content !== oldHTML;
     }
 
     addLink() {
@@ -46,48 +46,47 @@ export class TextEditor extends React.Component<{
         return (
             <div>
                 {
-                    this.props.edit ?
-                        <div style={toolbarStyle}>
 
-                            <div style={buttonSpacing}>
-                                <button type="button" className="btn btn-default" onClick={this.execCommand.bind(this, 'bold')}>
-                                    <i className="fa fa-bold"></i>
-                                </button>
-                                <button type="button" className="btn btn-default" onClick={this.execCommand.bind(this, 'italic')}>
-                                    <i className="fa fa-italic"></i>
-                                </button>
-                                <button type="button" className="btn btn-default" onClick={this.execCommand.bind(this, 'underline')}>
-                                    <i className="fa fa-underline"></i>
-                                </button>
-                                <button type="button" className="btn btn-default" onClick={this.execCommand.bind(this, 'insertOrderedList')}>
-                                    <i className="fa fa-list-ol"></i>
-                                </button>
-                                <button type="button" className="btn btn-default" onClick={this.execCommand.bind(this, 'insertUnorderedList')}>
-                                    <i className="fa fa-list-ul"></i>
-                                </button>
+                    <div style={toolbarStyle}>
 
-                                <button
-                                    type="button"
-                                    className="btn btn-default btn-xs"
-                                    onClick={this.addLink.bind(this)}>
-                                    <i className="fa fa-link"></i>
-                                </button>
+                        <div style={buttonSpacing}>
+                            <button type="button" className="btn btn-default" onClick={this.execCommand.bind(this, 'bold')}>
+                                <i className="fa fa-bold"></i>
+                            </button>
+                            <button type="button" className="btn btn-default" onClick={this.execCommand.bind(this, 'italic')}>
+                                <i className="fa fa-italic"></i>
+                            </button>
+                            <button type="button" className="btn btn-default" onClick={this.execCommand.bind(this, 'underline')}>
+                                <i className="fa fa-underline"></i>
+                            </button>
+                            <button type="button" className="btn btn-default" onClick={this.execCommand.bind(this, 'insertOrderedList')}>
+                                <i className="fa fa-list-ol"></i>
+                            </button>
+                            <button type="button" className="btn btn-default" onClick={this.execCommand.bind(this, 'insertUnorderedList')}>
+                                <i className="fa fa-list-ul"></i>
+                            </button>
 
-                                <button
-                                    type="button"
-                                    className="btn btn-default btn-xs"
-                                    onClick={this.execCommand.bind(this, 'removeFormat')}>
-                                    <i className="fa fa-eraser"></i>
-                                </button>
-                            </div>
+                            <button
+                                type="button"
+                                className="btn btn-default btn-xs"
+                                onClick={this.addLink.bind(this)}>
+                                <i className="fa fa-link"></i>
+                            </button>
+
+                            <button
+                                type="button"
+                                className="btn btn-default btn-xs"
+                                onClick={this.execCommand.bind(this, 'removeFormat')}>
+                                <i className="fa fa-eraser"></i>
+                            </button>
                         </div>
-                        : null
+                    </div>
                 }
                 < div
                     ref = "editor"
                     className = "form-control"
                     {...this.props }
-                    contentEditable = {this.props.edit ? "true" : "false"}
+                    contentEditable = {true}
                     dangerouslySetInnerHTML = {{ __html: this.props.content }}
                     onInput = {this.emitChange.bind(this)} />
             </div >

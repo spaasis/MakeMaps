@@ -1,19 +1,16 @@
 import * as React from 'react';
 import { DemoPreview } from './DemoPreview';
 let Dropzone = require('react-dropzone');
-import { LoadExternalMap, ShowLoading, ShowNotification } from '../../common_items/common';
-import { WelcomeScreenState } from '../../stores/States';
-import { Strings } from '../../localizations/strings';
+import { FetchSavedMap, LoadSavedMap, ShowLoading, ShowNotification } from '../../common_items/common';
+import { WelcomeScreenState, AppState, ImportWizardState } from '../../stores/States';
+import { Strings } from '../../localizations/Strings';
 
 import { observer } from 'mobx-react';
 @observer
 export class WelcomeScreen extends React.Component<{
     state: WelcomeScreenState,
-    loadMap: (json) => void,
-    openLayerImport: () => void,
+    appState: AppState
     changeLanguage: (lang: string) => void,
-    strings: Strings,
-    language: string,
 }, {}>{
 
     componentDidMount() {
@@ -35,12 +32,9 @@ export class WelcomeScreen extends React.Component<{
      */
     loadDemo(filename: string) {
         ShowLoading();
-        let loadMap = this.props.loadMap;
-        setTimeout(function() { LoadExternalMap('demos/' + filename + '.mmap', loadMap); }, 10)
+        let appState = this.props.appState;
+        setTimeout(function() { FetchSavedMap('demos/' + filename + '.mmap', appState); }, 10)
 
-    }
-    createNewMap() {
-        this.props.openLayerImport();
     }
 
     moveDemosLeft() {
@@ -87,22 +81,21 @@ export class WelcomeScreen extends React.Component<{
     }
     loadMap() {
         ShowLoading();
-        let load = this.props.loadMap;
         let json = this.props.state.loadedMap;
-
-        setTimeout(function() { load(json) }, 10);
+        let appState = this.props.appState;
+        setTimeout(function() { LoadSavedMap(json, appState) }, 10);
     }
 
 
     render() {
-        let strings = this.props.strings;
+        let strings = this.props.appState.strings;
         let blockHeaderStyle = { display: 'block', fontFamily: 'dejavu_sansextralight' };
         let infoDivStyle = { width: 200, border: '1px solid #cecece', borderRadius: '15px', padding: 10 }
 
         let flags =
             <div style={{ position: 'absolute', top: 5, left: 5 }} className='f32'>
-                <i className = 'flag gb' onClick={() => { this.props.changeLanguage('en'); } } style ={{ cursor: 'pointer', borderBottom: this.props.language == 'en' ? '2px solid #cecece' : '' }}/>
-                <i className = 'flag fi' onClick={() => { this.props.changeLanguage('fi'); } } style ={{ cursor: 'pointer', borderBottom: this.props.language == 'fi' ? '2px solid #cecece' : '' }}/>
+                <i className = 'flag gb' onClick={() => { this.props.changeLanguage('en'); } } style ={{ cursor: 'pointer', borderBottom: this.props.appState.language == 'en' ? '2px solid #cecece' : '' }}/>
+                <i className = 'flag fi' onClick={() => { this.props.changeLanguage('fi'); } } style ={{ cursor: 'pointer', borderBottom: this.props.appState.language == 'fi' ? '2px solid #cecece' : '' }}/>
             </div>
 
 
@@ -172,7 +165,14 @@ export class WelcomeScreen extends React.Component<{
                     >
                     {strings.uploadSavedMap}
                 </Dropzone>
-                <button style={{ width: 300, margin: 5 }} className='primaryButton' onClick={this.createNewMap.bind(this)}>{strings.createNewMap}</button>
+                <button style={{ width: 300, margin: 5 }} className='primaryButton'
+                    onClick={() => {
+                        let state = this.props.appState;
+                        state.importWizardState = new ImportWizardState(state)
+                        state.importWizardShown = true;
+                        state.welcomeShown = false;
+                        state.menuShown = false;
+                    } }>{strings.createNewMap}</button>
             </div>
             <br/>
             {infoBlocks}
@@ -197,7 +197,7 @@ export class WelcomeScreen extends React.Component<{
     }
 
     getHighlightedDemo() {
-        let strings = this.props.strings;
+        let strings = this.props.appState.strings;
         let demos = [<DemoPreview
             key={0}
             strings = {strings}

@@ -26,14 +26,14 @@ export class Layer {
     }
 
     @computed get categories() {
-        return this.headers.filter(function(val) { return val.type === 'strings' });
+        return this.headers.filter(function(val) { return val.type === 'string' });
     }
 
     getHeaderById(id: number) {
         return this.headers.filter(function(val) { return val.id === id })[0];
     }
 
-    @observable popupHeaders: Header[] = [];
+    @observable popupHeaderIds: number[] = [];
     @observable showPopUpOnHover: boolean;
     /** Open popup on top of the layer it is bound to, or in a separate element. Default true*/
     @observable showPopUpInPlace: boolean;
@@ -71,15 +71,10 @@ export class Layer {
                 this.headers.push(new Header(header))
             }
         }
-        this.popupHeaders = [];
-        if (prev && prev['popupHeaderIds']) {//from saved files
-            for (let id of prev['popupHeaderIds']) {
-                this.popupHeaders.push(this.getHeaderById(id))
-            }
-        }
-        else if (prev && prev.popupHeaders) {
-            for (let header of prev.popupHeaders) {
-                this.popupHeaders.push(new Header(header))
+        this.popupHeaderIds = [];
+        if (prev && prev.popupHeaderIds) {
+            for (let id of prev.popupHeaderIds) {
+                this.popupHeaderIds.push(id)
             }
         }
         this.symbolOptions.chartFields = [];
@@ -138,6 +133,12 @@ export class Layer {
                     this.appState.autoRefresh = false;
                 }
             }
+            if (this.layerType.valueOf() !== LayerTypes.HeatMap.valueOf()) {
+                if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
+                    this.symbolOptions.symbolType === SymbolTypes.Simple || this.symbolOptions.symbolType === SymbolTypes.Chart) {
+                    getScaleSymbolMaxValues.call(this);
+                }
+            }
         }
         else {
             this.reDraw();
@@ -191,12 +192,11 @@ export class Layer {
 
         if (this.layerType !== LayerTypes.HeatMap) {
             if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
-                this.symbolOptions.symbolType === SymbolTypes.Simple && this.symbolOptions.symbolType === SymbolTypes.Chart) {
+                this.symbolOptions.symbolType === SymbolTypes.Simple || this.symbolOptions.symbolType === SymbolTypes.Chart) {
                 getScaleSymbolMaxValues.call(this);
             }
         }
         if (this.bounds) {
-            console.log(this.bounds)
             let bounds = L.latLngBounds((this.bounds as any)._southWest, (this.bounds as any)._northEast);
             this.appState.map.fitBounds(bounds, {});
         }
@@ -277,7 +277,7 @@ export class Layer {
     initFilters() {
         let filters = this.appState.filters.filter((f) => { return f.layerId === this.id });
         for (let filter of filters) {
-            filter.init(true);
+            filter.init();
         }
     }
 
@@ -291,7 +291,7 @@ export class Layer {
     /**  Manually trigger popup update without refreshing the layer*/
     refreshPopUps() {
         if (this.layerType !== LayerTypes.HeatMap) {
-            if (this.displayLayer && this.popupHeaders) {
+            if (this.displayLayer && this.popupHeaderIds) {
                 if (this.showPopUpInPlace)
                     this.appState.infoScreenText = null;
                 this.displayLayer.eachLayer(function(l: any) {
@@ -841,10 +841,10 @@ function addPopups(feature, layer: L.GeoJSON) {
     let popupContent = '';
     let showInPlace = this.showPopUpInPlace;
     let showOnHover = this.showPopUpOnHover;
-    let headers: Header[] = this.popupHeaders.slice();
+    let headers: number[] = this.popupHeaderIds.slice();
     let state = this.appState;
-    for (let h in headers) {
-        let header = headers[h];
+    for (let h of headers) {
+        let header: Header = this.getHeaderById(h);
         let prop = feature.properties[header.value];
         if (prop != undefined) {
             popupContent += '<b>' + header.label + '</b>: ' + (header.type == 'number' ? prop.toFixed(header.decimalAccuracy) : prop);
@@ -916,7 +916,6 @@ export class ColorOptions implements L.PathOptions {
      * @param  prev   previous options to copy
      */
     constructor(prev?: ColorOptions) {
-
         this.colorField = prev && prev.colorField || undefined;
         this.useCustomScheme = prev && prev.useCustomScheme || false;
         this.colors = prev && prev.colors || [];

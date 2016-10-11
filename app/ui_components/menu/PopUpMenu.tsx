@@ -13,13 +13,13 @@ export class PopUpMenu extends React.Component<{
         this.props.state.editingLayer.refreshPopUps();
     }
 
-    onSelectionChange = (e: Header[]) => {
+    onSelectionChange = (headers: Header[]) => {
         let layer = this.props.state.editingLayer;
-        if (e === null)
-            e = [];
-        layer.popupHeaders = [] //empty headers
-        for (let i of e) { //add new headers
-            layer.popupHeaders.push(i);
+        if (headers === null)
+            headers = [];
+        layer.popupHeaderIds = [] //empty headers
+        for (let header of headers) { //add new headers
+            layer.popupHeaderIds.push(header.id);
         }
         if (this.props.state.autoRefresh)
             layer.refreshPopUps();
@@ -34,13 +34,13 @@ export class PopUpMenu extends React.Component<{
                 options={layer.headers.slice()}
                 multi
                 onChange={this.onSelectionChange}
-                value={layer.popupHeaders.slice()}
+                value={layer.popupHeaderIds.slice()}
                 backspaceRemoves={false}
                 placeholder={strings.selectPlaceholder}
                 />
 
             <div>
-                <label forHTML='click'>
+                <label htmlFor='click'>
                     {strings.showPopupOnClick}
                     <input
                         type='radio'
@@ -58,7 +58,7 @@ export class PopUpMenu extends React.Component<{
                 <br/>
                 {strings.or}
                 <br/>
-                <label forHTML='hover' style={{ marginTop: 0 }}>
+                <label htmlFor='hover' style={{ marginTop: 0 }}>
                     {strings.showPopUpOnHover}
                     <input
                         type='radio'
@@ -74,7 +74,7 @@ export class PopUpMenu extends React.Component<{
 
                 </label>
                 <br/>
-                <label forHTML='inPlace'>
+                <label htmlFor='inPlace'>
                     {strings.showPopUpInPlace}
                     <input
                         type='radio'
@@ -92,7 +92,7 @@ export class PopUpMenu extends React.Component<{
                 <br/>
                 {strings.or}
                 <br/>
-                <label forHTML='separate' style={{ marginTop: 0 }}>
+                <label htmlFor='separate' style={{ marginTop: 0 }}>
                     {strings.showPopUpUpTop}
                     <input
                         type='radio'

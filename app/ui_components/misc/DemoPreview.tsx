@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Strings } from '../../localizations/strings';
+import { Strings } from '../../localizations/Strings';
 export class DemoPreview extends React.Component<{
     strings: Strings,
     imageURL: string,

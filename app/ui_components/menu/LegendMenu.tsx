@@ -35,7 +35,7 @@ export class LegendMenu extends React.Component<{
                             onChange={(e) => {
                                 legend.meta = e.target.value;
                             } }
-                            edit={true}/>
+                            />
                     </div>
                     <label htmlFor='showPercentages'>{strings.legendDistShow}
                         <input id='showPercentages' type='checkbox' checked={legend.showPercentages} onChange={(e) => {

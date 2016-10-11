@@ -7,7 +7,7 @@ let _fileModel = new FilePreProcessModel();
 let _allowedFileTypes = ['geojson', 'csv', 'gpx', 'kml', 'wkt', 'osm', 'xlsx', 'xlsxm', 'xlsb', 'xls', 'ods'];//, 'shp', 'rar', 'zip'];
 import { ImportWizardState } from '../../stores/States';
 import { observer } from 'mobx-react';
-import { Strings } from '../../localizations/strings';
+import { Strings } from '../../localizations/Strings';
 
 @observer
 export class FileUploadView extends React.Component<{

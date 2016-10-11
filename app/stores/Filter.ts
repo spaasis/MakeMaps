@@ -11,8 +11,8 @@ export class Filter {
     @observable title: string;
     /** Layer Id to filter*/
     @observable layerId: number;
-    /** The name of the field to filter*/
-    @observable fieldToFilter: Header;
+    /** The id of the header to filter*/
+    @observable filterHeaderId: number;
     /** Dictionary containing lists of layer ids by the value being filtered*/
     @observable filterValues: { [value: string]: number[] };
     /** Current maximum value */
@@ -66,7 +66,7 @@ export class Filter {
         this.id = prev && prev.id !== undefined ? prev.id : undefined;;
         this.title = prev && prev.title || '';
         this.layerId = prev && prev.layerId !== undefined ? prev.layerId : undefined;
-        this.fieldToFilter = prev && prev.fieldToFilter || undefined;
+        this.filterHeaderId = prev && prev.filterHeaderId || undefined;
         this.filterValues = prev && prev.filterValues || {};
         this.currentMax = prev && prev.currentMax !== undefined ? prev.currentMax : undefined;
         this.currentMin = prev && prev.currentMin !== undefined ? prev.currentMin : undefined;
@@ -84,7 +84,7 @@ export class Filter {
         this.show = prev && prev.show || false;
         this.show = prev && prev.show || false;
         this.appState = prev && prev.appState || appState;
-        this.showSlider = prev && prev.showSlider || false;
+        this.showSlider = prev && prev.showSlider !== undefined ? prev.showSlider : true;
         this.forceSelection = prev && prev.forceSelection !== undefined ? prev.forceSelection : true;
         this.useDistinctValues = prev && prev.useDistinctValues || false;
     }
@@ -92,15 +92,17 @@ export class Filter {
     /**
      * Initializes a filter to be shown in the UI by calculating the layers
      */
-    init(layerUpdate: boolean = false) {
+    init() {
         this.filterValues = {};
         this.filteredIndices = [];
         let id = this.layerId;
         let count = 0;
         let layer = this.appState.layers.filter(function(l) { return l.id == id })[0];
+        let header = layer.getHeaderById(this.filterHeaderId);
+
         if (layer.layerType !== LayerTypes.HeatMap) {
             layer.displayLayer.eachLayer(function(lyr: any) {
-                let val = lyr.feature.properties[this.fieldToFilter.value];
+                let val = lyr.feature.properties[header.value];
                 if (this.filterValues[val]) {
                     this.filterValues[val].push(lyr);
                 }
@@ -120,9 +122,10 @@ export class Filter {
         if (this.show) {
             let id = this.layerId;
             let layer = this.appState.layers.filter(function(l) { return l.id === id })[0];
+            let header = layer.getHeaderById(this.filterHeaderId)
             if (layer.layerType !== LayerTypes.HeatMap) {
                 for (let val in this.filterValues) {
-                    if (this.fieldToFilter.type == 'number') {
+                    if (header.type == 'number') {
                         filterByNumber.call(this, +val, layer);
                     }
                     else {
@@ -147,7 +150,7 @@ export class Filter {
                 let arr: number[][] = [];
                 let max = 0;
                 layer.geoJSON.features.map(function(feat) {
-                    if (feat.properties[this.fieldToFilter] >= this.currentMin && feat.properties[this.fieldToFilter] <= this.currentMax) {
+                    if (feat.properties[header.value] >= this.currentMin && feat.properties[header.value] <= this.currentMax) {
                         let pos = [];
                         let heatVal = feat.properties[layer.colorOptions.colorField.value];
                         if (heatVal > max)
@@ -185,23 +188,39 @@ export class Filter {
 
         function hide(val: any) {
             this.filterValues[val].map(function(lyr: any) {
-                if (lyr.setOpacity)
-                    lyr.setOpacity(0.2);
-                else
-                    lyr.setStyle({ fillOpacity: 0.2, opacity: 0.2 })
-                if (lyr._icon) {
-                    lyr._icon.style.display = this.remove ? 'none' : '';
-                    if (lyr._shadow) {
-                        lyr._shadow.style.display = this.remove ? 'none' : '';
+                if (!this.remove) {
+                    if (lyr._icon && lyr._icon.style.display == 'none') {
+                        lyr._icon.style.display = '';
+                        if (lyr._shadow) {
+                            lyr._shadow.style.display = '';
+                        }
                     }
+                    if (lyr._shadow && lyr._shadow.style.display == 'none') {
+                        lyr._shadow.style.display = '';
+                    }
+                    else if (lyr._path && lyr._path.style.display == 'none') {
+                        lyr._path.style.display = '';
+                    }
+                    if (lyr.setOpacity)
+                        lyr.setOpacity(0.2);
+                    else
+                        lyr.setStyle({ fillOpacity: 0.2, opacity: 0.2 })
                 }
-                else if (lyr._path) {
-                    lyr._path.style.display = this.remove ? 'none' : '';
-                }
-                else if (lyr.options.icon && lyr.options.icon.options.className.indexOf('marker-hidden') == -1) {
+                else {
+                    if (lyr._icon) {
+                        lyr._icon.style.display = 'none';
+                        if (lyr._shadow) {
+                            lyr._shadow.style.display = 'none';
+                        }
+                    }
+                    else if (lyr._path) {
+                        lyr._path.style.display = 'none';
+                    }
+                    else if (lyr.options.icon && lyr.options.icon.options.className.indexOf('marker-hidden') == -1) {
 
-                    lyr.options.icon.options.className += ' marker-hidden';
-                    lyr.setIcon(lyr.options.icon);
+                        lyr.options.icon.options.className += ' marker-hidden';
+                        lyr.setIcon(lyr.options.icon);
+                    }
                 }
 
 
@@ -243,8 +262,9 @@ export class Filter {
 
             let canUnFilter = true;
             for (let filter of filters) {
-                let val = layer.feature.properties[filter.fieldToFilter.value];
-                if (filter.fieldToFilter.type == 'number') {
+                let header: Header = this.appState.layers.filter((layer) => { return layer.id == this.layerId })[0].getHeaderById(this.filterHeaderId);
+                let val = layer.feature.properties[header.value];
+                if (header.type == 'number') {
                     canUnFilter = val <= filter.currentMax && val >= filter.currentMin;
                 }
                 else

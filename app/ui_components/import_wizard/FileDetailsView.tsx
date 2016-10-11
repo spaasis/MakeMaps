@@ -7,7 +7,7 @@ import { DefaultProjections } from "../../common_items/common";
 
 import { ImportWizardState } from '../../stores/States';
 import { observer } from 'mobx-react';
-import { Strings } from '../../localizations/strings';
+import { Strings } from '../../localizations/Strings';
 
 @observer
 export class FileDetailsView extends React.Component<

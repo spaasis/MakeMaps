@@ -24,7 +24,7 @@
 "typings-custom/leaflet.ExtraMarkers.d.ts",
 "app/common_items/commonInterfaces.ts",
 "node_modules/react-localization/lib/LocalizedStrings.d.ts",
-"app/ui_components/Map.tsx",
+"app/ui_components/View.tsx",
 "app/stores/States.ts"
 ],
     "compileOnSave": true,

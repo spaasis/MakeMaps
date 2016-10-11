@@ -259,6 +259,7 @@ export class SymbolMenu extends React.Component<{
         let sym: SymbolOptions = layer.symbolOptions;
         let state: SymbolMenuState = this.props.state.symbolMenuState;
         let autoRefresh = this.props.state.autoRefresh;
+        let hasNumberHeaders = layer.numberHeaders.length > 0;
         let iconSelectStyle = {
             overlay: {
                 position: 'fixed',
@@ -335,7 +336,7 @@ export class SymbolMenu extends React.Component<{
             <div className="makeMaps-options">
                 <label>{strings.selectSymbolType}</label>
                 <br/>
-                <label forHTML='circle'>
+                <label htmlFor='circle'>
                     <i style={{ margin: 4 }} className='fa fa-circle-o'/>
                     {strings.symbolTypeSimple}
                     <input
@@ -347,7 +348,7 @@ export class SymbolMenu extends React.Component<{
                         />
                     <br/>
                 </label>
-                <label forHTML='icon'>
+                <label htmlFor='icon'>
                     <i style={{ margin: 4 }} className='fa fa-map-marker'/>
                     {strings.icon}
                     <input
@@ -359,7 +360,7 @@ export class SymbolMenu extends React.Component<{
                         />
                     <br/>
                 </label>
-                <label forHTML='chart'>
+                <label htmlFor='chart'>
                     <i style={{ margin: 4 }} className='fa fa-pie-chart'/>
                     {strings.symbolTypeChart}
                     <input
@@ -367,11 +368,12 @@ export class SymbolMenu extends React.Component<{
                         onChange={this.onTypeChange.bind(this, SymbolTypes.Chart)}
                         checked={sym.symbolType === SymbolTypes.Chart}
                         name='symboltype'
+                        disabled = {!hasNumberHeaders}
                         id='chart'
                         />
                     <br/>
                 </label>
-                <label forHTML='blocks'>
+                <label htmlFor='blocks'>
                     <i style={{ margin: 4 }} className='fa fa-th-large'/>
                     {strings.symbolTypeBlocks}
                     <input
@@ -379,6 +381,7 @@ export class SymbolMenu extends React.Component<{
                         onChange={this.onTypeChange.bind(this, SymbolTypes.Blocks)}
                         checked={sym.symbolType === SymbolTypes.Blocks}
                         name='symboltype'
+                        disabled = {!hasNumberHeaders}
                         id='blocks'
                         />
                     <br/>
@@ -403,7 +406,7 @@ export class SymbolMenu extends React.Component<{
                                 placeholder= {strings.selectPlaceholder}
                                 />
                             <label>{strings.borderRadius}
-                                <input type='number' value={sym.borderRadius} onChange={(e) => {
+                                <input type='number' value={sym.borderRadius.toString()} onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
                                     if (sym.borderRadius != val) {
                                         sym.borderRadius = val;
@@ -416,7 +419,7 @@ export class SymbolMenu extends React.Component<{
                         {sym.symbolType !== SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar) ?
                             <div>
                                 <label>{strings.sizeMultiplier}
-                                    <input type='number' value={sym.sizeMultiplier} onChange={(e) => {
+                                    <input type='number' value={sym.sizeMultiplier.toString()} onChange={(e) => {
                                         let val = (e.currentTarget as any).valueAsNumber;
                                         if (sym.sizeMultiplier != val) {
                                             sym.sizeMultiplier = val;
@@ -427,7 +430,7 @@ export class SymbolMenu extends React.Component<{
                                 </label>
                                 <br/>
                                 <label>{strings.sizeLowLimit}
-                                    <input type='number' value={sym.sizeLowLimit} onChange={(e) => {
+                                    <input type='number' value={sym.sizeLowLimit.toString()} onChange={(e) => {
                                         let val = (e.currentTarget as any).valueAsNumber;
                                         if (sym.sizeLowLimit != val) {
                                             sym.sizeLowLimit = val;
@@ -438,7 +441,7 @@ export class SymbolMenu extends React.Component<{
                                 </label>
                                 <br/>
                                 <label>{strings.sizeUpLimit}
-                                    <input type='number' value={sym.sizeUpLimit} onChange={(e) => {
+                                    <input type='number' value={sym.sizeUpLimit.toString()} onChange={(e) => {
                                         let val = (e.currentTarget as any).valueAsNumber;
                                         if (sym.sizeUpLimit != val) {
                                             sym.sizeUpLimit = val;
@@ -503,7 +506,7 @@ export class SymbolMenu extends React.Component<{
                             />
                         {strings.chartType}
                         <br/>
-                        <label forHTML='pie'>
+                        <label htmlFor='pie'>
                             {strings.chartTypePie}
                             <input
                                 type='radio'
@@ -518,7 +521,7 @@ export class SymbolMenu extends React.Component<{
                             <br/>
 
                         </label>
-                        <label forHTML='donut'>
+                        <label htmlFor='donut'>
                             {strings.chartTypeDonut}
                             <input
                                 type='radio'
@@ -540,7 +543,7 @@ export class SymbolMenu extends React.Component<{
                 {sym.symbolType === SymbolTypes.Blocks ?
                     <div>
                         <label>{strings.singleBlockValue}
-                            <input type='number' value={sym.blockValue}
+                            <input type='number' value={sym.blockValue.toString()}
                                 onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
                                     if (sym.blockValue != val) {
@@ -552,7 +555,7 @@ export class SymbolMenu extends React.Component<{
                                 min={1}/>
                         </label>
                         <label>{strings.singleBlockWidth}
-                            <input type='number' value={sym.blockWidth}
+                            <input type='number' value={sym.blockWidth.toString()}
                                 onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
                                     if (sym.blockWidth != val) {
@@ -564,7 +567,7 @@ export class SymbolMenu extends React.Component<{
                                 min={1}/>
                         </label>
                         <label>{strings.maxBlockColumns}
-                            <input type='number' value={sym.maxBlockColumns}
+                            <input type='number' value={sym.maxBlockColumns.toString()}
                                 onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
                                     if (sym.maxBlockColumns != val) {
@@ -576,7 +579,7 @@ export class SymbolMenu extends React.Component<{
                                 min={1}/>
                         </label>
                         <label>{strings.maxBlockRows}
-                            <input type='number' value={sym.maxBlockRows}
+                            <input type='number' value={sym.maxBlockRows.toString()}
                                 onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
                                     if (sym.maxBlockRows != val) {

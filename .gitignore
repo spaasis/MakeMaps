@@ -3,7 +3,7 @@ node_modules/
 demos/
 typings/
 release/
-*.js
+app/**/*.js
 *.js.map
 *.log.*
 *.log
