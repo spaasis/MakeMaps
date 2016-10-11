@@ -4,10 +4,11 @@ body{
   margin: 0;
   padding: 0;
   -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: -moz-none;
-    -o-user-select: none;
-    user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: -moz-none;
+  -o-user-select: none;
+  user-select: none;
+  overflow: hidden;
 
 }
 /*base divs*/
@@ -74,10 +75,13 @@ hr{
 }
 
 .menuHover{
-  transform: rotate(270deg);
-  transform-origin: 10% 10% 0;
   position: absolute;
-  bottom: 0;
+  top:50%;
+  left:50%;
+}
+
+.rotate{
+  transform: translateX(-50%) translateY(-50%) rotate(-90deg);
   display: none;
   white-space: nowrap;
 }
@@ -100,10 +104,7 @@ hr{
   display: inline-block;
 }
 .menuHeaderDiv:hover i{
-  position: absolute;
-  top: 6px;
-  left: 0;
-  right: 0;
+  display: none;
 }
 .makeMaps-options{
   background-color: #ededed;
@@ -341,15 +342,6 @@ hr{
 }
 
 @keyframes legendMoveLeft {
-<<<<<<< HEAD
-  from{right:30}
-  to {right: 281}
-}
-
-@keyframes legendMoveRight {
-  from{right:281}
-  to {right: 30}
-=======
   from{right:30px}
   to {right: 282px}
 }
@@ -357,5 +349,4 @@ hr{
 @keyframes legendMoveRight {
   from{right:282px}
   to {right: 30px}
->>>>>>> 61ceecdafad10e6a158a5b2e7d1d809da960fbd1
 }
