@@ -16,14 +16,7 @@ let Modal = require('react-modal');
 
 
 const state = new AppState();
-state.language = Locale.getLanguage();
-//Hack - get all the string options visible in the IDE
-let strings: Strings = (Locale as any);
-state.strings = strings;
-let parameters = decodeURIComponent(window.location.search.substring(1)).split('&');
 
-if (parameters.indexOf('mapURL') > -1)
-    state.embed = true;
 
 @observer
 export class View extends React.Component<{ state: AppState }, {}>{
@@ -32,6 +25,16 @@ export class View extends React.Component<{ state: AppState }, {}>{
         if (!this.props.state.embed) {
             window.onpopstate = this.onBackButtonEvent.bind(this);
         }
+        let parameters = decodeURIComponent(window.location.search.substring(1)).split('&');
+        for (let i of parameters) {
+            if (i.indexOf('mapURL') > -1)
+                this.props.state.embed = true;
+        }
+        this.props.state.language = Locale.getLanguage();
+        //Hack - get all the string options visible in the IDE
+        let strings: Strings = (Locale as any);
+        this.props.state.strings = strings;
+
     }
     changeLanguage(lang: string) {
         Locale.setLanguage(lang);
@@ -95,7 +98,7 @@ export class View extends React.Component<{ state: AppState }, {}>{
                         <WelcomeScreen
                             state={this.props.state.welcomeScreenState}
                             appState={state}
-                            changeLanguage ={this.changeLanguage}
+                            changeLanguage ={this.changeLanguage.bind(this)}
                             />
                     </Modal>
                     {this.props.state.importWizardShown ?
