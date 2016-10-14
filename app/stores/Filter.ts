@@ -187,6 +187,7 @@ export class Filter {
         }
 
         function hide(val: any) {
+
             this.filterValues[val].map(function(lyr: any) {
                 if (!this.remove) {
                     if (lyr._icon && lyr._icon.style.display == 'none') {
@@ -216,8 +217,7 @@ export class Filter {
                     else if (lyr._path) {
                         lyr._path.style.display = 'none';
                     }
-                    else if (lyr.options.icon && lyr.options.icon.options.className.indexOf('marker-hidden') == -1) {
-
+                    if (lyr.options.icon && lyr.options.icon.options.className.indexOf('marker-hidden') == -1) {
                         lyr.options.icon.options.className += ' marker-hidden';
                         lyr.setIcon(lyr.options.icon);
                     }
@@ -262,7 +262,7 @@ export class Filter {
 
             let canUnFilter = true;
             for (let filter of filters) {
-                let header: Header = this.appState.layers.filter((layer) => { return layer.id == this.layerId })[0].getHeaderById(this.filterHeaderId);
+                let header: Header = this.appState.layers.filter((layer) => { return layer.id == this.layerId })[0].getHeaderById(filter.filterHeaderId);
                 let val = layer.feature.properties[header.value];
                 if (header.type == 'number') {
                     canUnFilter = val <= filter.currentMax && val >= filter.currentMin;

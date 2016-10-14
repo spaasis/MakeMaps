@@ -1,5 +1,5 @@
 import { observable, computed } from 'mobx';
-import { GetSymbolSize, GetItemBetweenLimits, ShowNotification, HideLoading } from '../common_items/common';
+import { GetSymbolRadius, GetItemBetweenLimits, ShowNotification, HideLoading } from '../common_items/common';
 import { AppState } from './States';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -42,10 +42,10 @@ export class Layer {
     /** The function to run on every feature of the layer. Is used to place pop-ups to map features */
     onEachFeature: (feature: any, layer: L.GeoJSON) => void = addPopups.bind(this);
     /** The coloring options of the layer. Contains ie. border color and opacity */
-    @observable colorOptions: ColorOptions = new ColorOptions();
+    @observable colorOptions: ColorOptions;
     /**  The symbol options for symbol layers. Contains ie. symbol type  */
-    @observable symbolOptions: SymbolOptions = new SymbolOptions();
-    @observable clusterOptions: ClusterOptions = new ClusterOptions();
+    @observable symbolOptions: SymbolOptions;
+    @observable clusterOptions: ClusterOptions;
     appState: AppState;
     pointFeatureCount: number = 0;
     values: { [field: string]: any[]; };
@@ -136,7 +136,6 @@ export class Layer {
             if (this.layerType.valueOf() !== LayerTypes.HeatMap.valueOf()) {
                 if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
                     this.symbolOptions.symbolType === SymbolTypes.Simple || this.symbolOptions.symbolType === SymbolTypes.Chart) {
-                    getScaleSymbolMaxValues.call(this);
                 }
             }
         }
@@ -193,7 +192,6 @@ export class Layer {
         if (this.layerType !== LayerTypes.HeatMap) {
             if ((this.symbolOptions.sizeXVar || this.symbolOptions.sizeYVar) &&
                 this.symbolOptions.symbolType === SymbolTypes.Simple || this.symbolOptions.symbolType === SymbolTypes.Chart) {
-                getScaleSymbolMaxValues.call(this);
             }
         }
         if (this.bounds) {
@@ -303,6 +301,7 @@ export class Layer {
 
     /** Manually trigger cluster update*/
     refreshCluster() {
+
         if ((this.displayLayer as any).refreshClusters) {
             (this.displayLayer as any).refreshClusters();
         }
@@ -337,10 +336,12 @@ export class Layer {
                 (lyr as any).setStyle({ fillOpacity: this.colorOptions.fillOpacity, opacity: this.colorOptions.opacity })
         }
         this.refreshFilters();
+        this.refreshCluster();
     }
 
     /** Get feature values in their own dictionary to reduce the amount of common calculations*/
     getValues() {
+        console.time('getValues');
         if (!this.values)
             this.values = {};
         if (!this.uniqueValues)
@@ -378,6 +379,7 @@ export class Layer {
             }
             return a;
         }
+        console.timeEnd('getValues');
 
     }
 
@@ -418,6 +420,7 @@ export class Layer {
 
         for (let i = 0; i < markers.length; i++) {
             let marker = markers[i];
+
             if (marker.options.icon && marker.options.icon.options.className.indexOf('marker-hidden') > -1)
                 continue;
             count++;
@@ -458,15 +461,15 @@ export class Layer {
                             vals.push({ feat: e, val: avg[e.value], color: col.chartColors[e.value] });
                     });
                     let sizeVal = sym.sizeXVar ? avg[sym.sizeXVar.value] : undefined;
-                    icon = getChartIcon(sym, col, 20, vals, sizeVal);
+                    icon = getChartSymbol(sym, col, 0, vals, sizeVal);
                     break;
                 case SymbolTypes.Blocks:
-                    icon = getBlockIcon(sym, col, 10, avg[sym.blockSizeVar.value]);
+                    icon = getBlockIcon(sym, col, 0, avg[sym.blockSizeVar.value]);
                     break;
                 default:
                     let yVal = sym.sizeYVar ? avg[sym.sizeYVar.value] : undefined;
                     let xVal = sym.sizeXVar ? avg[sym.sizeXVar.value] : undefined;
-                    icon = getSimpleIcon(sym, col, 20, yVal, xVal);
+                    icon = getSimpleIcon(sym, col, 0, yVal, xVal);
                     break;
             }
         }
@@ -560,10 +563,11 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
         col.fillColor = col.colorField.type == 'number' ?
             GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value])
             : col.colors[col.limits.indexOf(feature.properties[col.colorField.value])];
-    let x, y;
+    let icon: L.DivIcon;
     switch (sym.symbolType) {
         case SymbolTypes.Icon:
-            return L.marker(latlng, { icon: getFaIcon(sym, col, 0, feature.properties[sym.iconField.value]), opacity: col.opacity });
+            icon = getFaIcon(sym, col, 0, feature.properties[sym.iconField.value]);
+            break;
         case SymbolTypes.Chart:
             let vals = [];
             sym.chartFields.map(function(e) {
@@ -571,87 +575,22 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
                     vals.push({ val: feature.properties[e.value], color: col.chartColors[e.value] });
             });
             let sizeVal = sym.sizeXVar ? feature.properties[sym.sizeXVar.value] : undefined;
-            return L.marker(latlng, { icon: getChartIcon(sym, col, 0, vals, sizeVal), opacity: col.opacity });
+            icon = getChartSymbol(sym, col, 0, vals, sizeVal);
+            break;
         case SymbolTypes.Blocks:
-            return L.marker(latlng, { icon: getBlockIcon(sym, col, 0, feature.properties[sym.blockSizeVar.value]), opacity: col.opacity });
+            icon = getBlockIcon(sym, col, 0, feature.properties[sym.blockSizeVar.value]);
+            break;
         default:
             let yVal = sym.sizeYVar ? feature.properties[sym.sizeYVar.value] : undefined;
             let xVal = sym.sizeXVar ? feature.properties[sym.sizeXVar.value] : undefined;
-            return L.marker(latlng, { icon: getSimpleIcon(sym, col, 0, yVal, xVal), opacity: col.opacity });
+            icon = getSimpleIcon(sym, col, 0, yVal, xVal);
+            break;
     }
+    return L.marker(latlng, { icon: icon, opacity: col.opacity });
+
 
 }
 
-function getScaleSymbolMaxValues() {
-    let maxXradius, minXradius, maxYradius, minYradius;
-    let sym: SymbolOptions = this.symbolOptions;
-    this.displayLayer.eachLayer(function(layer) {
-        let r = 10;
-        if (sym.sizeXVar) {
-            let xVal = layer.feature.properties[sym.sizeXVar.value];
-
-            r = GetSymbolSize(xVal, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit);
-            //calculate min and max values and -size
-            if (!sym.actualMaxXValue && !sym.actualMinXValue) {
-                sym.actualMinXValue = xVal;
-                sym.actualMaxXValue = xVal;
-            }
-            else {
-                if (xVal > sym.actualMaxXValue) {
-                    sym.actualMaxXValue = xVal;
-                }
-                else if (xVal < sym.actualMinXValue) {
-                    sym.actualMinXValue = xVal;
-                }
-            }
-            if (!maxXradius && !minXradius) {
-                maxXradius = r;
-                minXradius = r;
-            }
-            else {
-                if (r > maxXradius) {
-                    maxXradius = r;
-                }
-                else if (r < minXradius) {
-                    minXradius = r;
-                }
-            }
-        }
-        if (sym.sizeYVar) {
-            let yVal = layer.feature.properties[sym.sizeYVar.value];
-            r = GetSymbolSize(yVal, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit);
-            //calculate min and max values and -size
-            if (!sym.actualMaxYValue && !sym.actualMinYValue) {
-                sym.actualMinYValue = yVal;
-                sym.actualMaxYValue = yVal;
-            }
-            else {
-                if (yVal > sym.actualMaxYValue) {
-                    sym.actualMaxYValue = yVal;
-                }
-                else if (yVal < sym.actualMinYValue) {
-                    sym.actualMinYValue = yVal;
-                }
-            }
-            if (!maxYradius && !minYradius) {
-                maxYradius = r;
-                minYradius = r;
-            }
-            else {
-                if (r > maxYradius) {
-                    maxYradius = r;
-                }
-                else if (r < minYradius) {
-                    minYradius = r;
-                }
-            }
-        }
-    });
-    sym.actualMinXRadius = minXradius;
-    sym.actualMaxXRadius = maxXradius;
-    sym.actualMinYRadius = minYradius;
-    sym.actualMaxYRadius = maxYradius;
-}
 
 function getFaIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, value: any) {
 
@@ -671,35 +610,25 @@ function getFaIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, 
     });
 }
 
-function getChartIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, vals: any[], value?: number) {
+function getChartSymbol(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, vals: any[], value?: number) {
 
-    let x = value ? GetSymbolSize(value, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+    let x = value !== undefined ? GetSymbolRadius(value, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 50;
     x += sizeModifier;
 
-    let chartHtml = makePieChart({
-        fullCircle: sym.chartType === 'pie',
-        data: vals,
-        strokeWidth: col.weight,
-        outerRadius: x,
-        innerRadius: x / 3,
-        pathFillFunc: function(d) { return d.data.color },
-        borderColor: col.color,
-    });
-    return L.divIcon({ iconAnchor: L.point(x, x), popupAnchor: L.point(0, -x), html: chartHtml, className: '' });
+    return L.divIcon({ iconAnchor: L.point(x / 2, x / 2), popupAnchor: L.point(0, -x / 2), html: makeChartSymbol(), className: '' });
 
-    function makePieChart(options) {
-        if (!options.data) {
+    function makeChartSymbol() {
+        if (!vals) {
             return '';
         }
-        let r = options.outerRadius ? options.outerRadius : 28,
-            rInner = options.innerRadius ? options.innerRadius : r - 10,
-            pathFillFunc = options.pathFillFunc,
-            border = options.borderColor,
-            origo = (r + options.strokeWidth), //Center coordinate
+        let
+            rInner = x / 3,
+            pathFillFunc = function(d) { return d.data.color },
+            origo = (x + col.weight) / 2, //Center coordinate
             w = origo * 2, //width and height of the svg element
             h = w,
-            pie = d3.pie().value(function(d) { return d.val; })(options.data),
-            arc = options.fullCircle ? d3.arc().innerRadius(0).outerRadius(r) : d3.arc().innerRadius(rInner).outerRadius(r);
+            pie = d3.pie().value(function(d) { return d.val; })(vals),
+            arc = sym.chartType === 'pie' ? d3.arc().innerRadius(0).outerRadius(x / 2) : d3.arc().innerRadius(x / 5).outerRadius(x / 2);
 
         //Create an svg element
         let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -718,16 +647,18 @@ function getChartIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: numbe
         arcs.append('path')
             .attr('d', arc)
             .attr('fill', pathFillFunc)
-            .attr('stroke', border)
-            .attr('stroke-width', options.strokeWidth)
+            .attr('stroke', col.color)
+            .attr('opacity', col.fillOpacity)
+            .attr('stroke-width', col.weight)
 
         //Return the svg-markup rather than the actual element
         if (typeof (window as any).XMLSerializer != "undefined") {
             return (new (window as any).XMLSerializer()).serializeToString(svg);
-        } else if (typeof (svg as any).xml != "undefined") {
+        }
+        else if (typeof (svg as any).xml != "undefined") {
             return (svg as any).xml;
         }
-        return "";
+        return '';
     }
 
 }
@@ -805,8 +736,8 @@ function getBlockIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: numbe
 }
 
 function getSimpleIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, yValue: number, xValue: number) {
-    let x = xValue !== undefined ? GetSymbolSize(xValue, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
-    let y = yValue !== undefined ? GetSymbolSize(yValue, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+    let x = xValue !== undefined ? GetSymbolRadius(xValue, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
+    let y = yValue !== undefined ? GetSymbolRadius(yValue, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
     x += sizeModifier;
     y += sizeModifier;
     let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; background-color:' + col.fillColor + '; border: ' + (col.weight + sizeModifier / 6) + 'px solid ' + col.color + '; border-radius: ' + sym.borderRadius + 'px;"/>';
@@ -916,6 +847,7 @@ export class ColorOptions implements L.PathOptions {
      * @param  prev   previous options to copy
      */
     constructor(prev?: ColorOptions) {
+        console.log(prev.weight)
         this.colorField = prev && prev.colorField || undefined;
         this.useCustomScheme = prev && prev.useCustomScheme || false;
         this.colors = prev && prev.colors || [];
@@ -927,9 +859,9 @@ export class ColorOptions implements L.PathOptions {
         this.iconTextColor = prev && prev.iconTextColor || '#FFF';
         this.fillColor = prev && prev.fillColor || '#E0E62D';
         this.color = prev && prev.color || '#000';
-        this.weight = prev && prev.weight || 1;
-        this.fillOpacity = prev && prev.fillOpacity || 0.8;
-        this.opacity = prev && prev.opacity || 0.8;
+        this.weight = prev && prev.weight !== undefined ? prev.weight : 1;
+        this.fillOpacity = prev && prev.fillOpacity !== undefined ? prev.fillOpacity : 0.8;
+        this.opacity = prev && prev.opacity !== undefined ? prev.opacity : 0.8;
         this.useMultipleFillColors = prev && prev.useMultipleFillColors || false;
         this.heatMapRadius = prev && prev.heatMapRadius || 25;
         this.chartColors = prev && prev.chartColors || {};
@@ -979,22 +911,7 @@ export class SymbolOptions {
     @observable maxBlockColumns: number;
     /** Maximum amount of columns in block symbol == height*/
     @observable maxBlockRows: number;
-    /** If symbol is of scalable type; the minimum of all the x-values being calculated. Is used in the legend */
-    @observable actualMinXValue: number;
-    /** If symbol is of scalable type; the minimum of all the y-values being calculated. Is used in the legend */
-    @observable actualMinYValue: number;
-    /** If symbol is of scalable type; the minimum of all the x(pixels) being calculated. Is used in the legend */
-    @observable actualMinXRadius: number;
-    /** If symbol is of scalable type; the minimum of all the y(pixels) being calculated. Is used in the legend */
-    @observable actualMinYRadius: number;
-    /** If symbol is of scalable type; the maximum of all the x-values being calculated. Is used in the legend */
-    @observable actualMaxXValue: number;
-    /** If symbol is of scalable type; the maximum of all the y-values being calculated. Is used in the legend */
-    @observable actualMaxYValue: number;
-    /** If symbol is of scalable type; the maximum of all the x being calculated. Is used in the legend */
-    @observable actualMaxXRadius: number;
-    /** If symbol is of scalable type; the maximum of all the y being calculated. Is used in the legend */
-    @observable actualMaxYRadius: number;
+
 
     constructor(prev?: SymbolOptions) {
 
@@ -1015,15 +932,6 @@ export class SymbolOptions {
         this.blockWidth = prev && prev.blockWidth || 10;
         this.maxBlockColumns = prev && prev.maxBlockColumns || 2;
         this.maxBlockRows = prev && prev.maxBlockRows || 10;
-        this.actualMinYValue = prev && prev.actualMinYValue || undefined;
-        this.actualMaxYValue = prev && prev.actualMaxYValue || undefined;
-        this.actualMinXValue = prev && prev.actualMinXValue || undefined;
-        this.actualMaxXValue = prev && prev.actualMaxXValue || undefined;
-        this.actualMinYRadius = prev && prev.actualMinYRadius || undefined;
-        this.actualMaxYRadius = prev && prev.actualMaxYRadius || undefined;
-        this.actualMinXRadius = prev && prev.actualMinXRadius || undefined;
-        this.actualMaxXRadius = prev && prev.actualMaxXRadius || undefined;
-
 
     }
 }

@@ -48,6 +48,7 @@ export class ExportMenu extends React.Component<{
         };
 
         saveData.layers.forEach(function(e) {
+            console.log(e.colorOptions.weight)
             delete e.popupHeaderIds;
             if (e.colorOptions.colorField) {
                 e.colorOptions['colorHeaderId'] = e.colorOptions.colorField.id;

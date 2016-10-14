@@ -8,7 +8,7 @@ import { Layer, ColorOptions, SymbolOptions, ClusterOptions, Header, LayerTypes 
 import { Legend } from '../stores/Legend';
 
 import { MapInitModel } from '../models/MapInitModel';
-import { GetSymbolSize, FetchSavedMap, LoadSavedMap, ShowLoading, HideLoading, ShowNotification, HideNotification } from '../common_items/common';
+import { FetchSavedMap, LoadSavedMap, ShowLoading, HideLoading, ShowNotification, HideNotification } from '../common_items/common';
 import { OnScreenFilter } from './misc/OnScreenFilter';
 import { OnScreenLegend } from './misc/OnScreenLegend';
 import { OnScreenInfoDisplay } from './misc/OnScreenInfoDisplay';

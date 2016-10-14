@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { GetItemBetweenLimits } from '../../common_items/common';
+import { GetItemBetweenLimits, GetSymbolRadius } from '../../common_items/common';
 import { AppState } from '../../stores/States';
 import { Layer, SymbolOptions, ColorOptions, LayerTypes, SymbolTypes } from '../../stores/Layer';
 import { TextEditor } from './TextEditor';
@@ -23,7 +23,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         if (!isHeat && sym.symbolType === SymbolTypes.Chart && col.chartColors) {
             chartLegend = this.createChartSymbolLegend(col, sym);
         }
-        if (!isHeat && sym.symbolType === SymbolTypes.Simple) {
+        if (!isHeat && sym.symbolType === SymbolTypes.Simple || sym.symbolType === SymbolTypes.Chart) {
             scaledLegend = this.createScaledSizeLegend(options);
         }
         if (!isHeat && sym.symbolType === SymbolTypes.Icon) {
@@ -86,10 +86,10 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
 
     createScaledSizeLegend(layer: Layer) {
         let symbolType = layer.symbolOptions.symbolType;
-        let opt = layer.symbolOptions;
-        let xVar = opt.sizeXVar;
-        let yVar = opt.sizeYVar;
-        let square: boolean = xVar && yVar && xVar === yVar;
+        let sym = layer.symbolOptions;
+        let xVar = sym.sizeXVar;
+        let yVar = sym.sizeYVar;
+        let square: boolean = (xVar && yVar && xVar === yVar) || (xVar && symbolType === SymbolTypes.Chart);
 
         let style = {
             float: 'left',
@@ -99,28 +99,31 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
 
         if (square)
             return (<div style={style}>
-                {rectangleLegend.call(this, false)}
+                {scaledLegend.call(this, false)}
             </div>);
         else {
             return (
                 <div style={style}>
-                    {xVar ? rectangleLegend.call(this, false) : null}
-                    {yVar ? rectangleLegend.call(this, true) : null}
+                    {xVar ? scaledLegend.call(this, false) : null}
+                    {yVar ? scaledLegend.call(this, true) : null}
                 </div>);
         }
 
 
-        function rectangleLegend(y: boolean) {
+        function scaledLegend(y: boolean) {
 
             let divs = [], sides = [], values = [];
+            let col = layer.colorOptions;
             let classes: number = 5;
-            for (let i = 0; i < classes - 1; i++) {
-                sides[i] = y ? Math.round(opt.actualMinYRadius + i * ((opt.actualMaxYRadius - opt.actualMinYRadius) / classes)) : Math.round(opt.actualMinXRadius + i * ((opt.actualMaxXRadius - opt.actualMinXRadius) / classes));
-                values[i] = y ? (opt.actualMinYValue + i * ((opt.actualMaxYValue - opt.actualMinYValue) / classes)).toFixed(yVar.decimalAccuracy) : (opt.actualMinXValue + i * ((opt.actualMaxXValue - opt.actualMinXValue) / classes)).toFixed(xVar.decimalAccuracy);
+            let minValue = sym.sizeLowLimit == 0 ? 0 : Math.max((y ? layer.values[yVar.value][0] : layer.values[xVar.value][0]), (sym.sizeLowLimit ** 2 / sym.sizeMultiplier));
+            let maxValue = Math.max((y ? layer.values[yVar.value][layer.values[yVar.value].length - 1] : layer.values[xVar.value][layer.values[xVar.value].length - 1]), sym.sizeUpLimit ** 2 / sym.sizeMultiplier);
+
+            for (let i = minValue; i < maxValue; i += (maxValue - minValue) / classes) {
+                let val = i.toFixed(y ? yVar.decimalAccuracy : xVar.decimalAccuracy);
+                values.push(val);
+                sides.push(GetSymbolRadius(+val, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit));
             }
-            sides.push(y ? opt.actualMaxYRadius : opt.actualMaxXRadius);
-            values.push(y ? opt.actualMaxYValue.toFixed(yVar.decimalAccuracy) : opt.actualMaxXValue.toFixed(xVar.decimalAccuracy));
-            let textWidth = values[values.length - 1].length;
+            let textWidth = values.length > 0 ? values[values.length - 1].length + 1 : 1;
 
             for (let i = 0; i < classes; i++) {
                 let margin = (sides[sides.length - 1] - sides[i]) / 2;
@@ -128,10 +131,10 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 let style = {
                     width: square ? l : y ? 10 : l,
                     height: square ? l : y ? l : 10,
-                    backgroundColor: layer.colorOptions.fillColor,
+                    backgroundColor: symbolType == SymbolTypes.Chart ? col.chartColors[xVar.value] ? col.chartColors[xVar.value] : '#36e' : col.fillColor,
                     display: this.props.state.legend.horizontal ? '' : 'inline-block',
-                    border: '1px solid gray',
-                    borderRadius: opt.borderRadius,
+                    border: col.weight + 'px solid' + col.color,
+                    borderRadius: sym.borderRadius,
                     marginLeft: this.props.state.legend.horizontal || y ? 'auto' : margin, //center values
                     marginRight: this.props.state.legend.horizontal || y ? 'auto' : margin, //center values
                     marginTop: this.props.state.legend.horizontal && y ? margin : 'auto',
@@ -145,59 +148,12 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 divs.push(
                     <div key={i} style={parentDivStyle}>
                         <div style={style} />
-                        <span style={{ display: 'inline-block', width: this.props.state.legend.horizontal ? '' : textWidth * 10 }}>{values[i]}</span>
+                        <span style={{ display: 'inline-block', width: this.props.state.legend.horizontal ? '' : textWidth * 10 }}>{values[i] + (i == 0 ? '-' : i == classes - 1 ? '+' : '')}</span>
                     </div >);
             }
 
             return <div style= {{ float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}>
-                {y ? layer.symbolOptions.sizeYVar.label : layer.symbolOptions.sizeXVar.label}
-                <div>
-                    {divs.map(function(d) { return d })}
-                </div>
-            </div>;
-        }
-
-        function circleLegend() {
-            let divs = [], radii = [], values = [];
-            let classes: number = 5;
-            for (let i = 0; i < classes - 1; i++) {
-                radii[i] = Math.round(opt.actualMinXRadius + i * ((opt.actualMaxXRadius - opt.actualMinXRadius) / classes));
-                values[i] = (opt.actualMinXValue + i * ((opt.actualMaxXValue - opt.actualMinXValue) / classes)).toFixed(xVar.decimalAccuracy);
-            }
-            radii.push(opt.actualMaxXRadius);
-            values.push(opt.actualMaxXValue.toFixed(xVar.decimalAccuracy));
-            for (let i = 0; i < classes; i++) {
-                let margin = radii[radii.length - 1] - radii[i] + 2;
-                let l = 2 * radii[i];
-                let style = {
-                    width: l,
-                    height: l,
-                    backgroundColor: layer.colorOptions.fillColor,
-                    float: this.props.state.legend.horizontal ? '' : 'left',
-                    border: '1px solid gray',
-                    borderRadius: '50%',
-                    marginLeft: this.props.state.legend.horizontal ? 2 : margin, //center values
-                    marginRight: this.props.state.legend.horizontal ? 2 : margin, //center values
-                    marginTop: this.props.state.legend.horizontal ? margin : 2,
-                    marginBottom: this.props.state.legend.horizontal ? margin : 2,
-                }
-                let parentDivStyle = {
-                    float: this.props.state.legend.horizontal ? 'left' : '',
-                    minHeight: '15px',
-                    overflow: this.props.state.legend.horizontal ? 'none' : 'auto',
-                    lineHeight: this.props.state.legend.horizontal ? '' : Math.max(2 * radii[i] + 4, 15) + 'px',
-
-                }
-                divs.push(
-                    <div key={i} style={parentDivStyle}>
-                        <div style={style} />
-                        <span style={{ marginRight: this.props.state.legend.horizontal ? 15 : '' }}>{values[i]}</span>
-                    </div>);
-            }
-
-            return <div style= {{ float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}>
-                {layer.symbolOptions.sizeXVar.label}
-
+                {y ? sym.sizeYVar.label : sym.sizeXVar.label}
                 <div>
                     {divs.map(function(d) { return d })}
                 </div>

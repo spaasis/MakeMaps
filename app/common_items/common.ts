@@ -8,11 +8,11 @@ declare var XDomainRequest;
 /** Projection names to show in import wizard */
 let DefaultProjections: Array<string> = ['WGS84', 'EPSG:4269', 'EPSG:3857', 'ETRS-GK25FIN'];
 
-function GetSymbolSize(val: number, sizeMultiplier: number, minSize: number, maxSize: number) {
-    let r = Math.sqrt(val * sizeMultiplier / Math.PI) * 2;
-    if (r < minSize)
+function GetSymbolRadius(val: number, sizeMultiplier: number, minSize: number, maxSize: number) {
+    let r = Math.sqrt(val * sizeMultiplier / 4) * 2;
+    if (r <= minSize)
         return minSize;
-    else if (r > maxSize)
+    else if (r >= maxSize)
         return maxSize;
     return r;
 
@@ -141,6 +141,7 @@ function LoadSavedMap(saved: SaveState, appState: AppState) {
         let lyr = appState.layers[i];
         lyr.init();
     }
+
     appState.legend = new Legend(saved.legend);
 
     appState.welcomeShown = false;
@@ -154,4 +155,4 @@ function IsNumber(val: string) {
     return val == '' || !isNaN(+val)
 }
 
-export { DefaultProjections, GetSymbolSize, CalculateLimits, GetItemBetweenLimits, FetchSavedMap, LoadSavedMap, ShowLoading, HideLoading, ShowNotification, HideNotification, IsNumber }
+export { DefaultProjections, GetSymbolRadius, CalculateLimits, GetItemBetweenLimits, FetchSavedMap, LoadSavedMap, ShowLoading, HideLoading, ShowNotification, HideNotification, IsNumber }

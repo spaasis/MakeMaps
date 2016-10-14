@@ -28,13 +28,17 @@ export class PopUpMenu extends React.Component<{
     render() {
         let strings = this.props.state.strings;
         let layer = this.props.state.editingLayer;
+        let headers = [];
+        for (let id of layer.popupHeaderIds) {
+            headers.push(layer.getHeaderById(id))
+        }
         return (<div className="makeMaps-options">
             <label>{strings.selectHeadersToShow}</label>
             <Select
                 options={layer.headers.slice()}
                 multi
                 onChange={this.onSelectionChange}
-                value={layer.popupHeaderIds.slice()}
+                value={headers}
                 backspaceRemoves={false}
                 placeholder={strings.selectPlaceholder}
                 />

@@ -40,7 +40,7 @@ export class AppState {
         return this.filters.length > 0 ? this.filters[this.filters.length - 1].id + 1 : 0;
     }
     /** The active legend of the map*/
-    @observable legend: Legend = new Legend();
+    @observable legend: Legend;
 
     @observable currentLayerId: number = 0;
     /** Currently selected layer on the menu*/
