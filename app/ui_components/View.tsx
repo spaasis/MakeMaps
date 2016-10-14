@@ -22,13 +22,14 @@ const state = new AppState();
 export class View extends React.Component<{ state: AppState }, {}>{
 
     componentWillMount() {
-        if (!this.props.state.embed) {
-            window.onpopstate = this.onBackButtonEvent.bind(this);
-        }
+
         let parameters = decodeURIComponent(window.location.search.substring(1)).split('&');
         for (let i of parameters) {
             if (i.indexOf('mapURL') > -1)
                 this.props.state.embed = true;
+        }
+        if (!this.props.state.embed) {
+            window.onpopstate = this.onBackButtonEvent.bind(this);
         }
         this.props.state.language = Locale.getLanguage();
         //Hack - get all the string options visible in the IDE

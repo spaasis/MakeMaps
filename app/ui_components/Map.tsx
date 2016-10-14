@@ -28,8 +28,6 @@ export class Map extends React.Component<{ state: AppState }, {}>{
 
 
     componentDidMount() {
-        console.log('mount')
-        console.log(this.props.state.embed)
         _mapInitModel.InitCustomProjections();
         this.initMap();
         if (this.props.state.embed)

@@ -847,7 +847,6 @@ export class ColorOptions implements L.PathOptions {
      * @param  prev   previous options to copy
      */
     constructor(prev?: ColorOptions) {
-        console.log(prev.weight)
         this.colorField = prev && prev.colorField || undefined;
         this.useCustomScheme = prev && prev.useCustomScheme || false;
         this.colors = prev && prev.colors || [];
