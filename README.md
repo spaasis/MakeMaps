@@ -45,4 +45,4 @@ mapURL=http://makemaps.online/demos/symboldemo.mmap"</iframe>
 
 Author
 -----
-Simo Paasisalo [Mail](mailto:info@makemaps.online)|[LinkedIn](https://fi.linkedin.com/in/simopaasisalo)
+Simo Paasisalo [Mail](mailto:simopaasisalo@fastmail.com)|[LinkedIn](https://fi.linkedin.com/in/simopaasisalo)
