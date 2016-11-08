@@ -80,6 +80,8 @@ export class AppState {
 
     @observable language: string;
 
+    @observable loaded: boolean = false;
+
     strings: Strings;
 
     map: L.Map;

@@ -30,23 +30,29 @@ export class Map extends React.Component<{ state: AppState }, {}>{
     componentDidMount() {
         _mapInitModel.InitCustomProjections();
         this.initMap();
-        if (this.props.state.embed)
+        let state = this.props.state;
+        if (state.embed)
             this.embed();
 
+        //Handle direct JSON embed
+        if (window.addEventListener) {
+            window.addEventListener('message', function(e) {
+                //TODO: verify JSON before
+                state.embed = true;
+                ShowLoading();
+                LoadSavedMap(JSON.parse(e.data), state)
+            }, false);
+        }
+        //  else if ( window.attachEvent ) { // ie8
+        //     window.attachEvent('onmessage', handleMessage);
+        // }
     }
 
     /** Parse URL parameters and act accordingly */
     embed() {
         let parameters = decodeURIComponent(window.location.search.substring(1)).split('&');
-        if (this.getUrlParameter('mapURL', parameters) || this.getUrlParameter('mapJSON', parameters))
+        if (this.getUrlParameter('mapURL', parameters))
             this.props.state.embed = true;
-
-        let mapJSON = this.getUrlParameter('mapJSON', parameters);
-        if (mapJSON) {
-            ShowLoading();
-            LoadSavedMap(JSON.parse(mapJSON), this.props.state)
-            return;
-        }
 
         //URL to get a .makeMaps-file
         let mapURL = this.getUrlParameter("mapURL", parameters);

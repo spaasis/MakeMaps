@@ -98,8 +98,8 @@ export class ExportMenu extends React.Component<{
     }
 
     saveEmbedCode() {
-        let script = '<script type="text/javascript">function setSource(){var json =' + JSON.stringify(this.formSaveJSON()) + '; var frame =	document.getElementById("MakeMapsEmbed"); if (!frame.src || frame.src=="") frame.src = "https://makemaps.online?mapJSON="+encodeURIComponent(JSON.stringify(json));}</script>';
-        let frame = '<iframe onLoad="setSource()"  id="MakeMapsEmbed" style="height: 100%; width: 100%; border:none;"/>';
+        let script = '<script type="text/javascript">function loadJSON(){var json =' + JSON.stringify(this.formSaveJSON()) + '; var frame =	document.getElementById("MakeMapsEmbed"); frame.contentWindow.postMessage(JSON.stringify(json), "*");}</script>';
+        let frame = '<iframe onLoad="loadJSON()" src="https://makemaps.online" id="MakeMapsEmbed" style="height: 100%; width: 100%; border:none;"/>';
 
         let html = script + frame;
 
@@ -140,6 +140,12 @@ export class ExportMenu extends React.Component<{
                 <button className='menuButton' onClick={() => {
                     this.saveFile();
                 } }>{strings.saveAsFile}</button>
+                <br/>
+                {strings.or}
+                <br/>
+                <button className='menuButton' onClick={() => {
+                    this.saveEmbedCode();
+                } }>{strings.saveEmbedCode}</button>
 
 
 

@@ -24,19 +24,25 @@ export class View extends React.Component<{ state: AppState }, {}>{
     componentWillMount() {
 
         let parameters = decodeURIComponent(window.location.search.substring(1)).split('&');
+        let state = this.props.state;
         for (let i of parameters) {
             if (i.indexOf('mapURL') > -1)
-                this.props.state.embed = true;
+                state.embed = true;
         }
-        if (!this.props.state.embed) {
+        if (!state.embed) {
             window.onpopstate = this.onBackButtonEvent.bind(this);
         }
-        this.props.state.language = Locale.getLanguage();
+        state.language = Locale.getLanguage();
         //Hack - get all the string options visible in the IDE
         let strings: Strings = (Locale as any);
-        this.props.state.strings = strings;
+        state.strings = strings;
 
+        window.onload = function() {
+            state.loaded = true;
+        };
     }
+
+
     changeLanguage(lang: string) {
         Locale.setLanguage(lang);
         this.props.state.language = lang;
@@ -91,7 +97,7 @@ export class View extends React.Component<{ state: AppState }, {}>{
         }
         return <div>
             <Map state={state}/>
-            {this.props.state.embed ? null :
+            {!this.props.state.loaded || this.props.state.embed ? null :
                 <div>
                     <Modal
                         isOpen={this.props.state.welcomeShown}
