@@ -1,9 +1,8 @@
 import * as React from 'react';
 let Dropzone = require('react-dropzone');
 import { ShowNotification, ShowLoading, HideLoading } from '../../common_items/common';
-import { FilePreProcessModel } from '../../models/FilePreProcessModel';
+import { ParseHeadersFromCSV, ParseCSVToGeoJSON, ParseToGeoJSON } from '../../models/FilePreProcessModel';
 import * as XLSX from 'xlsx';
-let _fileModel = new FilePreProcessModel();
 let _allowedFileTypes = ['geojson', 'csv', 'gpx', 'kml', 'wkt', 'osm', 'xlsx', 'xlsxm', 'xlsb', 'xls', 'ods'];//, 'shp', 'rar', 'zip'];
 import { ImportWizardState } from '../../stores/States';
 import { observer } from 'mobx-react';
@@ -62,10 +61,10 @@ export class FileUploadView extends React.Component<{
             ext = 'csv';
         }
         if (ext === 'csv') {
-            let headers, delim;
-            [headers, delim] = _fileModel.ParseHeadersFromCSV(this.props.state.content);
+            let res = ParseHeadersFromCSV(this.props.state.content);
+            let headers = res.headers;
             this.props.state.layer.headers = [];
-            if (headers.length == 0) {
+            if (res.headers.length == 0) {
                 ShowNotification(this.props.strings.noHeadersError);
                 HideLoading();
                 return;
@@ -73,7 +72,7 @@ export class FileUploadView extends React.Component<{
             for (let header of headers) {
                 this.props.state.layer.headers.push({ id: headers.indexOf(header), value: header.name, label: header.name, type: header.type, decimalAccuracy: 0 });
             }
-            this.props.state.delimiter = delim;
+            this.props.state.delimiter = res.delim;
         }
         if (this.props.state.content) {
             this.props.state.fileExtension = ext;
@@ -93,7 +92,7 @@ export class FileUploadView extends React.Component<{
             <div style={{ padding: 20 }}>
                 <div>
                     <h2>{strings.uploadViewHeader}</h2>
-                    <hr/>
+                    <hr />
                     <p>{strings.currentlySupportedTypes}: </p>
                     <p> GeoJSON, Microsoft Office {strings.spreadsheets}, OpenDocument {strings.spreadsheets}, CSV, KML, GPX, WKT, OSM...</p>
                     <a target="_blank" rel="noopener noreferrer" href='https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'>{strings.fileTypeSupportInfo}</a>
@@ -102,12 +101,12 @@ export class FileUploadView extends React.Component<{
                         onDrop={this.onDrop.bind(this)}
                         accept={_allowedFileTypes.map(function(type) { return '.' + type }).join(', ')}>
 
-                        {this.props.state.fileName ? <span><i className='fa fa-check' style={{ color: '#549341', fontSize: 17 }}/> {this.props.state.fileName} </span> : <span>{strings.uploadDropBoxText}</span>}
+                        {this.props.state.fileName ? <span><i className='fa fa-check' style={{ color: '#549341', fontSize: 17 }} /> {this.props.state.fileName} </span> : <span>{strings.uploadDropBoxText}</span>}
                     </Dropzone>
                     <label>{strings.giveNameToLayer}</label>
                     <input type="text" onChange={(e) => {
                         layer.name = (e.target as any).value;
-                    } } value={layer.name}/>
+                    } } value={layer.name} />
 
                 </div>
                 <button className='secondaryButton' style={{ position: 'absolute', left: 15, bottom: 15 }} onClick={() => {

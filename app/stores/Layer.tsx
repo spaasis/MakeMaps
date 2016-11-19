@@ -195,8 +195,7 @@ export class Layer {
             }
         }
         if (this.bounds) {
-            let bounds = L.latLngBounds((this.bounds as any)._southWest, (this.bounds as any)._northEast);
-            this.appState.map.fitBounds(bounds, {});
+            this.appState.bounds = L.latLngBounds((this.bounds as any)._southWest, (this.bounds as any)._northEast);
         }
 
     }
@@ -240,8 +239,7 @@ export class Layer {
             }
 
             if (!this.bounds) {
-                let bounds: L.LatLngBounds = this.bounds || this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();
-                this.appState.map.fitBounds(bounds, {}); //leaflet.heat doesn't utilize getBounds, so get it directly
+                this.appState.bounds = this.bounds || this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();
             }
             this.appState.map.addLayer(this.displayLayer);
 
@@ -262,8 +260,7 @@ export class Layer {
         this.initFilters();
         this.refreshFilters();
         if (!this.bounds) {
-            let bounds: L.LatLngBounds = this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();//leaflet.heat doesn't utilize getBounds, so get it directly
-            this.appState.map.fitBounds(bounds, {});
+            this.appState.bounds = this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();//leaflet.heat doesn't utilize getBounds, so get it directly
             this.bounds = this.appState.map.getBounds();
         }
         HideLoading();
@@ -709,7 +706,7 @@ function getBlockIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: numbe
             for (let c = 0; c < columns; c++) {
                 let isDrawn = c * rows + (rows - i) <= blockCount;
                 if (isDrawn) {
-                    arr.push(<td style={style} key={i + c}/>);
+                    arr.push(<td style={style} key={i + c} />);
                     filledBlocks++;
                     actualColumns = Math.max(c + 1, actualColumns);
                 }

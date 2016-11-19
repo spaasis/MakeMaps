@@ -24,8 +24,10 @@
 "typings-custom/leaflet.ExtraMarkers.d.ts",
 "app/common_items/commonInterfaces.ts",
 "node_modules/react-localization/lib/LocalizedStrings.d.ts",
-"app/ui_components/View.tsx",
-"app/stores/States.ts"
+"app/MakeMaps.tsx",
+"app/View.tsx",
+"app/stores/States.ts",
+"app/stores/Main.ts"
 ],
     "compileOnSave": true,
     "buildOnSave": false,

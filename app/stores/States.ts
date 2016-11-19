@@ -9,7 +9,7 @@ let mobx = require('mobx');
 
 export class AppState {
 
-    @observable welcomeShown: boolean = true;
+    @observable welcomeShown: boolean = false;
     /** Is the import wizard visible*/
     @observable importWizardShown: boolean = false;
     /** Is the options menu icon visible*/
@@ -82,9 +82,24 @@ export class AppState {
 
     @observable loaded: boolean = false;
 
+    @observable bounds: L.LatLngBounds;
+
     strings: Strings;
 
     map: L.Map;
+
+    mapStartingCenter: [number, number] = [0, 0];
+
+    mapStartingZoom = 2;
+
+    constructor() {
+        mobx.autorun(() => {
+            if (this.bounds) {
+                this.map.fitBounds(this.bounds, {})
+            }
+        })
+    }
+
 }
 
 export class WelcomeScreenState {
@@ -114,12 +129,12 @@ export class ImportWizardState {
     @observable fileExtension: string;
     /** The file's contents as string */
     @observable content: string;
-    /** If DSV; the delimiter used to separate columns */
-    @observable delimiter: string;
     /** The name of the latitude field */
     @observable latitudeField: string;
     /** The name of the longitude field */
     @observable longitudeField: string;
+    /** CSV delimiter*/
+    @observable delimiter: string;
     /** The name of the coordinate system */
     @observable coordinateSystem: string;
     @observable useCustomProjection: boolean;

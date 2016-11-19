@@ -98,14 +98,12 @@ export class Map extends React.Component<{ state: AppState }, {}>{
             doubleClickZoom: false,
             // fullscreenControl: true,
         };
-        let map = L.map('map', props).setView([0, 0], 2);
-
-        map.doubleClickZoom.disable();
-        map.on('contextmenu', function(e) { //disable context menu opening on right-click
+        this.props.state.map = L.map('map', props).setView(this.props.state.mapStartingCenter, this.props.state.mapStartingZoom);
+        this.props.state.map.doubleClickZoom.disable();
+        this.props.state.map.on('contextmenu', function(e) { //disable context menu opening on right-click
             // map.openTooltip('asd', (e as any).latlng );
             return;
         });
-        this.props.state.map = map;
     }
 
 
@@ -132,15 +130,10 @@ export class Map extends React.Component<{ state: AppState }, {}>{
     renderLegend() {
         if (this.props.state.legend && this.props.state.legend.visible) {
             return <OnScreenLegend
-                state={this.props.state}/>
+                state={this.props.state} />
 
         }
     }
-
-
-
-
-
 
     render() {
 
@@ -150,7 +143,7 @@ export class Map extends React.Component<{ state: AppState }, {}>{
                     {this.renderFilters()}
                     {this.renderLegend()}
                     <OnScreenInfoDisplay
-                        state = {this.props.state}/>
+                        state={this.props.state} />
                 </div>
 
             </div>

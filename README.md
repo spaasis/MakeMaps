@@ -1,5 +1,6 @@
 [Hosting](#hosting)|
 [Embedding](#embedding)
+[Integrating](#integrating)
 #MakeMaps
 
  [![build status](https://travis-ci.org/simopaasisalo/MakeMaps.svg?branch=master)](http://travis-ci.org/simopaasisalo/MakeMaps)
@@ -53,6 +54,61 @@ src="https://makemaps.online
 ?
 mapURL=https://makemaps.online/demos/symboldemo.mmap"</iframe>
 ```
+
+Integrating
+===========
+
+You can integrate MakeMaps as a part of a larger React application.
+
+**API**
+The communication to MakeMaps is done through component properties.
+
+*Properties*
+- *data* data list
+- *mapOptions* map options object
+- *viewOptions* options related to the MakeMaps UI
+
+*Data*
+- *id (number)* unique data id
+- *name* display name of the map layer created from this data
+- *type* file type of the data
+  - csv|gpx|kml|geojson
+- *content* the data as a string
+- *columns (string[])* the columns to use. If null, every column will be used.
+- *projection* the map projection. If null, WGS84 will be used.
+- *latName* name of the latitude column
+- *lonName* name of the longitude column
+
+*Map options*
+- *attributionExtension* text to add to map attribution text
+- *mapCenter ([number,number])* map center coordinate. Default [0,0]
+- *zoomLevel (number)* map default zoom level. Default 2
+
+*View options*
+- *showMenu (bool)* show MakeMaps menu. NOTE: if this is disabled, map elements will not be customizable
+- *language (fi|en)* the menu display language. Default English
+- *showExportOptions (bool)* show map download options on menu. Default true
+- *allowLayerChanges (bool)* allow the creation and removal of additional layers through menu. Default false
+
+*Example*
+```
+var data = [{
+    id: 1,
+    type: 'geojson',
+    content: '{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[27.68,62.999]},"properties":{"category":"love it"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[27.68,62.998]},"properties":{"category":"fine dining"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[27.68,62.997]},"properties":{"category":"harbor?"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[27.68,62.996]},"properties":{"category":"trees"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[27.68,62.995]},"properties":{"category":"road"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[27.68,62.994]},"properties":{"category":"bugs"}}]}',
+    columns: null,
+    projection: null,
+    latName: null,
+    lonName: null,
+    name: 'Layer2'
+}];
+
+<MakeMaps settings={{ data: null, viewOptions: { showMenu: true, showExportOptions: true, allowLayerChanges: true, language: 'en' }, mapOptions: { attributionExtension: '', mapCenter: [0, 0], zoomLevel: 0 } }} />
+
+
+
+```
+
 
 Author
 -----
