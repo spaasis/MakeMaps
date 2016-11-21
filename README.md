@@ -61,36 +61,9 @@ Integrating
 You can integrate MakeMaps as a part of a larger React application.
 
 **API**
+
 The communication to MakeMaps is done through component properties.
 
-**Properties**
-- **data** data list
-- **mapOptions** map options object
-- **viewOptions** options related to the MakeMaps UI
-
-**Data**
-- **id (number)** unique data id
-- **name** display name of the map layer created from this data
-- **type** file type of the data
-  - csv|gpx|kml|geojson
-- **content** the data as a string
-- **columns (string[])** the columns to use. If null, every column will be used.
-- **projection** the map projection. If null, WGS84 will be used.
-- **latName** name of the latitude column
-- **lonName** name of the longitude column
-
-**Map options*
-- **attributionExtension** text to add to map attribution text
-- **mapCenter ([number,number])** map center coordinate. Default [0,0]
-- **zoomLevel (number)** map default zoom level. Default 2
-
-**View options**
-- **showMenu (bool)** show MakeMaps menu. NOTE: if this is disabled, map elements will not be customizable
-- **language (fi|en)** the menu display language. Default English
-- **showExportOptions (bool)** show map download options on menu. Default true
-- **allowLayerChanges (bool)** allow the creation and removal of additional layers through menu. Default false
-
-**Example**
 ```
 var data = [{
     id: 1,
@@ -108,6 +81,36 @@ var data = [{
 
 
 ```
+
+**Properties**
+- **data** data list
+- **mapOptions** map options object
+- **viewOptions** options related to the MakeMaps UI
+
+**Data**
+- **id (number)** unique data id
+- **name** display name of the map layer created from this data
+- **type** file type of the data
+  - csv|gpx|kml|geojson
+- **content** the data as a string
+- **columns (string[])** the columns to use. If null, every column will be used.
+- **projection** the map projection. If null, WGS84 will be used.
+- **latName** name of the latitude column
+- **lonName** name of the longitude column
+
+**Map options**
+- **attributionExtension** text to add to map attribution text
+- **mapCenter ([number,number])** map center coordinate. Default [0,0]
+- **zoomLevel (number)** map default zoom level. Default 2
+
+**View options**
+- **showMenu (bool)** show MakeMaps menu. NOTE: if this is disabled, map elements will not be customizable
+- **language (fi|en)** the menu display language. Default English
+- **showExportOptions (bool)** show map download options on menu. Default true
+- **allowLayerChanges (bool)** allow the creation and removal of additional layers through menu. Default false
+
+**Example**
+
 
 
 Author
