@@ -76,7 +76,18 @@ var data = [{
     name: 'Layer2'
 }];
 
-<MakeMaps settings={{ data: null, viewOptions: { showMenu: true, showExportOptions: true, allowLayerChanges: true, language: 'en' }, mapOptions: { attributionExtension: '', mapCenter: [0, 0], zoomLevel: 0 } }} />
+<MakeMaps settings={{ 
+data: data, 
+viewOptions: 
+ { showMenu: true, 
+  showExportOptions: true, 
+  allowLayerChanges: true, 
+  language: 'en' }, 
+mapOptions: 
+  { attributionExtension: '', 
+   mapCenter: [0, 0], 
+   zoomLevel: 0 } }} 
+   />
 
 
 
