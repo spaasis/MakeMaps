@@ -58,34 +58,10 @@ mapURL=https://makemaps.online/demos/symboldemo.mmap"</iframe>
 Integrating
 ===========
 
-You can integrate MakeMaps as a part of a larger React application.
+You can integrate MakeMaps as a part of a larger React application through React properties.
 
 **API**
-The communication to MakeMaps is done through component properties.
 
-*Data* - array of data to load to map
-- *id (number)* unique data id
-- *name* display name of the map layer created from this data
-- *type* file type of the data
-  - csv|gpx|kml|geojson
-- *content* the data as a string
-- *columns (string[])* the columns to use. If null, every column will be used.
-- *projection* the map projection. If null, WGS84 will be used.
-- *latName* name of the latitude column
-- *lonName* name of the longitude column
-
-*Map options* - options related to map display
-- *attributionExtension* text to add to map attribution text
-- *mapCenter ([number,number])* map center coordinate. Default null
-- *zoomLevel (number)* map default zoom level. Default null
-
-*View options* - MakeMaps menu and general view options
-- *showMenu (bool)* show MakeMaps menu. NOTE: if this is disabled, map elements will not be customizable
-- *language (fi|en)* the menu display language. Default English
-- *showExportOptions (bool)* show map download options on menu. Default true
-- *allowLayerChanges (bool)* allow the creation and removal of additional layers through menu. Default false
-
-*Example*
 ```
 var data = [{
     id: 1,
@@ -98,11 +74,40 @@ var data = [{
     name: 'Layer2'
 }];
 
-<MakeMaps data={data} viewOptions={{ showMenu: true, showExportOptions: true, allowLayerChanges: true, language: 'en' }} mapOptions={{ attributionExtension: '', mapCenter: null, zoomLevel: null }} />
-
-
+<MakeMaps
+  data={data}
+  viewOptions={{ showMenu: true, showExportOptions: true, allowLayerChanges: true, language: 'en' }}
+  mapOptions={{ attributionExtension: '', mapCenter: [15,16], zoomLevel: 4 }} />
 
 ```
+
+**Properties**
+- **data** data list
+- **mapOptions** map options object
+- **viewOptions** options related to the MakeMaps UI
+
+**Data**
+- **id (number)** unique data id
+- **name** display name of the map layer created from this data
+- **type** file type of the data
+  - csv|gpx|kml|geojson
+- **content** the data as a string
+- **columns (string[])** the columns to use. If null, every column will be used.
+- **projection** the map projection. If null, WGS84 will be used.
+- **latName** name of the latitude column
+- **lonName** name of the longitude column
+
+**Map options**
+- **attributionExtension** text to add to map attribution text
+- **mapCenter ([number,number])** map center coordinate. Default null
+- **zoomLevel (number)** map default zoom level. Default null
+
+**View options**
+- **showMenu (bool)** show MakeMaps menu. NOTE: if this is disabled, map elements will not be customizable. Default true
+- **language (fi|en)** the menu display language. Default English
+- **showExportOptions (bool)** show map download options on menu. Default true
+- **allowLayerChanges (bool)** allow the creation and removal of additional layers through menu. Default false
+
 
 
 Author
