@@ -49,7 +49,7 @@ function CalculateLimits(min: number, max: number, count: number, accuracy: numb
 }
 
 function GetItemBetweenLimits(limits: any[], items: any[], value: number) {
-    if (!isNaN(value)) {
+    if (value != null && !isNaN(value)) {
         if (limits.length > 0)
             for (let i = 0; i < limits.length; i++) {
                 if (i < limits.length - 1) {

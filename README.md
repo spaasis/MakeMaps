@@ -65,8 +65,8 @@ You can integrate MakeMaps as a part of a larger React application through React
 ```
 var data = [{
     id: 1,
-    type: 'geojson',
-    content: '{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[27.68,62.999]},"properties":{"category":"love it"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[27.68,62.998]},"properties":{"category":"fine dining"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[27.68,62.997]},"properties":{"category":"harbor?"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[27.68,62.996]},"properties":{"category":"trees"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[27.68,62.995]},"properties":{"category":"road"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[27.68,62.994]},"properties":{"category":"bugs"}}]}',
+    type: 'general',
+    content: '{ "field1": [1, null, 3, 4, 5, 6], "field2": ["a", null, "c", "d", "e", "f"], "loc": [[27.68, 62.899], [27.68, 62.898], [27.68, 62.897], [27.68, 62.896], [27.68, 62.895], [27.68, 62.894]] }',
     columns: null,
     projection: null,
     latName: null,
@@ -80,17 +80,11 @@ var data = [{
   mapOptions={{ attributionExtension: '', mapCenter: [15,16], zoomLevel: 4 }} />
 
 ```
-
-**Properties**
-- **data** data list
-- **mapOptions** map options object
-- **viewOptions** options related to the MakeMaps UI
-
 **Data**
 - **id (number)** unique data id
 - **name** display name of the map layer created from this data
 - **type** file type of the data
-  - csv|gpx|kml|geojson
+  - general|csv|gpx|kml|geojson
 - **content** the data as a string
 - **columns (string[])** the columns to use. If null, every column will be used.
 - **projection** the map projection. If null, WGS84 will be used.

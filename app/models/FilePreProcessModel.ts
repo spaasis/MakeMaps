@@ -73,13 +73,40 @@ function ParseToGeoJSON(input: string, fileFormat: string, onComplete: (geoJSON)
 
 }
 
+function ParseTableToGeoJSON(input, onComplete: (geoJSON) => void) {
+    let geoJSON = { features: [], type: 'FeatureCollection' }
+    let count = input.loc.length;
+    let fields: string[] = []
+    for (let key in input) {
+
+        if (input.hasOwnProperty(key) && key != 'loc')
+            fields.push(key);
+    }
+
+    for (let i = 0; i < count; i++) {
+        let props = {};
+        for (let field of fields) {
+            props[field] = input[field][i] == null ? null : input[field][i]
+        }
+        geoJSON.features.push({
+            geometry: {
+                type: 'Point', //TODO: other types
+                coordinates: input.loc[i]
+            },
+            properties: props,
+            type: 'Feature'
+        })
+    }
+    onComplete(geoJSON);
+}
+
 function SetGeoJSONTypes(geoJSON: { features: any, type: string }, headers: Header[]) {
     let headerId = 0;
     for (let i of geoJSON.features) {
         let props = geoJSON.features ? i.properties : {};
         for (let h of Object.keys(props)) {
             let isnumber = IsNumber(props[h]);
-            if (isnumber)
+            if (isnumber && props[h] != null)
                 props[h] = +props[h];
             let header = headers.slice().filter(function(e) { return e.value === h })[0];
 
@@ -124,4 +151,4 @@ function ProjectCoords(geoJSON, fromProj: string) {
 
 }
 
-export { ParseHeadersFromCSV, ParseCSVToGeoJSON, ParseToGeoJSON, ProjectCoords, SetGeoJSONTypes }
+export { ParseHeadersFromCSV, ParseCSVToGeoJSON, ParseTableToGeoJSON, ParseToGeoJSON, ProjectCoords, SetGeoJSONTypes }

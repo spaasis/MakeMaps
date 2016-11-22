@@ -4,7 +4,7 @@ export class MakeMapsData {
     /** Display name of the layer*/
     name: string;
     /** The format of the data */
-    type: 'json-stat' | 'csv' | 'gpx' | 'kml' | 'geojson';
+    type: 'general' | 'csv' | 'gpx' | 'kml' | 'geojson';
     /** The data as a string*/
     content: string;
     /** List of column names that are used. If undefined or null, every column is in use*/

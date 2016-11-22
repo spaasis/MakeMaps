@@ -774,8 +774,8 @@ function addPopups(feature, layer: L.GeoJSON) {
     for (let h of headers) {
         let header: Header = this.getHeaderById(h);
         let prop = feature.properties[header.value];
-        if (prop != undefined) {
-            popupContent += '<b>' + header.label + '</b>: ' + (header.type == 'number' ? prop.toFixed(header.decimalAccuracy) : prop);
+        if (prop !== undefined) {
+            popupContent += '<b>' + header.label + '</b>: ' + (header.type == 'number' ? prop == null ? 'null' : prop.toFixed(header.decimalAccuracy) : prop);
             popupContent += '<br />';
         }
     }

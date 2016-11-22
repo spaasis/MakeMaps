@@ -10,7 +10,7 @@ import { WelcomeScreen } from './ui_components/misc/WelcomeScreen';
 import { LayerImportWizard } from './ui_components/import_wizard/LayerImportWizard';
 import { MakeMapsMenu } from './ui_components/menu/Menu';
 import { HideLoading, HideNotification } from './common_items/common';
-import { ParseHeadersFromCSV, ParseCSVToGeoJSON, ParseToGeoJSON, SetGeoJSONTypes } from './models/FilePreProcessModel';
+import { ParseHeadersFromCSV, ParseCSVToGeoJSON, ParseTableToGeoJSON, ParseToGeoJSON, SetGeoJSONTypes } from './models/FilePreProcessModel';
 import { observer } from 'mobx-react';
 
 let Modal = require('react-modal');
@@ -107,6 +107,9 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
                 headers.map(function(h) { layer.headers.push({ id: index, value: h.name, label: h.name, type: h.type, decimalAccuracy: 0 }) });
                 ParseCSVToGeoJSON(d.content, d.latName, d.lonName, delim, layer.headers,
                     function(geo) { layer.geoJSON = geo });
+            }
+            else if (d.type == 'general') {
+                ParseTableToGeoJSON(JSON.parse(d.content), function(geo) { layer.geoJSON = SetGeoJSONTypes(geo, layer.headers) });
             }
             else if (d.type != 'geojson') {
                 ParseToGeoJSON(d.content, d.type, function(geo) { layer.geoJSON = SetGeoJSONTypes(geo, layer.headers) });
