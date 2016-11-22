@@ -34,7 +34,6 @@ export class LayerImportWizard extends React.Component<{
                 ParseToGeoJSON(state.content, ext, function(geojson) {
                     state.layer.geoJSON = SetGeoJSONTypes(geojson, state.layer.headers);
                 })
-            console.log(state.layer)
             this.nextStep();
 
 

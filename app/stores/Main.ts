@@ -1,10 +1,3 @@
-export class AppProps {
-    /** The data to load on to the map. Data is loaded in the order of the array (first goes first)*/
-    data: MakeMapsData[];
-    mapOptions: MapOptions;
-    viewOptions: ViewOptions;
-}
-
 export class MakeMapsData {
     /** Unique id that is used to reference the map layers. */
     id: number;

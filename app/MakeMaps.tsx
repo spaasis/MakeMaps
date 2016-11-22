@@ -2,7 +2,7 @@ import * as React from 'react';
 import { AppState, ImportWizardState, WelcomeScreenState, ColorMenuState, SymbolMenuState, FilterMenuState, LegendMenuState, LayerMenuState, ExportMenuState, ClusterMenuState, SaveState } from './stores/States';
 import { Layer, ColorOptions, SymbolOptions, ClusterOptions, Header, LayerTypes } from './stores/Layer';
 import { Legend } from './stores/Legend'
-import { AppProps, MakeMapsData } from './stores/Main';
+import { MakeMapsData, MapOptions, ViewOptions } from './stores/Main';
 import { Map } from './ui_components/Map';
 import { Locale } from './localizations/Locale';
 import { Strings } from './localizations/Strings';
@@ -18,11 +18,10 @@ let Modal = require('react-modal');
 const state = new AppState();
 
 @observer
-export class MakeMaps extends React.Component<{ settings: AppProps }, {}>{
+export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOptions: ViewOptions, mapOptions: MapOptions }, {}>{
 
     componentWillMount() {
-        let settings = this.props.settings;
-        if (!settings.data) {
+        if (!this.props.data) {
 
             let parameters = decodeURIComponent(window.location.search.substring(1)).split('&');
             for (let i of parameters) {
@@ -31,15 +30,15 @@ export class MakeMaps extends React.Component<{ settings: AppProps }, {}>{
             }
 
         }
-        if (settings.mapOptions) {
-            state.mapStartingCenter = settings.mapOptions.mapCenter || [0, 0];
-            state.mapStartingZoom = settings.mapOptions.zoomLevel || 2;
+        if (this.props.mapOptions) {
+            state.mapStartingCenter = this.props.mapOptions.mapCenter || [0, 0];
+            state.mapStartingZoom = this.props.mapOptions.zoomLevel || 2;
         }
-        state.language = settings.viewOptions.language || Locale.getLanguage();
+        state.language = this.props.viewOptions.language || Locale.getLanguage();
         //Hack - get all the string options visible in the IDE
         let strings: Strings = (Locale as any);
         state.strings = strings;
-        state.welcomeShown = !this.props.settings.data;
+        state.welcomeShown = !this.props.data;
 
         window.onload = function() {
             state.loaded = true;
@@ -48,22 +47,30 @@ export class MakeMaps extends React.Component<{ settings: AppProps }, {}>{
     }
 
     componentDidMount() {
-        if (!this.props.settings.data) {
+        if (!this.props.data) {
 
             if (!state.embed) {
                 window.onpopstate = this.onBackButtonEvent.bind(this);
             }
         }
         else {
-            this.loadData(null, this.props.settings.data)
+            this.loadData(null, this.props.data)
         }
     }
 
-    componentWillReceiveProps(newProps: AppProps) {
-        //check diff
-        if (newProps.data) {
-            this.loadData(this.props.settings.data, newProps.data);
+    componentWillReceiveProps(newProps: { data: MakeMapsData[], mapOptions: MapOptions, viewOptions: ViewOptions }) {
+        if (newProps.data && JSON.stringify(newProps.data) !== JSON.stringify(this.props.data)) {
+            this.loadData(this.props.data, newProps.data);
         }
+        if (state.map) {
+            if (newProps.mapOptions.mapCenter && !!newProps.mapOptions.zoomLevel)
+                state.map.setView(newProps.mapOptions.mapCenter, newProps.mapOptions.zoomLevel)
+        }
+        if (JSON.stringify(newProps.viewOptions) !== JSON.stringify(this.props.viewOptions)) {
+            state.menuShown = newProps.viewOptions.showMenu;
+            state.language = newProps.viewOptions.language;
+        }
+
     }
 
     /** Load data from parent system based on props     */
@@ -74,8 +81,16 @@ export class MakeMaps extends React.Component<{ settings: AppProps }, {}>{
                 addData(d);
             }
             if (old && hasDifferentData(old, d)) {
-                removeData(old);
+                removeData(old.id);
                 addData(d);
+            }
+        }
+        if (oldData) { //remove layers no longer in newData
+            let oldIds = oldData.map(d => d.id);
+            let newIds = newData.map(d => d.id);
+            for (let id of oldIds) {
+                if (newIds.indexOf(id) == -1)
+                    removeData(id);
             }
         }
         state.editingLayer = state.layers[state.layers.length - 1];
@@ -105,8 +120,8 @@ export class MakeMaps extends React.Component<{ settings: AppProps }, {}>{
             layer.init();
         }
 
-        function removeData(d: MakeMapsData) {
-            let layer: Layer = state.layers.filter(f => f.id == d.id)[0];
+        function removeData(id: number) {
+            let layer: Layer = state.layers.filter(f => f.id == id)[0];
             if (layer) {
                 state.map.removeLayer(layer.displayLayer);
                 state.layers.splice(state.layers.indexOf(layer), 1);
@@ -162,7 +177,7 @@ export class MakeMaps extends React.Component<{ settings: AppProps }, {}>{
         state.editingLayer = undefined;
         state.importWizardShown = false;
 
-        state.welcomeShown = !this.props.settings.data;
+        state.welcomeShown = !this.props.data;
         state.currentLayerId = 0;
         state.standardLayerOrder = [];
         state.heatLayerOrder = [];
@@ -203,7 +218,7 @@ export class MakeMaps extends React.Component<{ settings: AppProps }, {}>{
                             <LayerImportWizard state={state} />
                         </Modal>
                         : null}
-                    {state.menuShown || this.props.settings.viewOptions.showMenu ?
+                    {state.menuShown || this.props.viewOptions.showMenu ?
                         <MakeMapsMenu state={state} />
                         : null}
                 </div>

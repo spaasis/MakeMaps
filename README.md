@@ -63,12 +63,7 @@ You can integrate MakeMaps as a part of a larger React application.
 **API**
 The communication to MakeMaps is done through component properties.
 
-*Properties*
-- *data* data list
-- *mapOptions* map options object
-- *viewOptions* options related to the MakeMaps UI
-
-*Data*
+*Data* - array of data to load to map
 - *id (number)* unique data id
 - *name* display name of the map layer created from this data
 - *type* file type of the data
@@ -79,12 +74,12 @@ The communication to MakeMaps is done through component properties.
 - *latName* name of the latitude column
 - *lonName* name of the longitude column
 
-*Map options*
+*Map options* - options related to map display
 - *attributionExtension* text to add to map attribution text
-- *mapCenter ([number,number])* map center coordinate. Default [0,0]
-- *zoomLevel (number)* map default zoom level. Default 2
+- *mapCenter ([number,number])* map center coordinate. Default null
+- *zoomLevel (number)* map default zoom level. Default null
 
-*View options*
+*View options* - MakeMaps menu and general view options
 - *showMenu (bool)* show MakeMaps menu. NOTE: if this is disabled, map elements will not be customizable
 - *language (fi|en)* the menu display language. Default English
 - *showExportOptions (bool)* show map download options on menu. Default true
@@ -103,7 +98,7 @@ var data = [{
     name: 'Layer2'
 }];
 
-<MakeMaps settings={{ data: null, viewOptions: { showMenu: true, showExportOptions: true, allowLayerChanges: true, language: 'en' }, mapOptions: { attributionExtension: '', mapCenter: [0, 0], zoomLevel: 0 } }} />
+<MakeMaps data={data} viewOptions={{ showMenu: true, showExportOptions: true, allowLayerChanges: true, language: 'en' }} mapOptions={{ attributionExtension: '', mapCenter: null, zoomLevel: null }} />
 
 
 
