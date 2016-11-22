@@ -80,7 +80,8 @@ var data = [{
   mapOptions={{ attributionExtension: '', mapCenter: [15,16], zoomLevel: 4 }} />
 
 ```
-**Data**
+
+**Data** - list of data to load to map
 - **id (number)** unique data id
 - **name** display name of the map layer created from this data
 - **type** file type of the data
@@ -91,12 +92,12 @@ var data = [{
 - **latName** name of the latitude column
 - **lonName** name of the longitude column
 
-**Map options**
+**Map options** - general map options
 - **attributionExtension** text to add to map attribution text
 - **mapCenter ([number,number])** map center coordinate. Default null
 - **zoomLevel (number)** map default zoom level. Default null
 
-**View options**
+**View options** - MakeMaps menu and general view options
 - **showMenu (bool)** show MakeMaps menu. NOTE: if this is disabled, map elements will not be customizable. Default true
 - **language (fi|en)** the menu display language. Default English
 - **showExportOptions (bool)** show map download options on menu. Default true
