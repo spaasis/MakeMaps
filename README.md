@@ -85,8 +85,9 @@ var data = [{
 - **id (number)** unique data id
 - **name** display name of the map layer created from this data
 - **type** file type of the data
-  - general|csv|gpx|kml|geojson
-- **content** the data as a string
+  - general|csv|gpx|kml|geojson|wkt
+- **data** the data as JS object (optional. Use this for General or GeoJSON formats. Either data or content is required)
+- **content** the data as a string (optional. Use this for CSV,GPX,KML,WKT formats. Can also be used for General or GeoJSON)
 - **columns (string[])** the columns to use. If null, every column will be used.
 - **projection** the map projection. If null, WGS84 will be used.
 - **latName** name of the latitude column

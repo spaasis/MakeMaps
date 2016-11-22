@@ -6,7 +6,9 @@ export class MakeMapsData {
     /** The format of the data */
     type: 'general' | 'csv' | 'gpx' | 'kml' | 'geojson';
     /** The data as a string*/
-    content: string;
+    content?: string;
+    /** Data as a JS object*/
+    data?: any;
     /** List of column names that are used. If undefined or null, every column is in use*/
     columns: string[];
     /** Map projection. Default WGS84*/

@@ -109,13 +109,13 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
                     function(geo) { layer.geoJSON = geo });
             }
             else if (d.type == 'general') {
-                ParseTableToGeoJSON(JSON.parse(d.content), function(geo) { layer.geoJSON = SetGeoJSONTypes(geo, layer.headers) });
+                ParseTableToGeoJSON(d.data ? d.data : JSON.parse(d.content), function(geo) { layer.geoJSON = SetGeoJSONTypes(geo, layer.headers) });
             }
             else if (d.type != 'geojson') {
                 ParseToGeoJSON(d.content, d.type, function(geo) { layer.geoJSON = SetGeoJSONTypes(geo, layer.headers) });
             }
             else {
-                layer.geoJSON = SetGeoJSONTypes(JSON.parse(d.content), layer.headers)
+                layer.geoJSON = SetGeoJSONTypes(d.data ? d.data : JSON.parse(d.content), layer.headers)
             }
             layer.id = d.id;
             layer.name = d.name;
