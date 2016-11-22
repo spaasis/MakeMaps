@@ -67,6 +67,7 @@ var data = [{
     id: 1,
     type: 'general',
     content: '{ "field1": [1, null, 3, 4, 5, 6], "field2": ["a", null, "c", "d", "e", "f"], "loc": [[27.68, 62.899], [27.68, 62.898], [27.68, 62.897], [27.68, 62.896], [27.68, 62.895], [27.68, 62.894]] }',
+    data: { field1: [1, null, 3, 4, 5, 6], field2: ["a", null, "c", "d", "e", "f"], loc: [[27.68, 62.899], [27.68, 62.898], [27.68, 62.897], [27.68, 62.896], [27.68, 62.895], [27.68, 62.894]] }, //Use either data or content (see below)
     columns: null,
     projection: null,
     latName: null,
