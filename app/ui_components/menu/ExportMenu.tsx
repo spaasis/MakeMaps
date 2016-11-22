@@ -111,13 +111,26 @@ export class ExportMenu extends React.Component<{
         let strings = this.props.state.strings;
         return (
             <div>
+                <button className='menuButton' onClick={() => {
+                    this.saveFile();
+                } }>{strings.saveAsFile}</button>
+                <i>{strings.saveAsFileHelpText}</i>
+                <br />
+
+                <hr />
+                <button className='menuButton' onClick={() => {
+                    this.saveEmbedCode();
+                } }>{strings.saveEmbedCode}</button>
+                <i>{strings.saveEmbedCodeHelpText}</i>
+                <br />
+
+                <hr />
                 {this.props.state.legend.visible ?
                     <div>
-                        <label htmlFor='showLegend'>{strings.downloadShowLegend}</label>
+                        <label htmlFor='showLegend' style={{ marginTop: 0 }}>{strings.downloadShowLegend}</label>
                         <input id='showLegend' type='checkbox' checked={this.props.state.exportMenuState.showLegend} onChange={(e) => {
                             this.props.state.exportMenuState.showLegend = (e.currentTarget as any).checked;
-                        } }/>
-                        <br/>
+                        } } />
                     </div> : null
                 }
                 {this.props.state.filters.length > 0 ?
@@ -126,27 +139,14 @@ export class ExportMenu extends React.Component<{
                         <input id='showFilters' type='checkbox' checked={this.props.state.exportMenuState.showFilters}
                             onChange={(e) => {
                                 this.props.state.exportMenuState.showFilters = (e.currentTarget as any).checked;
-                            } }/>
-                        <br/>
+                            } } />
                     </div> : null
                 }
 
                 <button className='menuButton' onClick={() => {
                     this.saveImage();
                 } }>{strings.saveAsImage}</button>
-                <br/>
-                {strings.or}
-                <br/>
-                <button className='menuButton' onClick={() => {
-                    this.saveFile();
-                } }>{strings.saveAsFile}</button>
-                <br/>
-                {strings.or}
-                <br/>
-                <button className='menuButton' onClick={() => {
-                    this.saveEmbedCode();
-                } }>{strings.saveEmbedCode}</button>
-
+                <i>{strings.saveAsImageHelpText}</i>
 
 
             </div>

@@ -1,5 +1,5 @@
 [Hosting](#hosting)|
-[Embedding](#embedding)
+[Embedding](#embedding)|
 [Integrating](#integrating)
 #MakeMaps
 
@@ -78,8 +78,8 @@ var data = [{
 
 <MakeMaps
   data={data}
-  viewOptions={{ showMenu: true, showExportOptions: true, allowLayerChanges: true, language: 'en' }}
-  mapOptions={{ attributionExtension: '', mapCenter: [15,16], zoomLevel: 4 }} />
+  viewOptions={{ showMenu: true, showExportOptions: true, allowLayerChanges: true, language: 'en', showWelcomeScreen:false }}
+  mapOptions={{ attributionExtension: '', mapCenter: [15,16], zoomLevel: 4, baseMapName: 'OSM Black&White' }} />
 
 ```
 
@@ -99,12 +99,15 @@ var data = [{
 - **attributionExtension** text to add to map attribution text
 - **mapCenter ([number,number])** map center coordinate. Default null
 - **zoomLevel (number)** map default zoom level. Default null
+- **baseMapName** name of the map base layer. Default OSM Streets
+  - OSM Streets | OSM Black&White | OpenTopoMap | Stamen Toner | Stamen Watercolor | null
 
 **View options** - MakeMaps menu and general view options
 - **showMenu (bool)** show MakeMaps menu. NOTE: if this is disabled, map elements will not be customizable. Default true
 - **language (fi|en)** the menu display language. Default English
 - **showExportOptions (bool)** show map download options on menu. Default true
 - **allowLayerChanges (bool)** allow the creation and removal of additional layers through menu. Default false
+- **showWelcomeScreen (bool)** show the MakeMaps welcome screen when there is no data to load. Setting this to false shows an empty map.
 
 
 

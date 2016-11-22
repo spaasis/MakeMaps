@@ -93,8 +93,11 @@ class Strings {
     refreshMap: string = 'Refresh map';
     revert: string = 'Revert';
     saveAsFile: string = 'Download map as a file';
+    saveAsFileHelpText: string = 'Save the map as a .mmap-file for later editing';
     saveAsImage: string = 'Download map as image';
+    saveAsImageHelpText: string = 'Save the currently visible map as a .png image file';
     saveEmbedCode: string = 'Save embed code';
+    saveEmbedCodeHelpText: string = 'Save the .html code to embed this map directly to your web page';
     saveFilter: string = 'Save filter';
     selectBaseMap: string = 'Select the base map';
     selectColorScheme: string = 'Select a color scheme';

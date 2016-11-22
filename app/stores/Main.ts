@@ -20,14 +20,14 @@ export class MakeMapsData {
 }
 
 export class MapOptions {
-
     /** Add text or html string to map attribution text*/
     attributionExtension: string;
     /** Map center coordinates. If null or undefined, will be automatically set based on the data*/
-    mapCenter: [number, number];
+    mapCenter: [number, number] = [0, 0];
     /** Map zoom level. If null or undefined (or not fit to baselayer), will be automatically set*/
-    zoomLevel: number;
-
+    zoomLevel: number = 2;
+    /** Map base layer*/
+    baseMapName: 'OSM Streets' | 'OSM Black&White' | 'OpenTopoMap' | 'Stamen Toner' | 'Stamen Watercolor' | null = 'OSM Streets';
 }
 
 export class ViewOptions {
@@ -35,8 +35,10 @@ export class ViewOptions {
     showMenu: boolean = true;
     /** Should the export options be visible in the menu. Default true*/
     showExportOptions: boolean = true;
-    /** Should the addition and removal of layers be allowed in the layer menu. Default false*/
-    allowLayerChanges: boolean = false;
-    /** Menu display language*/
-    language: 'fi' | 'en' = 'en';
+    /** Should the addition and removal of layers be allowed in the layer menu. Default true*/
+    allowLayerChanges: boolean = true;
+    /** Menu display language. Null=automatically select based on browser*/
+    language: 'fi' | 'en' | null = null;
+    /** Show default MakeMaps welcome screen when there is no data to load. Default true*/
+    showWelcomeScreen = true;
 }
