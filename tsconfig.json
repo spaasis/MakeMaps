@@ -28,8 +28,7 @@
 "app/MakeMaps.tsx",
 "app/View.tsx",
 "app/stores/States.ts",
-"app/stores/Main.ts",
-"app/index.ts"
+"app/stores/Main.ts"
 ],
     "compileOnSave": true,
     "buildOnSave": false,
