@@ -1,8 +1,8 @@
 {
   "name": "makeMaps",
   "version": "1.0.0",
-  "main": "./dist/index.js",
-  "types": "./dist/index",
+  "main": "./dist/MakeMaps.js",
+  "typings": "./dist/MakeMaps",
   "scripts": {
     "prepublish": "typings install && tsc && webpack"
   },
