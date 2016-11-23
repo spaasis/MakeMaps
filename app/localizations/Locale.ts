@@ -1,12 +1,13 @@
-import * as LocalizedStrings from 'react-localization';
+import * as Loc from 'react-localization';
 import { Strings } from './Strings';
 import { fi } from './fi';
 
 let en = new Strings();
 
-// let Locale = new LocalizedStrings({
-//     fi,
-//     en,
-// });
-//
-// export { Locale }
+//TODO:fix typings!
+let Locale: any = new Loc({
+    fi,
+    en,
+});
+
+export { Locale }
