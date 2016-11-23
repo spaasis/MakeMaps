@@ -352,7 +352,8 @@ export class Layer {
             for (let i in feat.properties) {
                 if (!this.values[i])
                     this.values[i] = [];
-                this.values[i].push(feat.properties[i]);
+                if (feat.properties[i] != null)
+                    this.values[i].push(feat.properties[i]);
             }
         }, this);
         for (let i in this.headers.slice()) {

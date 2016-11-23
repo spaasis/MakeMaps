@@ -35,8 +35,8 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         if (!this.props.mapOptions)
             this.props.mapOptions = new MapOptions(); //init with defaults
 
-        state.mapStartingCenter = this.props.mapOptions.mapCenter;
-        state.mapStartingZoom = this.props.mapOptions.zoomLevel;
+        state.mapStartingCenter = this.props.mapOptions.mapCenter || [0, 0];
+        state.mapStartingZoom = this.props.mapOptions.zoomLevel || 2;
 
         state.language = this.props.viewOptions.language || Locale.getLanguage();
         //Hack - get all the string options visible in the IDE
@@ -92,8 +92,7 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
                 addData(d);
             }
             if (old && hasDifferentData(old, d)) {
-                removeData(old.id);
-                addData(d);
+                refreshData(d);
             }
         }
         if (oldData) { //remove layers no longer in newData
@@ -108,8 +107,7 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         state.legend = new Legend();
         state.menuShown = true;
 
-        function addData(d: MakeMapsData) {
-            let layer: Layer = new Layer(state);
+        function getGeoJSONFromData(d: MakeMapsData, layer: Layer) {
             if (d.type == 'csv') {
                 let index = 0, headers, delim;
                 let res = ParseHeadersFromCSV(d.content);
@@ -128,10 +126,51 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
             else {
                 layer.geoJSON = SetGeoJSONTypes(d.data ? d.data : JSON.parse(d.content), layer.headers)
             }
+        }
+
+        function addData(d: MakeMapsData) {
+            let layer: Layer = new Layer(state);
+            getGeoJSONFromData(d, layer);
             layer.id = d.id;
             layer.name = d.name;
             state.layers.push(layer);
             layer.init();
+        }
+
+        function refreshData(d: MakeMapsData) {
+            let layer: Layer = state.layers.filter(f => f.id == d.id)[0];
+            layer.values = {};
+            let oldHeaders = layer.headers;
+            layer.headers = [];
+            getGeoJSONFromData(d, layer);
+            for (let newHeader of layer.headers) {
+                newHeader.id = oldHeaders.filter(h => h.value == newHeader.value)[0].id;
+            }
+
+            let filters = state.filters.filter(f => { return f.layerId == layer.id && layer.headers.map(h => h.id).indexOf(f.filterHeaderId) == -1 })//filters from fields that have been removed
+            for (let filter of filters) {
+                filter.show = false;
+                state.filters.splice(state.filters.indexOf(filter), 1); //remove from filters
+            }
+
+            layer.reDraw();
+
+            for (let filter of state.filters) {
+                if (filter.useDistinctValues) { //refresh distinct values
+                    let lyr = state.layers.filter(l => l.id == filter.layerId)[0];
+                    filter.steps = [];
+                    let header = lyr.headers.filter(h => h.id == filter.filterHeaderId)[0]
+                    let values = lyr.uniqueValues[header.value];
+                    if (header.type == 'string') {
+                        filter.categories = values;
+                        break;
+                    }
+                    for (let i = 0; i < values.length - 1; i++) {
+                        let step: [number, number] = [values[i], values[i + 1] - 1];
+                        filter.steps.push(step);
+                    }
+                }
+            }
         }
 
         function removeData(id: number) {
@@ -154,6 +193,7 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
             return oldData.name !== newData.name ||
                 oldData.type !== newData.type ||
                 oldData.content !== newData.content ||
+                oldData.data !== newData.data ||
                 oldData.columns !== newData.columns ||
                 oldData.projection !== newData.projection ||
                 oldData.latName !== newData.latName ||

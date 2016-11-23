@@ -83,12 +83,22 @@ export class FilterMenu extends React.Component<{
         let filter = new Filter(this.props.state);
         filter.id = this.props.state.nextFilterId;
         filter.layerId = this.props.state.editingLayer.id;
-        filter.filterHeaderId = this.props.state.editingLayer.numberHeaders[0].id;
-        filter.title = this.props.state.editingLayer.numberHeaders[0].label;
+        let header = this.props.state.editingLayer.headers[0]
+        filter.filterHeaderId = header.id;
+        filter.title = header.label;
 
         this.props.state.filters.push(filter);
         this.props.state.filterMenuState.selectedFilterId = filter.id;
-        this.getMinMax()
+        if (header.type === 'string') {
+            this.props.state.filterMenuState.useCustomSteps = true;
+            filter.useDistinctValues = true;
+            this.calculateSteps(header);
+        }
+        else {
+            this.props.state.filterMenuState.useCustomSteps = false;
+            filter.useDistinctValues = false;
+            this.getMinMax()
+        }
     }
     onSave = () => {
         let filter = this.props.state.editingFilter;
@@ -160,7 +170,7 @@ export class FilterMenu extends React.Component<{
                             />
                         {strings.or}</div> : null}
                 <button className='menuButton' onClick={this.onCreate}>{strings.createNewFilter}</button>
-                <br/>
+                <br />
 
                 {filter ?
 
@@ -168,23 +178,23 @@ export class FilterMenu extends React.Component<{
                         <label>{strings.selectFilterLayer}</label>
                         <Select
                             options={layers}
-                            onChange = {(val: { label: string, value: Layer }) => {
+                            onChange={(val: { label: string, value: Layer }) => {
                                 filter.layerId = val.value.id;
                             } }
-                            value = {layer}
-                            valueRenderer = {(option: Layer) => {
+                            value={layer}
+                            valueRenderer={(option: Layer) => {
                                 return option ? option.name : '';
                             } }
                             clearable={false}
                             placeholder={strings.selectPlaceholder}
                             />
-                        <br/>
+                        <br />
                         <label>{strings.giveNameToFilter}
                             <input type="text" onChange={(e) => {
                                 filter.title = (e.target as any).value;
-                            } } value={filter ? filter.title : ''}/>
+                            } } value={filter ? filter.title : ''} />
                         </label>
-                        {filter.show ? <br/>
+                        {filter.show ? <br />
                             :
                             <div>
                                 <label>{strings.selectFilterVariable}
@@ -213,7 +223,7 @@ export class FilterMenu extends React.Component<{
                                                 checked={state.useCustomSteps}
                                                 id='steps'
                                                 />
-                                            <br/>
+                                            <br />
                                         </label>
                                         <label htmlFor='showSlider'>
                                             {strings.filterShowSlider}
@@ -225,7 +235,7 @@ export class FilterMenu extends React.Component<{
                                                 checked={filter.showSlider}
                                                 id='showSlider'
                                                 />
-                                            <br/>
+                                            <br />
                                         </label>
                                     </div>
                                     :
@@ -242,7 +252,7 @@ export class FilterMenu extends React.Component<{
                                             checked={filter.allowCategoryMultiSelect}
                                             id='multiSelect'
                                             />
-                                        <br/>
+                                        <br />
                                     </label>
                                 }
                                 {header.type !== 'string' && state.useCustomSteps && filter.totalMin !== undefined && filter.totalMax !== undefined ?
@@ -260,7 +270,7 @@ export class FilterMenu extends React.Component<{
                                                 checked={filter.useDistinctValues}
                                                 id='dist'
                                                 />
-                                            <br/>
+                                            <br />
                                         </label>
                                         {this.renderSteps.call(this)}
                                     </div>
@@ -276,14 +286,14 @@ export class FilterMenu extends React.Component<{
                                                     let val: boolean = (e.target as any).checked;
                                                     filter.forceSelection = val;
                                                     if (val) {
-                                                        filter.selectedStep = filter.selectedStep > -1 ? filter.selectedStep : filter.steps.length > 0 ? 0 : -1;
+                                                        filter.selectedStep = filter.selectedStep > -1 ? filter.selectedStep : filter.steps && filter.steps.length > 0 ? 0 : -1;
                                                         filter.selectedCategories = filter.selectedCategories.length > 0 ? filter.selectedCategories : filter.categories.length > 0 ? [filter.categories[0]] : [];
                                                     }
                                                 } }
                                                 checked={filter.forceSelection}
                                                 id='noSelect'
                                                 />
-                                            <br/>
+                                            <br />
                                         </label>
                                     </div> : null
                                 }
@@ -309,9 +319,9 @@ export class FilterMenu extends React.Component<{
                                         id='remove'
                                         />
                                 </label>
-                                <br/>
+                                <br />
                                 {strings.or}
-                                <br/>
+                                <br />
                                 <label htmlFor='opacity' style={{ marginTop: 0 }}>
                                     {strings.filterChangeOpacity}
                                     <input
@@ -338,7 +348,7 @@ export class FilterMenu extends React.Component<{
                             :
                             <button className='menuButton' onClick={this.onSave}>{strings.saveFilter}</button>}
 
-                        <br/>
+                        <br />
                         <i>{strings.filterDragTip}</i>
                     </div>
 
@@ -371,7 +381,7 @@ export class FilterMenu extends React.Component<{
                             value={s[0].toString()}
                             onChange={(e) => { s[0] = (e.currentTarget as any).valueAsNumber } }
                             style={inputStyle}
-                            step='any'/>
+                            step='any' />
                         -
                         <input
                             id={row + 'max'}
@@ -379,7 +389,7 @@ export class FilterMenu extends React.Component<{
                             value={s[1].toString()}
                             onChange={(e) => { s[1] = (e.currentTarget as any).valueAsNumber } }
                             style={inputStyle}
-                            step='any'/>
+                            step='any' />
                     </li>);
                 row++;
             });
