@@ -4,7 +4,7 @@ import { Layer, ColorOptions, SymbolOptions, ClusterOptions, Header, LayerTypes 
 import { Legend } from './stores/Legend'
 import { MakeMapsData, MapOptions, ViewOptions } from './stores/Main';
 import { Map } from './ui_components/Map';
-import { Locale } from './localizations/Locale';
+// import { Locale } from './localizations/Locale';
 import { Strings } from './localizations/Strings';
 import { WelcomeScreen } from './ui_components/misc/WelcomeScreen';
 import { LayerImportWizard } from './ui_components/import_wizard/LayerImportWizard';
@@ -38,10 +38,10 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         state.mapStartingCenter = this.props.mapOptions.mapCenter || [0, 0];
         state.mapStartingZoom = this.props.mapOptions.zoomLevel || 2;
 
-        state.language = this.props.viewOptions.language || Locale.getLanguage();
+        // state.language = this.props.viewOptions.language || Locale.getLanguage();
         //Hack - get all the string options visible in the IDE
-        let strings: Strings = (Locale as any);
-        state.strings = strings;
+        // let strings: Strings = (Locale as any);
+        // state.strings = strings;
         state.welcomeShown = this.props.viewOptions.showWelcomeScreen && !this.props.data;
 
         window.onload = function() {
@@ -202,7 +202,7 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
     }
 
     changeLanguage(lang: string) {
-        Locale.setLanguage(lang);
+        // Locale.setLanguage(lang);
         state.language = lang;
     }
 
