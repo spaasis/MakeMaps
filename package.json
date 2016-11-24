@@ -4,8 +4,7 @@
   "main": "./dist/MakeMaps.js",
   "typings": "./dist/MakeMaps",
   "scripts": {
-	"prepublish": "typings install && tsc && webpack",
-	"postinstall": "typings install && tsc && webpack"
+	"preinstall": "typings install && tsc && webpack"
   },
   "author": "Simo Paasisalo",
   "license": "GPL V3",
