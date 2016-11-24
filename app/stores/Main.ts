@@ -27,7 +27,7 @@ export class MapOptions {
     /** Map zoom level. If null or undefined (or not fit to baselayer), will be automatically set*/
     zoomLevel: number = 2;
     /** Map base layer*/
-    baseMapName: 'OSM Streets' | 'OSM Black&White' | 'OpenTopoMap' | 'Stamen Toner' | 'Stamen Watercolor' | null = 'OSM Streets';
+    baseMapName: 'OSM Streets' | 'OSM Black&White' | 'OpenTopoMap' | 'Stamen Toner' | 'Stamen Watercolor';
 }
 
 export class ViewOptions {
@@ -37,8 +37,8 @@ export class ViewOptions {
     showExportOptions: boolean = true;
     /** Should the addition and removal of layers be allowed in the layer menu. Default true*/
     allowLayerChanges: boolean = true;
-    /** Menu display language. Null=automatically select based on browser*/
-    language: 'fi' | 'en' | null = null;
+    /** Menu display language. */
+    language: 'fi' | 'en';
     /** Show default MakeMaps welcome screen when there is no data to load. Default true*/
     showWelcomeScreen = true;
 }
