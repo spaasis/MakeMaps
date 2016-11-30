@@ -135,9 +135,9 @@ export class WelcomeScreen extends React.Component<{
         return (<div style={{ textAlign: 'center' }}>
             {flags}
             <div style={{ display: 'block', margin: '0 auto', padding: 5 }}>
-                <img src='images/favicon.png' style={{ display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }} />
-                <img src='images/logo.png' style={{ display: 'inline-block', verticalAlign: 'middle' }} />
-                <img src='images/favicon.png' style={{ display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }} />
+                <div className="fav" />
+                <div className="logo" />
+                <div className="fav" />
 
             </div>
             <hr />

@@ -15,6 +15,6 @@ export declare class WelcomeScreen extends React.Component<{
     onDrop(files: any): void;
     loadMap(): void;
     render(): JSX.Element;
-    getDemoButtons(): any[];
+    getDemoButtons(): JSX.Element[];
     getHighlightedDemo(): JSX.Element;
 }
