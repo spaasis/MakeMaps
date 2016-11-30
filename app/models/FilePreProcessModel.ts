@@ -6,7 +6,7 @@ let wkt = require('wellknown');
 let osmtogeojson = require('osmtogeojson');
 import { Header } from '../stores/Layer';
 import { IsNumber } from '../common_items/common';
-// declare function shp(any): { any }
+//  declare function shp(any): { any }
 /**
  * public - Returns the headers from the input text
  *
@@ -46,7 +46,7 @@ function ParseCSVToGeoJSON(input: string, latField: string, lonField: string, de
                 onComplete(data);
             }
             else {
-                //TODO
+                // TODO
                 console.log(err);
             }
         });
@@ -61,10 +61,10 @@ function ParseToGeoJSON(input: string, fileFormat: string, onComplete: (geoJSON)
     }
     let xml = stringToXML(input);
     if (fileFormat === 'kml') {
-        geoJSON = togeojson.kml(xml)
+        geoJSON = togeojson.kml(xml);
     }
     else if (fileFormat === 'gpx') {
-        geoJSON = togeojson.gpx(xml)
+        geoJSON = togeojson.gpx(xml);
     }
     else if (fileFormat === 'osm') {
         geoJSON = osmtogeojson(xml);
@@ -74,28 +74,28 @@ function ParseToGeoJSON(input: string, fileFormat: string, onComplete: (geoJSON)
 }
 
 function ParseTableToGeoJSON(input, onComplete: (geoJSON) => void) {
-    let geoJSON = { features: [], type: 'FeatureCollection' }
+    let geoJSON = { features: [], type: 'FeatureCollection' };
     let count = input.loc.length;
-    let fields: string[] = []
+    let fields: string[] = [];
     for (let key in input) {
 
-        if (input.hasOwnProperty(key) && key != 'loc')
+        if (input.hasOwnProperty(key) && key !== 'loc')
             fields.push(key);
     }
 
     for (let i = 0; i < count; i++) {
         let props = {};
         for (let field of fields) {
-            props[field] = input[field][i] == null ? null : input[field][i]
+            props[field] = input[field][i] === null ? null : input[field][i];
         }
         geoJSON.features.push({
             geometry: {
-                type: 'Point', //TODO: other types
+                type: 'Point', // TODO: other types
                 coordinates: input.loc[i]
             },
             properties: props,
             type: 'Feature'
-        })
+        });
     }
     onComplete(geoJSON);
 }
@@ -108,14 +108,14 @@ function SetGeoJSONTypes(geoJSON: { features: any, type: string }, headers: Head
             let isnumber = IsNumber(props[h]);
             if (isnumber && props[h] != null)
                 props[h] = +props[h];
-            let header = headers.slice().filter(function(e) { return e.value === h })[0];
+            let header = headers.slice().filter(function(e) { return e.value === h; })[0];
 
             if (!header) {
                 headers.push(new Header({ id: headerId, value: h, type: isnumber ? 'number' : 'string', label: undefined, decimalAccuracy: undefined }));
                 headerId++;
             }
             else {
-                if (header.type === 'number' && !isnumber) { //previously marked as number but new value is text => mark as string
+                if (header.type === 'number' && !isnumber) { // previously marked as number but new value is text => mark as string
                     header.type = 'string';
                 }
             }
@@ -127,7 +127,7 @@ function SetGeoJSONTypes(geoJSON: { features: any, type: string }, headers: Head
 }
 
 function stringToXML(oString) {
-    return (new DOMParser()).parseFromString(oString, "text/xml");
+    return (new DOMParser()).parseFromString(oString, 'text/xml');
 }
 
 

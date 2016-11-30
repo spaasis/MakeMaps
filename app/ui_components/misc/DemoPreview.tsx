@@ -7,7 +7,7 @@ export class DemoPreview extends React.Component<{
     loadDemo: () => void,
     onClick: () => void,
 }
-    , {}>{
+    , {}> {
     loadClicked() {
         this.props.loadDemo();
     }
@@ -33,10 +33,10 @@ export class DemoPreview extends React.Component<{
             bottom: 0,
             left: 0,
 
-        }
+        };
         return (
-            <div style = {style}>
-                <img  className='demoImage' src = {this.props.imageURL}/>
+            <div style={style}>
+                <img className='demoImage' src={this.props.imageURL} />
                 <div style={overlayStyle}>
                     {this.props.description}
                     <button className='primaryButton' style={{ display: 'block', margin: '0 auto' }} onClick={this.loadClicked.bind(this)}>{this.props.strings.demoLoadButton}</button>
@@ -44,6 +44,6 @@ export class DemoPreview extends React.Component<{
 
             </div>
 
-        )
+        );
     }
 }

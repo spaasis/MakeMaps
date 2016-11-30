@@ -12,7 +12,7 @@ export class WelcomeScreen extends React.Component<{
     state: WelcomeScreenState,
     appState: AppState
     changeLanguage: (lang: string) => void,
-}, {}>{
+}, {}> {
 
     componentDidMount() {
         this.stopScrolling();
@@ -34,7 +34,7 @@ export class WelcomeScreen extends React.Component<{
     loadDemo(filename: string) {
         ShowLoading();
         let appState = this.props.appState;
-        setTimeout(function() { FetchSavedMap('demos/' + filename + '.mmap', appState); }, 10)
+        setTimeout(function() { FetchSavedMap('demos/' + filename + '.mmap', appState); }, 10);
 
     }
 
@@ -84,45 +84,45 @@ export class WelcomeScreen extends React.Component<{
         ShowLoading();
         let json = this.props.state.loadedMap;
         let appState = this.props.appState;
-        setTimeout(function() { LoadSavedMap(json, appState) }, 10);
+        setTimeout(function() { LoadSavedMap(json, appState); }, 10);
     }
 
 
     render() {
         let strings = this.props.appState.strings;
         let blockHeaderStyle = { display: 'block', fontFamily: 'dejavu_sansextralight' };
-        let infoDivStyle = { width: 200, border: '1px solid #cecece', borderRadius: '15px', padding: 10 }
+        let infoDivStyle = { width: 200, border: '1px solid #cecece', borderRadius: '15px', padding: 10 };
 
         let flags =
             <div style={{ position: 'absolute', top: 5, left: 5 }} className='f32'>
-                <i className='flag gb' onClick={() => { this.props.changeLanguage('en'); } } style={{ cursor: 'pointer', borderBottom: this.props.appState.language == 'en' ? '2px solid #cecece' : '' }} />
-                <i className='flag fi' onClick={() => { this.props.changeLanguage('fi'); } } style={{ cursor: 'pointer', borderBottom: this.props.appState.language == 'fi' ? '2px solid #cecece' : '' }} />
-            </div>
+                <i className='flag gb' onClick={() => { this.props.changeLanguage('en'); } } style={{ cursor: 'pointer', borderBottom: this.props.appState.language === 'en' ? '2px solid #cecece' : '' }} />
+                <i className='flag fi' onClick={() => { this.props.changeLanguage('fi'); } } style={{ cursor: 'pointer', borderBottom: this.props.appState.language === 'fi' ? '2px solid #cecece' : '' }} />
+            </div>;
 
 
         let infoBlocks =
             <div style={{ display: 'inline-flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '85%' }}>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeOpenness}</b>
-                    <a style={{ textDecoration: 'none' }} target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps"><i className='fa fa-github-square' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} /></a>
-                    {strings.welcomeOpennessText1}<br />{strings.welcomeOpennessText2}<a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps">GitHub</a>
+                    <a style={{ textDecoration: 'none' }} target='_blank' rel='noopener noreferrer' href='https:// github.com/simopaasisalo/MakeMaps'><i className='fa fa-github-square' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} /></a>
+                    {strings.welcomeOpennessText1}<br />{strings.welcomeOpennessText2}<a target='_blank' rel='noopener noreferrer' href='https:// github.com/simopaasisalo/MakeMaps'>GitHub</a>
                 </div>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeAccessibility}</b>
                     <i className='fa fa-eye' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} />
                     {strings.welcomeAccessibilityText1}
-                    <a target="_blank" rel="noopener noreferrer" href="http://colorbrewer2.org/">Color Brewer</a>
+                    <a target='_blank' rel='noopener noreferrer' href='http:// colorbrewer2.org/'>Color Brewer</a>
                     {strings.welcomeAccessibilityText2}
                 </div>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeUsability}</b>
                     <i className='fa fa-bolt' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} />
-                    {strings.welcomeUsabilityText1} <a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps/wiki">{strings.wiki}</a> {strings.welcomeUsabilityText2}
+                    {strings.welcomeUsabilityText1} <a target='_blank' rel='noopener noreferrer' href='https:// github.com/simopaasisalo/MakeMaps/wiki'>{strings.wiki}</a> {strings.welcomeUsabilityText2}
                 </div>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeFileSupport}</b>
                     <i className='fa fa-file-text-o' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} />
-                    {strings.welcomeFileSupportText}<br /><a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements">{strings.welcomeFileSupportLink}</a>
+                    {strings.welcomeFileSupportText}<br /><a target='_blank' rel='noopener noreferrer' href='https:// github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'>{strings.welcomeFileSupportLink}</a>
                 </div>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeDataFiltering}</b>
@@ -135,9 +135,9 @@ export class WelcomeScreen extends React.Component<{
         return (<div style={{ textAlign: 'center' }}>
             {flags}
             <div style={{ display: 'block', margin: '0 auto', padding: 5 }}>
-                <div className="fav" />
-                <div className="logo" />
-                <div className="fav" />
+                <div className='fav' />
+                <div className='logo' />
+                <div className='fav' />
 
             </div>
             <hr />
@@ -147,8 +147,8 @@ export class WelcomeScreen extends React.Component<{
                     overflowX: 'hidden', overflowY: 'hidden', height: 250, maxWidth: '85%',
                     margin: '0 auto', whiteSpace: 'nowrap', position: 'relative'
                 }}
-                onMouseEnter={() => { this.stopScrolling() } }
-                onMouseLeave={() => { this.startScrolling() } }>
+                onMouseEnter={() => { this.stopScrolling(); } }
+                onMouseLeave={() => { this.startScrolling(); } }>
                 <button className='primaryButton' style={{ height: '100%', width: 40, position: 'absolute', left: 0, top: 0 }} onClick={() => this.moveDemosRight()}>{'<'}</button>
                 <div style={{ marginLeft: 40, marginRight: 40 }}>
                     {this.getHighlightedDemo()}
@@ -169,7 +169,7 @@ export class WelcomeScreen extends React.Component<{
                 <button style={{ width: 300, margin: 5 }} className='primaryButton'
                     onClick={() => {
                         let state = this.props.appState;
-                        state.importWizardState = new ImportWizardState(state)
+                        state.importWizardState = new ImportWizardState(state);
                         state.importWizardShown = true;
                         state.welcomeShown = false;
                         state.menuShown = false;
@@ -187,10 +187,10 @@ export class WelcomeScreen extends React.Component<{
         for (let i = 0; i < this.props.state.demoOrder.length; i++) {
             buttons.push(
                 <button key={i}
-                    className={'welcomeDemoButton' + (this.props.state.demoOrder[0] == i ? ' active' : '')}
-                    onClick={() => { this.highlightDemo(i) } }
-                    onMouseEnter={() => { this.stopScrolling() } }
-                    onMouseLeave={() => { this.startScrolling() } }
+                    className={'welcomeDemoButton' + (this.props.state.demoOrder[0] === i ? ' active' : '')}
+                    onClick={() => { this.highlightDemo(i); } }
+                    onMouseEnter={() => { this.stopScrolling(); } }
+                    onMouseLeave={() => { this.startScrolling(); } }
                     />
             );
         }
@@ -205,7 +205,7 @@ export class WelcomeScreen extends React.Component<{
             imageURL='demos/chorodemo.png'
             description={strings.chorodemoDescription}
             loadDemo={this.loadDemo.bind(this, 'chorodemo')}
-            onClick={() => { this.highlightDemo(0) } }
+            onClick={() => { this.highlightDemo(0); } }
             />,
         <DemoPreview
             key={1}
@@ -213,7 +213,7 @@ export class WelcomeScreen extends React.Component<{
             imageURL='demos/symboldemo.png'
             description={strings.symboldemoDescription}
             loadDemo={this.loadDemo.bind(this, 'symboldemo')}
-            onClick={() => { this.highlightDemo(1) } }
+            onClick={() => { this.highlightDemo(1); } }
             />,
         <DemoPreview
             key={2}
@@ -221,7 +221,7 @@ export class WelcomeScreen extends React.Component<{
             imageURL='demos/hki_chartdemo.png'
             description={strings.chartDemoDescription}
             loadDemo={this.loadDemo.bind(this, 'hki_chartdemo')}
-            onClick={() => { this.highlightDemo(2) } }
+            onClick={() => { this.highlightDemo(2); } }
             />,
         <DemoPreview
             key={3}
@@ -229,7 +229,7 @@ export class WelcomeScreen extends React.Component<{
             imageURL='demos/hki_heatdemo.png'
             description={strings.heatDemoDescription}
             loadDemo={this.loadDemo.bind(this, 'hki_heatdemo')}
-            onClick={() => { this.highlightDemo(3) } }
+            onClick={() => { this.highlightDemo(3); } }
             />,
         <DemoPreview
             key={4}
@@ -237,7 +237,7 @@ export class WelcomeScreen extends React.Component<{
             imageURL='demos/clusterdemo.png'
             description={strings.clusterDemoDescription}
             loadDemo={this.loadDemo.bind(this, 'clusterdemo')}
-            onClick={() => { this.highlightDemo(4) } }
+            onClick={() => { this.highlightDemo(4); } }
             />];
         return demos[this.props.state.demoOrder[0]];
 

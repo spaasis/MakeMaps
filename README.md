@@ -5,9 +5,9 @@
 
 #MakeMaps
 
- [![build status](https://travis-ci.org/simopaasisalo/MakeMaps.svg?branch=master)](http://travis-ci.org/simopaasisalo/MakeMaps)
+ [![build status](https:// travis-ci.org/simopaasisalo/MakeMaps.svg?branch=master)](http:// travis-ci.org/simopaasisalo/MakeMaps)
 
-![alt text](https://github.com/simopaasisalo/MakeMaps/blob/master/misc/map_preview.png "Map previews")
+![alt text](https:// github.com/simopaasisalo/MakeMaps/blob/master/misc/map_preview.png "Map previews")
 
 
 
@@ -20,7 +20,7 @@ Integrating
 
 You can integrate MakeMaps as a part of a larger React application through React properties.
 
-Sample of an integration baseline: https://github.com/simopaasisalo/MakeMapsIntegrationTests
+Sample of an integration baseline: https:// github.com/simopaasisalo/MakeMapsIntegrationTests
 
 **Installing** 
 
@@ -75,7 +75,7 @@ var data = [{
     id: 1,
     type: 'general',
     content: '{ "field1": [1, null, 3, 4, 5, 6], "field2": ["a", null, "c", "d", "e", "f"], "loc": [[27.68, 62.899], [27.68, 62.898], [27.68, 62.897], [27.68, 62.896], [27.68, 62.895], [27.68, 62.894]] }',
-     //Use either data or content (see below)
+     // Use either data or content (see below)
     data: { field1: [1, null, 3, 4, 5, 6], field2: ["a", null, "c", "d", "e", "f"], loc: [[27.68, 62.899], [27.68, 62.898], [27.68, 62.897], [27.68, 62.896], [27.68, 62.895], [27.68, 62.894]] },
     columns: null,
     projection: null,
@@ -141,9 +141,9 @@ There are two ways to embed maps to your website/blog:
   2. mapURL - URL of the .mmap-file
 ```
 <iframe style="height: 400px; width: 400px;"
-src="https://makemaps.online
+src="https:// makemaps.online
 ?
-mapURL=https://makemaps.online/demos/symboldemo.mmap"</iframe>
+mapURL=https:// makemaps.online/demos/symboldemo.mmap"</iframe>
 ```
 
 Hosting
@@ -162,4 +162,4 @@ License: GPL V3
 
 Author
 -----
-Simo Paasisalo [Mail](mailto:simopaasisalo@fastmail.com)|[LinkedIn](https://linkedin.com/in/simopaasisalo)
+Simo Paasisalo [Mail](mailto:simopaasisalo@fastmail.com)|[LinkedIn](https:// linkedin.com/in/simopaasisalo)

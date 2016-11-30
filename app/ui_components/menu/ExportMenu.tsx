@@ -10,7 +10,7 @@ export class ExportMenu extends React.Component<{
     state: AppState,
 
 
-}, {}>{
+}, {}> {
     saveImage() {
 
         let options = this.props.state.exportMenuState;
@@ -34,11 +34,11 @@ export class ExportMenu extends React.Component<{
     formSaveJSON() {
         let layers: Layer[] = [];
         for (let layer of this.props.state.layers) {
-            layers.push(new Layer(this.props.state, layer))
+            layers.push(new Layer(this.props.state, layer));
         }
         let filters: Filter[] = [];
         for (let filter of this.props.state.filters) {
-            filters.push(new Filter(this.props.state, filter))
+            filters.push(new Filter(this.props.state, filter));
         }
         let saveData: SaveState = {
             baseLayerId: this.props.state.activeBaseLayer.id,
@@ -59,7 +59,7 @@ export class ExportMenu extends React.Component<{
             }
             if (e.symbolOptions.chartFields !== undefined) {
                 e.symbolOptions['chartHeaderIds'] = [];
-                e.symbolOptions.chartFields.map(function(h) { e.symbolOptions['chartHeaderIds'].push(h.id) });
+                e.symbolOptions.chartFields.map(function(h) { e.symbolOptions['chartHeaderIds'].push(h.id); });
                 delete e.symbolOptions.chartFields;
             }
             if (e.symbolOptions.sizeXVar) {
@@ -74,15 +74,15 @@ export class ExportMenu extends React.Component<{
                 e.symbolOptions['blockHeaderId'] = e.symbolOptions.blockSizeVar.id;
                 delete e.symbolOptions.blockSizeVar;
             }
-            if (e.symbolOptions.icons.length == 0) {
+            if (e.symbolOptions.icons.length === 0) {
                 delete e.symbolOptions.icons;
                 delete e.symbolOptions.iconLimits;
             }
-            if (e.colorOptions.colors.length == 0) {
+            if (e.colorOptions.colors.length === 0) {
                 delete e.colorOptions.colors;
                 delete e.colorOptions.steps;
             }
-            delete e.appState; delete e.displayLayer; delete e.values; delete e.uniqueValues; delete e.pointFeatureCount;;
+            delete e.appState; delete e.displayLayer; delete e.values; delete e.uniqueValues; delete e.pointFeatureCount;
         });
         saveData.filters.forEach(function(e) {
             delete e.filterValues; delete e.filteredIndices; delete e.appState;
@@ -93,17 +93,19 @@ export class ExportMenu extends React.Component<{
     saveFile() {
 
         let saveString = JSON.stringify(this.formSaveJSON());
-        let blob = new Blob([saveString], { type: "text/plain;charset=utf-8" });
+        let blob = new Blob([saveString], { type: 'text/plain;charset=utf-8' });
         (window as any).saveAs(blob, 'map.mmap');
     }
 
     saveEmbedCode() {
-        let script = '<script type="text/javascript">function loadJSON(){var json =' + JSON.stringify(this.formSaveJSON()) + '; var frame =	document.getElementById("MakeMapsEmbed"); frame.contentWindow.postMessage(JSON.stringify(json), "*");}</script>';
-        let frame = '<iframe onLoad="loadJSON()" src="https://makemaps.online" id="MakeMapsEmbed" style="height: 100%; width: 100%; border:none;"/>';
+        // tslint:disable-next-line
+        let script = "<script type='text/javascript'>function loadJSON(){var json =' + JSON.stringify(this.formSaveJSON()) + '; var frame =	document.getElementById('MakeMapsEmbed'); frame.contentWindow.postMessage(JSON.stringify(json), '*');}</script>";
+        // tslint:disable-next-line
+        let frame = "<iframe onLoad='loadJSON();' src=';https:// makemaps.online' id='MakeMapsEmbed' style='height: 100%; width: 100%; border:none;'/>";
 
         let html = script + frame;
 
-        let blob = new Blob([html], { type: "text/plain;charset=utf-8" });
+        let blob = new Blob([html], { type: 'text/plain;charset=utf-8' });
         (window as any).saveAs(blob, 'MakeMaps_embed.html');
     }
 
@@ -150,6 +152,6 @@ export class ExportMenu extends React.Component<{
 
 
             </div>
-        )
+        );
     }
 }

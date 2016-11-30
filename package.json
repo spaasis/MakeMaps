@@ -9,7 +9,7 @@
   "main": "./dist/MakeMaps.js",
   "typings": "./dist/MakeMaps",
   "scripts": {
-    "prepublish": "typings install && tsc && webpack"
+    "prepublish": "typings install && tslint app/**/*.ts* && tsc && webpack"
   },
   "author": "Simo Paasisalo",
   "license": "GPL-3.0",
@@ -49,6 +49,7 @@
     "file-loader": "^0.9.0",
     "json-loader": "^0.5.4",
     "style-loader": "^0.13.1",
+    "tslint": "^4.0.2",
     "typescript": "^2.0.3",
     "typings": "^1.3.2",
     "url-loader": "^0.5.7",

@@ -43,8 +43,8 @@ function CalculateLimits(min: number, max: number, count: number, accuracy: numb
         if (limits.indexOf(val) === -1)
             limits.push(val);
     }
-    // if (limits.indexOf(+max.toFixed(accuracy)) === -1)
-    //     limits.push(+max.toFixed(accuracy))
+    //  if (limits.indexOf(+max.toFixed(accuracy)) === -1)
+    //      limits.push(+max.toFixed(accuracy))
     return limits;
 }
 
@@ -60,7 +60,7 @@ function GetItemBetweenLimits(limits: any[], items: any[], value: number) {
                     }
                 }
                 else {
-                    return items[items.length - 1]
+                    return items[items.length - 1];
                 }
             }
         else {
@@ -76,11 +76,11 @@ function GetItemBetweenLimits(limits: any[], items: any[], value: number) {
  * @param  onLoad     function to run on load complete
  */
 function FetchSavedMap(path: string, appState: AppState) {
-    var xhr = new XMLHttpRequest();
-    if ("withCredentials" in xhr) {
+    let xhr = new XMLHttpRequest();
+    if ('withCredentials' in xhr) {
         xhr.open('GET', path, true);
     }
-    else if (typeof XDomainRequest != "undefined") {
+    else if (typeof XDomainRequest !== 'undefined') {
         xhr = new XDomainRequest();
         xhr.open('GET', path);
     } else {
@@ -88,18 +88,18 @@ function FetchSavedMap(path: string, appState: AppState) {
     }
     xhr.onload = function() {
         if (xhr.readyState === 4) {
-            if (xhr.status === 200 || xhr.status == 0) {
+            if (xhr.status === 200 || xhr.status === 0) {
                 LoadSavedMap(JSON.parse(xhr.responseText), appState);
             }
         }
-    }
-    xhr.onerror = function() { console.log('Embedding error in XHR request') }
+    };
+    xhr.onerror = function() { console.log('Embedding error in XHR request'); };
     xhr.send();
 }
 
 function LoadSavedMap(saved: SaveState, appState: AppState) {
     window.location.hash = 'edit';
-    console.time("LoadSavedMap")
+    console.time('LoadSavedMap');
     let headers: Header[];
     if (saved.baseLayerId) {
         let oldBase = appState.activeBaseLayer;
@@ -136,7 +136,7 @@ function LoadSavedMap(saved: SaveState, appState: AppState) {
     let layers = appState.layers;
     saved.filters.map(function(f) {
         appState.filters.push(new Filter(appState, f));
-    })
+    });
     for (let i in appState.layers.slice()) {
         let lyr = appState.layers[i];
         lyr.init();
@@ -147,12 +147,12 @@ function LoadSavedMap(saved: SaveState, appState: AppState) {
     appState.welcomeShown = false;
     appState.editingLayer = appState.layers[0];
     appState.menuShown = !appState.embed;
-    console.timeEnd("LoadSavedMap")
+    console.timeEnd('LoadSavedMap');
 }
 
 
 function IsNumber(val: string) {
-    return val == '' || !isNaN(+val)
+    return val === '' || !isNaN(+val);
 }
 
 export { DefaultProjections, GetSymbolRadius, CalculateLimits, GetItemBetweenLimits, FetchSavedMap, LoadSavedMap, ShowLoading, HideLoading, ShowNotification, HideNotification, IsNumber }

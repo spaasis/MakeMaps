@@ -7,7 +7,7 @@ import { Header } from '../../stores/Layer';
 @observer
 export class PopUpMenu extends React.Component<{
     state: AppState,
-}, {}>{
+}, {}> {
 
     saveValues() {
         this.props.state.editingLayer.refreshPopUps();
@@ -17,8 +17,8 @@ export class PopUpMenu extends React.Component<{
         let layer = this.props.state.editingLayer;
         if (headers === null)
             headers = [];
-        layer.popupHeaderIds = [] //empty headers
-        for (let header of headers) { //add new headers
+        layer.popupHeaderIds = []; // empty headers
+        for (let header of headers) { // add new headers
             layer.popupHeaderIds.push(header.id);
         }
         if (this.props.state.autoRefresh)
@@ -30,9 +30,9 @@ export class PopUpMenu extends React.Component<{
         let layer = this.props.state.editingLayer;
         let headers = [];
         for (let id of layer.popupHeaderIds) {
-            headers.push(layer.getHeaderById(id))
+            headers.push(layer.getHeaderById(id));
         }
-        return (<div className="makeMaps-options">
+        return (<div className='makeMaps-options'>
             <label>{strings.selectHeadersToShow}</label>
             <Select
                 options={layer.headers.slice()}
@@ -59,9 +59,9 @@ export class PopUpMenu extends React.Component<{
                         id='click'
                         />
                 </label>
-                <br/>
+                <br />
                 {strings.or}
-                <br/>
+                <br />
                 <label htmlFor='hover' style={{ marginTop: 0 }}>
                     {strings.showPopUpOnHover}
                     <input
@@ -77,7 +77,7 @@ export class PopUpMenu extends React.Component<{
                         />
 
                 </label>
-                <br/>
+                <br />
                 <label htmlFor='inPlace'>
                     {strings.showPopUpInPlace}
                     <input
@@ -93,9 +93,9 @@ export class PopUpMenu extends React.Component<{
                         id='inPlace'
                         />
                 </label>
-                <br/>
+                <br />
                 {strings.or}
-                <br/>
+                <br />
                 <label htmlFor='separate' style={{ marginTop: 0 }}>
                     {strings.showPopUpUpTop}
                     <input
@@ -117,7 +117,7 @@ export class PopUpMenu extends React.Component<{
                     this.saveValues();
                 } }>{strings.refreshMap}</button>
             }
-            <br/>
+            <br />
             <i>{strings.popupHelp}</i>
             {layer.clusterOptions.useClustering ?
                 <div>

@@ -6,14 +6,14 @@ let Modal = require('react-modal');
 let chroma = require('chroma-js');
 import { AppState } from '../../stores/States';
 import { Layer, ColorOptions, Header, LayerTypes, SymbolTypes } from '../../stores/Layer';
-import { CalculateLimits } from "../../common_items/common";
+import { CalculateLimits } from '../../common_items/common';
 import { observer } from 'mobx-react';
 
 @observer
 export class ColorMenu extends React.Component<{
     state: AppState,
     /** layer being edited*/
-}, {}>{
+}, {}> {
     onColorSelect = (color) => {
         let layer = this.props.state.editingLayer;
         let isChart: boolean = layer.symbolOptions.symbolType === SymbolTypes.Chart;
@@ -48,7 +48,7 @@ export class ColorMenu extends React.Component<{
     onCustomSchemeChange = (e) => {
         let use: boolean = e.target.checked;
         let layer = this.props.state.editingLayer;
-        let steps: number = use ? layer.colorOptions.steps : layer.colorOptions.steps > 10 ? 10 : layer.colorOptions.steps; //If switching back from custom steps, force the steps to be under the limit
+        let steps: number = use ? layer.colorOptions.steps : layer.colorOptions.steps > 10 ? 10 : layer.colorOptions.steps; //  If switching back from custom steps, force the steps to be under the limit
         layer.colorOptions.useCustomScheme = use;
         layer.colorOptions.steps = steps;
 
@@ -59,10 +59,10 @@ export class ColorMenu extends React.Component<{
         let layer = this.props.state.editingLayer;
         let limits = layer.colorOptions.limits;
         let val = e.currentTarget.valueAsNumber;
-        if (limits[step + 1] !== undefined && limits[step + 1] <= val) { //if collides with the next limit
+        if (limits[step + 1] !== undefined && limits[step + 1] <= val) { // if collides with the next limit
             limits = this.increaseLimitStep(limits, val, step);
         }
-        else if (limits[step - 1] !== undefined && limits[step - 1] >= val) { //if collides with the previous limit
+        else if (limits[step - 1] !== undefined && limits[step - 1] >= val) { // if collides with the previous limit
             limits = this.decreaseLimitStep(limits, val, step);
         }
         if (this.props.state.autoRefresh)
@@ -73,8 +73,8 @@ export class ColorMenu extends React.Component<{
     onCustomLimitChange = (step: number, e) => {
         let layer = this.props.state.editingLayer;
         let val = (e.currentTarget as any).valueAsNumber;
-        if (step === 0 && val > layer.values[layer.colorOptions.colorField.value][0])//the lowest limit cannot be increased, since this would lead to some items not having a color
-            return
+        if (step === 0 && val > layer.values[layer.colorOptions.colorField.value][0])// the lowest limit cannot be increased, since this would lead to some items not having a color
+            return;
         else
             layer.colorOptions.limits[step] = val;
     }
@@ -82,7 +82,7 @@ export class ColorMenu extends React.Component<{
     increaseLimitStep = (limits: number[], val: number, step: number) => {
         limits[step] = val;
         if (step < limits.length - 1 && limits[step + 1] <= val) {
-            return this.increaseLimitStep(limits, val + 1, step + 1)
+            return this.increaseLimitStep(limits, val + 1, step + 1);
         }
         else {
             return limits;
@@ -93,7 +93,7 @@ export class ColorMenu extends React.Component<{
         limits[step] = val;
         if (step > 0 && limits[step - 1] >= val) {
 
-            return this.decreaseLimitStep(limits, val - 1, step - 1)
+            return this.decreaseLimitStep(limits, val - 1, step - 1);
         }
         else {
             return limits;
@@ -104,12 +104,12 @@ export class ColorMenu extends React.Component<{
         let state = this.props.state.colorMenuState;
         let col = this.props.state.editingLayer.colorOptions;
         state.colorSelectOpen = state.editing !== property ? true : !state.colorSelectOpen;
-        state.startColor = property.indexOf('step') !== -1 ? col.colors[property.substring(4)] : property.indexOf('chartfield') !== -1 ? col.chartColors[property.substring(10)] : "";
+        state.startColor = property.indexOf('step') !== -1 ? col.colors[property.substring(4)] : property.indexOf('chartfield') !== -1 ? col.chartColors[property.substring(10)] : '';
         state.editing = property;
     }
 
     renderScheme = (option: Header) => {
-        return <ColorScheme gradientName={option.value} revert={this.props.state.editingLayer.colorOptions.revert} width='109%'/>;
+        return <ColorScheme gradientName={option.value} revert={this.props.state.editingLayer.colorOptions.revert} width='109%' />;
     }
 
     /**
@@ -119,14 +119,14 @@ export class ColorMenu extends React.Component<{
         let lyr: Layer = this.props.state.editingLayer;
         let field: Header = lyr.colorOptions.colorField;
         let limits: any[] = [];
-        if (field.type == 'number') {
+        if (field.type === 'number') {
             let steps: number = Math.min(lyr.uniqueValues[field.value].length, lyr.colorOptions.steps);
             if (!lyr.colorOptions.useCustomScheme) {
                 limits = chroma.limits(lyr.values[field.value], lyr.colorOptions.mode, steps);
-                limits.splice(limits.length - 1, 1); //remove maximum value from limits
+                limits.splice(limits.length - 1, 1); // remove maximum value from limits
                 limits = limits.filter(function(e, i, arr) {
                     return arr.lastIndexOf(e) === i;
-                }); //only unique values in limits
+                }); // only unique values in limits
             }
             else {
                 if (steps >= lyr.uniqueValues[field.value].length) {
@@ -170,7 +170,7 @@ export class ColorMenu extends React.Component<{
             return '#000';
         }
         else if (color.toLowerCase() === '#000' || color === '#000000' || color === 'black') {
-            return '#FFF'
+            return '#FFF';
         }
         return '#' + ('000000' + ((0xffffff ^ parseInt(color.substr(1), 16)).toString(16))).slice(-6);
 
@@ -182,8 +182,8 @@ export class ColorMenu extends React.Component<{
             return [];
         let limits: number[] = [];
         for (let i = 0; i < this.props.state.editingLayer.colorOptions.steps; i++) {
-            let step: number = +(document.getElementById(i + 'min') as any).value
-            limits.push(step)
+            let step: number = +(document.getElementById(i + 'min') as any).value;
+            limits.push(step);
         }
         limits.push(this.props.state.editingLayer.colorOptions.limits[this.props.state.editingLayer.colorOptions.limits.length - 1]);
         return limits;
@@ -202,13 +202,13 @@ export class ColorMenu extends React.Component<{
             background: col.fillColor,
             color: this.getOppositeColor(col.fillColor),
             border: '1px solid ' + col.color,
-        }
+        };
         let iconTextColorBlockStyle = {
 
             background: col.iconTextColor,
             color: this.getOppositeColor(col.iconTextColor),
             border: '1px solid ' + col.color,
-        }
+        };
         let colorSelectStyle = {
             overlay: {
                 position: 'fixed',
@@ -232,12 +232,12 @@ export class ColorMenu extends React.Component<{
                 top: '',
                 left: '',
             }
-        }
-        let isChart = layer.layerType == LayerTypes.Standard && layer.symbolOptions.symbolType === SymbolTypes.Chart;
+        };
+        let isChart = layer.layerType === LayerTypes.Standard && layer.symbolOptions.symbolType === SymbolTypes.Chart;
         let isHeat = layer.layerType === LayerTypes.HeatMap;
-        let fieldIsString = col.colorField ? col.colorField.type == 'string' : false;
+        let fieldIsString = col.colorField ? col.colorField.type === 'string' : false;
 
-        //separated some components for readability
+        // separated some components for readability
         let colorPicker = <Modal
             isOpen={state.colorSelectOpen}
             style={colorSelectStyle}
@@ -267,7 +267,7 @@ export class ColorMenu extends React.Component<{
                     name='mode'
                     id='quantiles'
                     />
-                <br/>
+                <br />
             </label>
             <label htmlFor='kmeans'>
                 {strings.colorStepKMeans}
@@ -278,7 +278,7 @@ export class ColorMenu extends React.Component<{
                     name='mode'
                     id='kmeans'
                     />
-                <br/>
+                <br />
 
             </label>
             <label htmlFor='equidistant'>
@@ -290,7 +290,7 @@ export class ColorMenu extends React.Component<{
                     name='mode'
                     id='equidistant'
                     />
-                <br/>
+                <br />
 
             </label>
         </div>;
@@ -307,32 +307,32 @@ export class ColorMenu extends React.Component<{
                     <input type='number' min={0} max={15} step={1} value={col.weight.toString()} style={{ position: 'absolute', right: 0, width: 50 }}
                         onClick={(e) => { e.stopPropagation(); } }
                         onChange={(e) => {
-                            let val: number = (e.currentTarget as any).valueAsNumber
-                            if (col.weight != val) {
+                            let val: number = (e.currentTarget as any).valueAsNumber;
+                            if (col.weight !== val) {
                                 col.weight = val;
                                 if (autoRefresh) layer.refresh();
                             }
-                        } }/>
+                        } } />
                 </div>
             }
             {!isHeat && layer.symbolOptions.symbolType === SymbolTypes.Icon ?
                 <div className='colorBlock' style={iconTextColorBlockStyle} onClick={this.toggleColorPick.bind(this, 'iconTextColor')}>{strings.icon}</div>
                 : null
             }
-        </div>
+        </div>;
 
         let colorSchemeOptions = <div>
             {strings.or}
-            <br/>
+            <br />
             <label>{strings.selectColorScheme}</label>
             <Select
-                clearable = {false}
-                searchable = {false}
-                options = {_gradientOptions}
+                clearable={false}
+                searchable={false}
+                options={_gradientOptions}
                 optionRenderer={this.renderScheme}
-                valueRenderer = {this.renderScheme}
+                valueRenderer={this.renderScheme}
                 onChange={(e) => {
-                    if (col.colorScheme != e) {
+                    if (col.colorScheme !== e) {
                         col.colorScheme = e.value;
                         this.calculateValues();
                     }
@@ -347,11 +347,11 @@ export class ColorMenu extends React.Component<{
                     col.revert = (e.target as any).checked;
                     this.calculateValues();
                 } }
-                checked={col.revert}/>
-        </div>
+                checked={col.revert} />
+        </div>;
 
         return (
-            <div className="makeMaps-options">
+            <div className='makeMaps-options'>
                 {isHeat || isChart ? null :
                     <label htmlFor='multipleSelect'>{strings.useMultipleFillColors}
                         <input
@@ -362,7 +362,7 @@ export class ColorMenu extends React.Component<{
                                 if (autoRefresh)
                                     layer.refresh();
                             } }
-                            checked={col.useMultipleFillColors}/>
+                            checked={col.useMultipleFillColors} />
                     </label>
                 }
                 {colorBlocks}
@@ -371,14 +371,14 @@ export class ColorMenu extends React.Component<{
                         onChange={(e) => {
                             let val: number = (e.target as any).valueAsNumber;
                             let layer = this.props.state.editingLayer;
-                            if (layer.colorOptions.opacity != val || layer.colorOptions.fillOpacity != val) {
+                            if (layer.colorOptions.opacity !== val || layer.colorOptions.fillOpacity !== val) {
                                 layer.colorOptions.opacity = val;
                                 layer.colorOptions.fillOpacity = val;
                                 if (this.props.state.autoRefresh)
                                     layer.setOpacity();
                             }
                         } }
-                        value={col.opacity.toString()}/>
+                        value={col.opacity.toString()} />
                 </label>
                 {colorPicker}
 
@@ -390,14 +390,14 @@ export class ColorMenu extends React.Component<{
                                 <Select
                                     options={layer.headers.slice()}
                                     onChange={(e: Header) => {
-                                        if (col.colorField != e) {
+                                        if (col.colorField !== e) {
                                             col.colorField = e;
                                             this.calculateValues();
                                         }
                                     } }
                                     value={col.colorField}
                                     clearable={false}
-                                    placeholder= {strings.selectPlaceholder}
+                                    placeholder={strings.selectPlaceholder}
                                     />
                             </div>
 
@@ -408,8 +408,8 @@ export class ColorMenu extends React.Component<{
                                         id='customScale'
                                         type='checkbox'
                                         onChange={this.onCustomSchemeChange}
-                                        checked={col.useCustomScheme}/>
-                                    <br/>
+                                        checked={col.useCustomScheme} />
+                                    <br />
                                     {col.useCustomScheme ?
                                         null
                                         :
@@ -423,12 +423,12 @@ export class ColorMenu extends React.Component<{
                                         step={1}
                                         onChange={(e) => {
                                             let val: number = (e.currentTarget as any).valueAsNumber;
-                                            if (col.steps != val) {
+                                            if (col.steps !== val) {
                                                 col.steps = val;
                                                 this.calculateValues();
                                             }
                                         } }
-                                        value={col.steps.toString()}/>
+                                        value={col.steps.toString()} />
                                     {col.useCustomScheme ?
                                         <div>
                                             {strings.colorMenuStepHelp}
@@ -447,13 +447,13 @@ export class ColorMenu extends React.Component<{
                                                 step={1}
                                                 onChange={(e) => {
                                                     let val: number = (e.currentTarget as any).valueAsNumber;
-                                                    if (col.heatMapRadius != val) {
+                                                    if (col.heatMapRadius !== val) {
                                                         col.heatMapRadius = val;
                                                         if (autoRefresh)
                                                             layer.refresh();
                                                     }
                                                 } }
-                                                value={col.heatMapRadius.toString()}/>
+                                                value={col.heatMapRadius.toString()} />
                                         </div>
                                         : null}
                                 </div>
@@ -494,7 +494,7 @@ export class ColorMenu extends React.Component<{
                 row++;
             }
         }
-        else if (col.colorField.type == 'string') {
+        else if (col.colorField.type === 'string') {
             for (let i of limits) {
                 rows.push(
                     <li key={row}
@@ -524,15 +524,15 @@ export class ColorMenu extends React.Component<{
                                 width: 100,
                             }}
                             onClick={function(e) { e.stopPropagation(); } }
-                            step={1 * 10 ** (-col.colorField.decimalAccuracy)}/>
+                            step={1 * 10 ** (-col.colorField.decimalAccuracy)} />
 
                     </li>);
                 row++;
             }
         }
         return <div>
-            <ul id='customSteps' style={{ listStyle: 'none', padding: 0 }}>{rows.map(function(r) { return r })}</ul>
-        </div>
+            <ul id='customSteps' style={{ listStyle: 'none', padding: 0 }}>{rows.map(function(r) { return r; })}</ul>
+        </div>;
     }
 }
 const _gradientOptions: { value: string }[] =
@@ -557,15 +557,15 @@ const _gradientOptions: { value: string }[] =
         { value: 'PiYG' },
         { value: 'PRGn' },
         { value: 'BrBG' },
-        //{ value: 'RdGy' },
-        //{ value: 'Set1' },
+        // { value: 'RdGy' },
+        // { value: 'Set1' },
         { value: 'Set2' },
-        //{ value: 'Set3' },
-        //{ value: 'Accent' },
+        // { value: 'Set3' },
+        // { value: 'Accent' },
         { value: 'Dark2' },
         { value: 'Paired' },
-        //{ value: 'Pastel1' },
-        //{ value: 'Pastel2' }
+        // { value: 'Pastel1' },
+        // { value: 'Pastel2' }
 
 
 

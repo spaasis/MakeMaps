@@ -18,10 +18,10 @@ export class Legend {
 
     constructor(prev?: Legend) {
 
-        this.title = prev && prev.title || "";
-        this.meta = prev && prev.meta || "";
+        this.title = prev && prev.title || '';
+        this.meta = prev && prev.meta || '';
 
-        this.horizontal = prev && prev.horizontal !== undefined ? prev.horizontal : true; //longer format needed because default is true: if previous value is false in the shorter syntax, will resolve to false
+        this.horizontal = prev && prev.horizontal !== undefined ? prev.horizontal : true; // longer format needed because default is true: if previous value is false in the shorter syntax, will resolve to false
         this.visible = prev && prev.visible !== undefined ? prev.visible : true;
         this.showPercentages = prev && prev.showPercentages || false;
         this.showVariableNames = prev && prev.showVariableNames || false;

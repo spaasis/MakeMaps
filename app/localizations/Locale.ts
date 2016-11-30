@@ -4,7 +4,7 @@ import { fi } from './fi';
 
 let en = new Strings();
 
-//TODO:fix typings!
+// TODO:fix typings!
 let Locale: any = new Loc({
     fi,
     en,

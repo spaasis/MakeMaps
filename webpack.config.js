@@ -34,7 +34,11 @@ module.exports = {
       }
     ]
   },
-  // required for xlsx to work with webpack
+  tslint: {
+          emitErrors: false,
+          failOnHint: true,
+      },
+  //  required for xlsx to work with webpack
   node: {
     fs: 'empty'
   },

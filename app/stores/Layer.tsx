@@ -22,15 +22,15 @@ export class Layer {
     @observable headers: Header[];
 
     @computed get numberHeaders() {
-        return this.headers.filter(function(val) { return val.type === 'number' });
+        return this.headers.filter(function(val) { return val.type === 'number'; });
     }
 
     @computed get categories() {
-        return this.headers.filter(function(val) { return val.type === 'string' });
+        return this.headers.filter(function(val) { return val.type === 'string'; });
     }
 
     getHeaderById(id: number) {
-        return this.headers.filter(function(val) { return val.id === id })[0];
+        return this.headers.filter(function(val) { return val.id === id; })[0];
     }
 
     @observable popupHeaderIds: number[] = [];
@@ -65,27 +65,27 @@ export class Layer {
         this.symbolOptions = prev && prev.symbolOptions ? new SymbolOptions(prev.symbolOptions) : new SymbolOptions();
         this.clusterOptions = prev && prev.clusterOptions ? new ClusterOptions(prev.clusterOptions) : new ClusterOptions();
         this.bounds = prev && prev.bounds || undefined;
-        this.headers = []
+        this.headers = [];
         if (prev && prev.headers) {
             for (let header of prev.headers) {
-                this.headers.push(new Header(header))
+                this.headers.push(new Header(header));
             }
         }
         this.popupHeaderIds = [];
         if (prev && prev.popupHeaderIds) {
             for (let id of prev.popupHeaderIds) {
-                this.popupHeaderIds.push(id)
+                this.popupHeaderIds.push(id);
             }
         }
         this.symbolOptions.chartFields = [];
-        if (prev && prev.symbolOptions['chartHeaderIds']) {//from saved files
+        if (prev && prev.symbolOptions['chartHeaderIds']) {// from saved files
             for (let id of prev.symbolOptions['chartHeaderIds']) {
                 this.symbolOptions.chartFields.push(this.getHeaderById(id));
             }
         }
         else if (prev && prev.symbolOptions.chartFields) {
             for (let header of prev.symbolOptions.chartFields) {
-                this.symbolOptions.chartFields.push(new Header(header))
+                this.symbolOptions.chartFields.push(new Header(header));
             }
         }
 
@@ -98,15 +98,15 @@ export class Layer {
             return {
                 fillOpacity: col.fillOpacity,
                 opacity: col.opacity,
-                fillColor: col.colors.slice().length == 0 || !col.useMultipleFillColors ?
+                fillColor: col.colors.slice().length === 0 || !col.useMultipleFillColors ?
                     col.fillColor :
-                    col.colorField.type == 'number' ?
+                    col.colorField.type === 'number' ?
                         GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value])
                         : col.colors[col.limits.indexOf(feature.properties[col.colorField.value])],
                 color: col.color,
                 weight: col.weight,
-            }
-        }
+            };
+        };
         if (this.layerType !== LayerTypes.HeatMap) {
             let start = Date.now();
             let that = this;
@@ -157,15 +157,15 @@ export class Layer {
             return {
                 fillOpacity: col.fillOpacity,
                 opacity: col.opacity,
-                fillColor: col.colors.slice().length == 0 || !col.useMultipleFillColors ?
+                fillColor: col.colors.slice().length === 0 || !col.useMultipleFillColors ?
                     col.fillColor :
-                    col.colorField.type == 'number' ?
+                    col.colorField.type === 'number' ?
                         GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value])
                         : col.colors[col.limits.indexOf(feature.properties[col.colorField.value])],
                 color: col.color,
                 weight: col.weight,
-            }
-        }
+            };
+        };
         if (this.geoJSON) {
             this.getValues();
 
@@ -176,7 +176,7 @@ export class Layer {
                 return;
             }
             else {
-                console.time('start')
+                console.time('start');
                 this.displayLayer = L.geoJSON([], {
                     onEachFeature: this.onEachFeature,
                     pointToLayer: getMarker.bind(this, col, sym),
@@ -210,7 +210,7 @@ export class Layer {
                     chunkedLoading: true,
                 });
                 markers.on('clustermouseover', function(c: any) {
-                    if (c.layer._group._spiderfied) //if cluster has been spiderfied, ignore the event in order to show other popups properly
+                    if (c.layer._group._spiderfied) // if cluster has been spiderfied, ignore the event in order to show other popups properly
                         return;
                     if (this.showPopUpInPlace)
                         c.layer.openPopup();
@@ -230,7 +230,7 @@ export class Layer {
                 });
 
                 markers.on('clusterclick', function(c) {
-                    // a.layer is actually a cluster
+                    //  a.layer is actually a cluster
                     c.layer.closePopup();
                 });
 
@@ -250,7 +250,7 @@ export class Layer {
             let displayLayer = this.displayLayer;
 
 
-            setTimeout(function() { add(i, geoJSON, displayLayer, null, finish) }, 10); //if clustering is enabled, calling this here makes sure the references are ok
+            setTimeout(function() { add(i, geoJSON, displayLayer, null, finish); }, 10); // if clustering is enabled, calling this here makes sure the references are ok
 
         }
 
@@ -260,24 +260,24 @@ export class Layer {
         this.initFilters();
         this.refreshFilters();
         if (!this.bounds) {
-            this.appState.bounds = this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();//leaflet.heat doesn't utilize getBounds, so get it directly
+            this.appState.bounds = this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds(); // leaflet.heat doesn't utilize getBounds, so get it directly
             this.bounds = this.appState.map.getBounds();
         }
         HideLoading();
 
-        console.timeEnd('start')
+        console.timeEnd('start');
 
     }
 
     initFilters() {
-        let filters = this.appState.filters.filter((f) => { return f.layerId === this.id });
+        let filters = this.appState.filters.filter((f) => { return f.layerId === this.id; });
         for (let filter of filters) {
             filter.init();
         }
     }
 
     refreshFilters() {
-        let filters = this.appState.filters.filter((f) => { return f.layerId === this.id });
+        let filters = this.appState.filters.filter((f) => { return f.layerId === this.id; });
         for (let filter of filters) {
             filter.filterLayer();
         }
@@ -291,7 +291,7 @@ export class Layer {
                     this.appState.infoScreenText = null;
                 this.displayLayer.eachLayer(function(l: any) {
                     addPopups.call(this, l.feature, l);
-                }, this)
+                }, this);
             }
         }
     }
@@ -310,13 +310,13 @@ export class Layer {
         if (!opts.colorField) {
             return;
         }
-        let values = this.values[opts.colorField.value]
+        let values = this.values[opts.colorField.value];
         let colors = [];
         opts.limits = chroma.limits(values, opts.mode, opts.steps);
-        opts.limits.splice(opts.limits.length - 1, 1); //remove maximum value
+        opts.limits.splice(opts.limits.length - 1, 1); // remove maximum value
         opts.limits = opts.limits.filter(function(e, i, arr) {
             return arr.lastIndexOf(e) === i;
-        }); //only unique values in limits
+        }); // only unique values in limits
         colors = chroma.scale(opts.colorScheme).colors(opts.limits.length);
         opts.colors = opts.revert ? colors.reverse() : colors;
     }
@@ -330,7 +330,7 @@ export class Layer {
             if ((lyr as any).setOpacity)
                 (lyr as any).setOpacity(this.colorOptions.opacity);
             else
-                (lyr as any).setStyle({ fillOpacity: this.colorOptions.fillOpacity, opacity: this.colorOptions.opacity })
+                (lyr as any).setStyle({ fillOpacity: this.colorOptions.fillOpacity, opacity: this.colorOptions.opacity });
         }
         this.refreshFilters();
         this.refreshCluster();
@@ -346,13 +346,13 @@ export class Layer {
         let pointCount = 0;
 
         this.geoJSON.features.map(function(feat) {
-            if (feat.geometry.type == 'Point') {
+            if (feat.geometry.type === 'Point') {
                 pointCount++;
             }
             for (let i in feat.properties) {
                 if (!this.values[i])
                     this.values[i] = [];
-                if (feat.properties[i] != null)
+                if (feat.properties[i] !== null)
                     this.values[i].push(feat.properties[i]);
             }
         }, this);
@@ -360,15 +360,15 @@ export class Layer {
             let header = this.headers[i].value;
 
             if (this.values[header]) {
-                this.values[header].sort(function(a, b) { return a == b ? 0 : a < b ? -1 : 1 })
+                this.values[header].sort(function(a, b) { return a === b ? 0 : a < b ? -1 : 1; });
                 this.uniqueValues[header] = unique(this.values[header]);
             }
         }
 
         this.pointFeatureCount = pointCount;
-        function unique(arr: any[]) { //http://stackoverflow.com/questions/1960473/unique-values-in-an-array/1961068#1961068
-            var u = {}, a = [];
-            for (var i = 0, l = arr.length; i < l; ++i) {
+        function unique(arr: any[]) { // http:// stackoverflow.com/questions/1960473/unique-values-in-an-array/1961068#1961068
+            let u = {}, a = [];
+            for (let i = 0, l = arr.length; i < l; ++i) {
                 if (u.hasOwnProperty(arr[i])) {
                     continue;
                 }
@@ -407,11 +407,11 @@ export class Layer {
                 relevantHeaders.push(sym.blockSizeVar);
                 break;
             case SymbolTypes.Chart:
-                sym.chartFields.map(function(f) { relevantHeaders.push(f) });
+                sym.chartFields.map(function(f) { relevantHeaders.push(f); });
         }
         for (let h of clu.hoverHeaders) {
-            let header = this.getHeaderById(h.headerId)
-            if (relevantHeaders.indexOf(header) == -1 && (h.showAvg || h.showSum)) {
+            let header = this.getHeaderById(h.headerId);
+            if (relevantHeaders.indexOf(header) === -1 && (h.showAvg || h.showSum)) {
                 relevantHeaders.push(header);
             }
         }
@@ -430,7 +430,7 @@ export class Layer {
                     if (!values[h.value])
                         values[h.value] = [];
                     values[h.value].push(val);
-                    if (h.type == 'number') {
+                    if (h.type === 'number') {
                         if (sum[h.value] === undefined)
                             sum[h.value] = 0;
                         sum[h.value] += +val;
@@ -481,7 +481,7 @@ export class Layer {
                 alignItems: 'center',
                 border: '1px solid ' + col.color,
                 opacity: col.fillOpacity
-            }
+            };
             let iconElem =
                 <div style={style}>
                     <div style={{
@@ -492,7 +492,7 @@ export class Layer {
                     }}>
                         <b style={{ display: 'block' }} > {count}</b>
                     </div>
-                </div>
+                </div>;
 
             let html: string = reactDOMServer.renderToString(iconElem);
             icon = L.divIcon({
@@ -506,8 +506,8 @@ export class Layer {
             clu.hoverHeaders.map(function(h) {
                 let header = this.getHeaderById(h.headerId);
                 popupContent += h.showSum ? '<b>' + h.sumText + '</b> ' + sum[header.value].toFixed(header.decimalAccuracy) + '<br/>' : '';
-                popupContent += h.showAvg ? '<b>' + h.avgText + '</b> ' + avg[header.value].toFixed(header.decimalAccuracy) + '<br/>' : ''
-            }, this)
+                popupContent += h.showAvg ? '<b>' + h.avgText + '</b> ' + avg[header.value].toFixed(header.decimalAccuracy) + '<br/>' : '';
+            }, this);
             popupContent += 'Click or zoom to expand';
             cluster.bindPopup(L.popup({ closeButton: false }).setContent(popupContent));
         }
@@ -517,7 +517,7 @@ export class Layer {
     /** Add the determined amount of feature layers to displayLayer and let the UI refresh in between*/
     batchAdd(start: number, source: any, target: any, partialCallback: (i: number) => void, finishedCallback: () => void) {
         let i = start;
-        let layers = []
+        let layers = [];
         let time = Date.now();
         while (true) {
             if ((Date.now() - time) < 200 && source.features[i]) {
@@ -529,7 +529,7 @@ export class Layer {
                         onEachFeature: this.onEachFeature,
                         pointToLayer: getMarker.bind(this, this.colorOptions, this.symbolOptions),
                     }));
-                i++
+                i++;
             }
             else
                 break;
@@ -543,12 +543,12 @@ export class Layer {
             }
             else {
                 let add = this.batchAdd.bind(this);
-                setTimeout(function() { add(i, source, target, null, finishedCallback) }, 10);
+                setTimeout(function() { add(i, source, target, null, finishedCallback); }, 10);
             }
         }
         else {
-            if (start == 0)
-                partialCallback(i)//if completed on first iteration, trigger both callbacks
+            if (start === 0)
+                partialCallback(i); // if completed on first iteration, trigger both callbacks
             finishedCallback();
         }
 
@@ -558,7 +558,7 @@ export class Layer {
 /** Function to run on every point-type data to visualize it according to the settings*/
 function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.LatLng): L.Marker {
     if (col.colors.slice().length > 0 && col.limits.slice().length > 0 && col.useMultipleFillColors)
-        col.fillColor = col.colorField.type == 'number' ?
+        col.fillColor = col.colorField.type === 'number' ?
             GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), feature.properties[col.colorField.value])
             : col.colors[col.limits.indexOf(feature.properties[col.colorField.value])];
     let icon: L.DivIcon;
@@ -592,7 +592,7 @@ function getMarker(col: ColorOptions, sym: SymbolOptions, feature, latlng: L.Lat
 
 function getFaIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: number, value: any) {
 
-    let icon: IIcon = sym.iconField.type == 'number' ?
+    let icon: IIcon = sym.iconField.type === 'number' ?
         GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), sym.iconField ? value : 0)
         : sym.icons[sym.iconLimits.slice().indexOf(value)];
     return L.ExtraMarkers.icon({
@@ -621,16 +621,16 @@ function getChartSymbol(sym: SymbolOptions, col: ColorOptions, sizeModifier: num
         }
         let
             rInner = x / 3,
-            pathFillFunc = function(d) { return d.data.color },
-            origo = (x + col.weight) / 2, //Center coordinate
-            w = origo * 2, //width and height of the svg element
+            pathFillFunc = function(d) { return d.data.color; },
+            origo = (x + col.weight) / 2, // Center coordinate
+            w = origo * 2, // width and height of the svg element
             h = w,
             pie = d3.pie().value(function(d) { return d.val; })(vals),
             arc = sym.chartType === 'pie' ? d3.arc().innerRadius(0).outerRadius(x / 2) : d3.arc().innerRadius(x / 5).outerRadius(x / 2);
 
-        //Create an svg element
-        let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        //Create the pie chart
+        // Create an svg element
+        let svg = document.createElementNS('http:// www.w3.org/2000/svg', 'svg');
+        // Create the pie chart
         let vis = d3.select(svg)
             .attr('width', w)
             .attr('height', h)
@@ -640,20 +640,20 @@ function getChartSymbol(sym: SymbolOptions, col: ColorOptions, sizeModifier: num
         let arcs = vis.selectAll('arc')
             .data(pie)
             .enter().append('g')
-            .attr('class', 'arc')
+            .attr('class', 'arc');
 
         arcs.append('path')
             .attr('d', arc)
             .attr('fill', pathFillFunc)
             .attr('stroke', col.color)
             .attr('opacity', col.fillOpacity)
-            .attr('stroke-width', col.weight)
+            .attr('stroke-width', col.weight);
 
-        //Return the svg-markup rather than the actual element
-        if (typeof (window as any).XMLSerializer != "undefined") {
+        // Return the svg-markup rather than the actual element
+        if (typeof (window as any).XMLSerializer !== 'undefined') {
             return (new (window as any).XMLSerializer()).serializeToString(svg);
         }
-        else if (typeof (svg as any).xml != "undefined") {
+        else if (typeof (svg as any).xml !== 'undefined') {
             return (svg as any).xml;
         }
         return '';
@@ -684,7 +684,7 @@ function getBlockIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: numbe
             margin: 0,
             padding: 0,
             border: borderWeight + 'px solid ' + borderColor,
-        }
+        };
         for (let row = 0; row < rows; row++) {
             if (filledBlocks < blockCount) {
                 actualRows++;
@@ -738,7 +738,7 @@ function getSimpleIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: numb
     let y = yValue !== undefined ? GetSymbolRadius(yValue, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
     x += sizeModifier;
     y += sizeModifier;
-    let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; background-color:' + col.fillColor + '; border: ' + (col.weight + sizeModifier / 6) + 'px solid ' + col.color + '; border-radius: ' + sym.borderRadius + 'px;"/>';
+    let rectHtml = '<div style="height: " + y + " px; width: " + x + "px; background-color:" + col.fillColor + "; border: " + (col.weight + sizeModifier / 6) + "px solid " + col.color + "; border-radius: " + sym.borderRadius + "px;"/>';
     return L.divIcon({ iconAnchor: L.point((x + col.weight + sizeModifier / 3) / 2, (y + col.weight + sizeModifier / 3) / 2), popupAnchor: L.point(0, -y / 2), html: rectHtml, className: '' });
 }
 
@@ -763,7 +763,7 @@ function createHeatLayer(l: Layer) {
             gradient[limits[i] / max] = l.colorOptions.colors[i];
         }
     }
-    return L.heatLayer(arr, { relative: false, gradient: gradient, radius: l.colorOptions.heatMapRadius, max: max, minOpacity: l.colorOptions.fillOpacity })
+    return L.heatLayer(arr, { relative: false, gradient: gradient, radius: l.colorOptions.heatMapRadius, max: max, minOpacity: l.colorOptions.fillOpacity });
 }
 
 function addPopups(feature, layer: L.GeoJSON) {
@@ -776,12 +776,12 @@ function addPopups(feature, layer: L.GeoJSON) {
         let header: Header = this.getHeaderById(h);
         let prop = feature.properties[header.value];
         if (prop !== undefined) {
-            popupContent += '<b>' + header.label + '</b>: ' + (header.type == 'number' ? prop == null ? 'null' : prop.toFixed(header.decimalAccuracy) : prop);
+            popupContent += '<b>' + header.label + '</b>: ' + (header.type === 'number' ? prop === null ? 'null' : prop.toFixed(header.decimalAccuracy) : prop);
             popupContent += '<br />';
         }
     }
 
-    if (popupContent != '' && showInPlace) {
+    if (popupContent !== '' && showInPlace) {
         let popup = L.popup({ closeButton: !showOnHover }).setContent(popupContent);
         layer.bindPopup(popup);
     }
@@ -789,12 +789,12 @@ function addPopups(feature, layer: L.GeoJSON) {
         layer.unbindPopup();
 
     if (showOnHover) {
-        layer.off('click')
+        layer.off('click');
         layer.on('mouseover', function(e) { showInPlace ? this.openPopup() : updateInfoScreenText(popupContent); });
         layer.on('mouseout', function(e) { showInPlace ? this.closePopup() : updateInfoScreenText(null); });
     }
     else {
-        layer.on('click', function(e) { showInPlace ? this.openPopup() : updateInfoScreenText(popupContent); })
+        layer.on('click', function(e) { showInPlace ? this.openPopup() : updateInfoScreenText(popupContent); });
         layer.off('mouseover');
         layer.off('mouseout');
     }
@@ -904,9 +904,9 @@ export class SymbolOptions {
     @observable blockValue: number;
     /**Block width in pixels*/
     @observable blockWidth: number;
-    /** Maximum amount of columns in block symbol == width*/
+    /** Maximum amount of columns in block symbol === width*/
     @observable maxBlockColumns: number;
-    /** Maximum amount of columns in block symbol == height*/
+    /** Maximum amount of columns in block symbol === height*/
     @observable maxBlockRows: number;
 
 
@@ -964,7 +964,7 @@ export class Header {
     constructor(prev?: Header) {
         this.id = prev && prev.id !== undefined ? prev.id : undefined;
         this.value = prev && prev.value || '';
-        this.label = prev && prev.label || this.value && this.value[0].toUpperCase() + this.value.slice(1);;
+        this.label = prev && prev.label || this.value && this.value[0].toUpperCase() + this.value.slice(1);
         this.type = prev && prev.type || 'string';
         this.decimalAccuracy = prev && prev.decimalAccuracy || 0;
     }

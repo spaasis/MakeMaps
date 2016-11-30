@@ -7,7 +7,7 @@ export class ColorScheme extends React.Component<{
     revert: boolean,
     /** For items in dropdown, 100%, else 110%*/
     width: string
-}, {}>{
+}, {}> {
     private brewerColors =
     {
         OrRd: ['#fff7ec', '#fee8c8', '#fdd49e', '#fdbb84', '#fc8d59', '#ef6548', '#d7301f', '#b30000', '#7f0000'],
@@ -47,7 +47,7 @@ export class ColorScheme extends React.Component<{
         Paired: ['#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', '#e31a1c', '#fdbf6f', '#ff7f00', '#cab2d6', '#6a3d9a', '#ffff99', '#b15928'],
         Pastel2: ['#b3e2cd', '#fdcdac', '#cbd5e8', '#f4cae4', '#e6f5c9', '#fff2ae', '#f1e2cc', '#cccccc'],
         Pastel1: ['#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec', '#f2f2f2'],
-    }
+    };
     render() {
         let direction = this.props.revert ? 'to left' : 'to right';
         let style = {
@@ -55,8 +55,8 @@ export class ColorScheme extends React.Component<{
             background: 'linear-gradient(' + direction + ',' + this.brewerColors[this.props.gradientName].join(',') + ')',
             marginLeft: -10,
             width: this.props.width
-        }
-        return <div style={style}/>
+        };
+        return <div style={style} />;
     }
 
 

@@ -20,8 +20,8 @@ export class AppState {
     @computed get obsBaseLayers() {
         let arr: ISelectData[] = [];
         this.baseLayers.map(function(lyr) {
-            arr.push({ value: lyr.layer, label: lyr.id })
-        })
+            arr.push({ value: lyr.layer, label: lyr.id });
+        });
         return arr;
     }
     /** Currently visible base map*/
@@ -61,7 +61,7 @@ export class AppState {
 
     @computed get editingFilter() {
         let selectedId = this.filterMenuState.selectedFilterId;
-        return this.filters ? this.filters.filter(function(f) { return f.id === selectedId })[0] : undefined;
+        return this.filters ? this.filters.filter(function(f) { return f.id === selectedId; })[0] : undefined;
     }
 
     @observable legendMenuState: LegendMenuState = new LegendMenuState();
@@ -95,9 +95,9 @@ export class AppState {
     constructor() {
         mobx.autorun(() => {
             if (this.bounds) {
-                this.map.fitBounds(this.bounds, {})
+                this.map.fitBounds(this.bounds, {});
             }
-        })
+        });
     }
 
 }
@@ -152,7 +152,7 @@ export class ImportWizardState {
     }
 }
 
-//TODO: filterstore, layerstore, legendstore(?)
+// TODO: filterstore, layerstore, legendstore(?)
 export class ColorMenuState {
     /** The name of the color being edited in color selection */
     @observable editing: string;

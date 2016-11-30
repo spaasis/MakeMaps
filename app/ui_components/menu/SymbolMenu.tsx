@@ -9,7 +9,7 @@ import { observer } from 'mobx-react';
 @observer
 export class SymbolMenu extends React.Component<{
     state: AppState,
-}, {}>{
+}, {}> {
 
     onTypeChange = (type: SymbolTypes) => {
         let layer: Layer = this.props.state.editingLayer;
@@ -17,16 +17,16 @@ export class SymbolMenu extends React.Component<{
         sym.symbolType = type;
         if (type === SymbolTypes.Blocks && !sym.blockSizeVar) {
             sym.blockSizeVar = layer.numberHeaders[0];
-            sym.blockValue = sym.blockValue == 0 ? Math.ceil(layer.values[sym.blockSizeVar.value][layer.values[sym.blockSizeVar.value].length - 1] / 5) : sym.blockValue;
+            sym.blockValue = sym.blockValue === 0 ? Math.ceil(layer.values[sym.blockSizeVar.value][layer.values[sym.blockSizeVar.value].length - 1] / 5) : sym.blockValue;
         }
         if (type === SymbolTypes.Chart) {
-            if (sym.chartFields.length == 0)
+            if (sym.chartFields.length === 0)
                 this.onChartFieldsChange(layer.numberHeaders);
         }
         if (type === SymbolTypes.Icon) {
             if (!sym.iconField)
                 sym.iconField = layer.numberHeaders[0] ? layer.numberHeaders[0] : layer.headers[0];
-            if (!sym.icons || sym.icons.length == 0) {
+            if (!sym.icons || sym.icons.length === 0) {
                 sym.icons = [];
                 this.addRandomIcon();
             }
@@ -60,8 +60,8 @@ export class SymbolMenu extends React.Component<{
     }
 
     onFAIconChange = (e) => {
-        if (e.currentTarget) { //if event triggered from input
-            e = e.currentTarget.value
+        if (e.currentTarget) { //  if event triggered from input
+            e = e.currentTarget.value;
         }
         this.props.state.editingLayer.symbolOptions.icons[this.props.state.symbolMenuState.currentIconIndex].fa = e;
         if (this.props.state.autoRefresh)
@@ -81,8 +81,8 @@ export class SymbolMenu extends React.Component<{
         let colors = this.props.state.editingLayer.colorOptions.chartColors;
         if (e === null)
             e = [];
-        headers.splice(0, headers.length) //empty headers
-        for (let i in e) { //add new headers
+        headers.splice(0, headers.length); //  empty headers
+        for (let i in e) { //  add new headers
             if (!colors[e[i].value]) {
                 colors[e[i].value] = defaultChartColors[i] || '#FFF';
             }
@@ -105,7 +105,7 @@ export class SymbolMenu extends React.Component<{
         sym.icons = use ? sym.icons : [sym.icons.slice()[0]];
         sym.iconLimits = use ? sym.iconLimits : [];
         if (use && sym.iconField) {
-            this.calculateIconValues(sym.iconField, sym.iconCount, sym.iconField.decimalAccuracy)
+            this.calculateIconValues(sym.iconField, sym.iconCount, sym.iconField.decimalAccuracy);
         }
         if (this.props.state.autoRefresh)
             this.props.state.editingLayer.refresh();
@@ -123,17 +123,17 @@ export class SymbolMenu extends React.Component<{
     onIconStepCountChange = (amount: number) => {
 
         let layer = this.props.state.editingLayer;
-        let sym = layer.symbolOptions
-        if (amount == 1) {
+        let sym = layer.symbolOptions;
+        if (amount === 1) {
             if (sym.iconCount >= layer.uniqueValues[sym.iconField.value].length)
                 return;
-            this.addRandomIcon()
+            this.addRandomIcon();
         }
-        else if (amount == -1 && sym.iconCount > 1) {
+        else if (amount === -1 && sym.iconCount > 1) {
             sym.icons.pop();
         }
         if (sym.iconCount > 0) {
-            this.calculateIconValues(sym.iconField, sym.iconCount, sym.iconField.decimalAccuracy)
+            this.calculateIconValues(sym.iconField, sym.iconCount, sym.iconField.decimalAccuracy);
         }
         if (this.props.state.autoRefresh)
             layer.refresh();
@@ -150,9 +150,9 @@ export class SymbolMenu extends React.Component<{
         let layer = this.props.state.editingLayer;
         let limits: number[] = layer.symbolOptions.iconLimits;
         let val = e.currentTarget.valueAsNumber;
-        if (limits[step + 1] && limits[step + 1] <= val) { //if collides with the next limit
+        if (limits[step + 1] && limits[step + 1] <= val) { //  if collides with the next limit
             let index = step + 1;
-            while (index < limits.length) { //keep increasing limits by one until a free amount is found. NOTE: This will cause some funky effects if the actual limits are something like 0.5, 0.6, 0.7...
+            while (index < limits.length) { //  keep increasing limits by one until a free amount is found. NOTE: This will cause some funky effects if the actual limits are something like 0.5, 0.6, 0.7...
                 limits[index]++;
                 if (limits[index + 1] && limits[index + 1] <= limits[index])
                     index++;
@@ -160,9 +160,9 @@ export class SymbolMenu extends React.Component<{
                     break;
             }
         }
-        else if (limits[step - 1] && limits[step - 1] >= val) { //if collides with the previous limit
+        else if (limits[step - 1] && limits[step - 1] >= val) { //  if collides with the previous limit
             let index = step - 1;
-            while (true) { //keep increasing limits by one until a free amount is found. NOTE: This will cause some funky effects if the actual limits are something like 0.5, 0.6, 0.7...
+            while (true) { //  keep increasing limits by one until a free amount is found. NOTE: This will cause some funky effects if the actual limits are something like 0.5, 0.6, 0.7...
                 limits[index]--;
                 if (limits[index - 1] && limits[index - 1] >= limits[index])
                     index--;
@@ -179,29 +179,29 @@ export class SymbolMenu extends React.Component<{
 
     getIcon(shape: string, fa: string, stroke: string, fill: string, onClick) {
         let circleIcon =
-            <svg viewBox="0 0 69.529271 95.44922" height="40" width="40">
-                <g transform="translate(-139.52 -173.21)">
-                    <path fill={fill} stroke={stroke} d="m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z"/>
+            <svg viewBox='0 0 69.529271 95.44922' height='40' width='40'>
+                <g transform='translate(-139.52 -173.21)'>
+                    <path fill={fill} stroke={stroke} d='m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z' />
                 </g>
 
             </svg>;
         let squareIcon =
-            <svg viewBox="0 0 69.457038 96.523441" height="40" width="40">
-                <g transform="translate(-545.27 -658.39)">
-                    <path fill={fill} stroke={stroke} d="m545.27 658.39v65.301h22.248l12.48 31.223 12.676-31.223h22.053v-65.301h-69.457z"/>
+            <svg viewBox='0 0 69.457038 96.523441' height='40' width='40'>
+                <g transform='translate(-545.27 -658.39)'>
+                    <path fill={fill} stroke={stroke} d='m545.27 658.39v65.301h22.248l12.48 31.223 12.676-31.223h22.053v-65.301h-69.457z' />
                 </g>
-            </svg>
+            </svg>;
         let starIcon =
-            <svg height="40" width="40" viewBox="0 0 77.690999 101.4702"><g transform="translate(-101.15 -162.97)">
-                <g transform="matrix(1 0 0 1.0165 -65.712 -150.28)">
-                    <path  fill={fill} stroke={stroke} d="m205.97 308.16-11.561 11.561h-16.346v16.346l-11.197 11.197 11.197 11.197v15.83h15.744l11.615 33.693 11.467-33.568 0.125-0.125h16.346v-16.346l11.197-11.197-11.197-11.197v-15.83h-15.83l-11.561-11.561z"/></g>
+            <svg height='40' width='40' viewBox='0 0 77.690999 101.4702'><g transform='translate(-101.15 -162.97)'>
+                <g transform='matrix(1 0 0 1.0165 -65.712 -150.28)'>
+                    <path fill={fill} stroke={stroke} d='m205.97 308.16-11.561 11.561h-16.346v16.346l-11.197 11.197 11.197 11.197v15.83h15.744l11.615 33.693 11.467-33.568 0.125-0.125h16.346v-16.346l11.197-11.197-11.197-11.197v-15.83h-15.83l-11.561-11.561z' /></g>
             </g>
-            </svg>
+            </svg>;
         let pentaIcon =
-            <svg viewBox="0 0 71.550368 96.362438" height="40" width="40">
-                <g fill={fill} transform="translate(-367.08 -289.9)">
-                    <path stroke={stroke} d="m367.08 322.5 17.236-32.604h36.151l18.164 32.25-35.665 64.112z"/></g>
-            </svg>
+            <svg viewBox='0 0 71.550368 96.362438' height='40' width='40'>
+                <g fill={fill} transform='translate(-367.08 -289.9)'>
+                    <path stroke={stroke} d='m367.08 322.5 17.236-32.604h36.151l18.164 32.25-35.665 64.112z' /></g>
+            </svg>;
         let activeIcon;
         switch (shape) {
             case ('circle'):
@@ -229,8 +229,8 @@ export class SymbolMenu extends React.Component<{
             }}
             >
             {activeIcon}
-            <i style={{ position: 'relative', bottom: 33, width: 18, height: 18 }} className={'fa ' + fa}/>
-        </div>
+            <i style={{ position: 'relative', bottom: 33, width: 18, height: 18 }} className={'fa ' + fa} />
+        </div>;
 
     }
 
@@ -238,12 +238,12 @@ export class SymbolMenu extends React.Component<{
         let layer = this.props.state.editingLayer;
         let values = layer.values;
         let uniqueValues = layer.uniqueValues;
-        if (field.type == 'number') {
+        if (field.type === 'number') {
             if (steps >= uniqueValues[field.value].length) {
                 layer.symbolOptions.iconLimits = uniqueValues[field.value];
             }
             else
-                layer.symbolOptions.iconLimits = CalculateLimits(values[field.value][0], values[field.value][values[field.value].length - 1], steps, accuracy); //get limits by min and max value
+                layer.symbolOptions.iconLimits = CalculateLimits(values[field.value][0], values[field.value][values[field.value].length - 1], steps, accuracy); //  get limits by min and max value
         }
         else {
             layer.symbolOptions.iconLimits = uniqueValues[field.value];
@@ -284,7 +284,7 @@ export class SymbolMenu extends React.Component<{
                 textAlign: 'center',
                 lineHeight: 1.5
             }
-        }
+        };
 
         let iconSelect = (
             <Modal
@@ -295,34 +295,34 @@ export class SymbolMenu extends React.Component<{
                     {strings.icon}
                     {this.renderIcons.call(this)}
                     {strings.or}
-                    <br/>
-                    <label>{strings.symbolMenuUseFAIcon} <a href='http://fontawesome.io/icons/'>Font Awesome</a></label>
-                    <input type="text" onChange={this.onFAIconChange} value={sym.icons[state.currentIconIndex].fa}/>
+                    <br />
+                    <label>{strings.symbolMenuUseFAIcon} <a href='http:// fontawesome.io/icons/'>Font Awesome</a></label>
+                    <input type='text' onChange={this.onFAIconChange} value={sym.icons[state.currentIconIndex].fa} />
 
-                    <br/>
+                    <br />
                     {strings.iconShape}
-                    <br/>
+                    <br />
                     <div
-                        style ={{ display: 'inline-block' }}
+                        style={{ display: 'inline-block' }}
                         onClick={this.onIconShapeChange.bind(this, 'circle')}>
                         {this.getIcon('circle', '', '#999999', 'transparent', null)}
                     </div>
                     <div
-                        style ={{ display: 'inline-block' }}
+                        style={{ display: 'inline-block' }}
                         onClick={this.onIconShapeChange.bind(this, 'square')}>
                         {this.getIcon('square', '', '#999999', 'transparent', null)}
                     </div>
                     <div
-                        style ={{ display: 'inline-block' }}
+                        style={{ display: 'inline-block' }}
                         onClick={this.onIconShapeChange.bind(this, 'star')}>
                         {this.getIcon('star', '', '#999999', 'transparent', null)}
                     </div>
                     <div
-                        style ={{ display: 'inline-block' }}
+                        style={{ display: 'inline-block' }}
                         onClick={this.onIconShapeChange.bind(this, 'penta')}>
                         {this.getIcon('penta', '', '#999999', 'transparent', null)}
                     </div>
-                    <br/>
+                    <br />
                     <button
                         className='primaryButton'
                         onClick={this.toggleIconSelect.bind(this, state.currentIconIndex)}
@@ -333,11 +333,11 @@ export class SymbolMenu extends React.Component<{
         );
         return (
 
-            <div className="makeMaps-options">
+            <div className='makeMaps-options'>
                 <label>{strings.selectSymbolType}</label>
-                <br/>
+                <br />
                 <label htmlFor='circle'>
-                    <i style={{ margin: 4 }} className='fa fa-circle-o'/>
+                    <i style={{ margin: 4 }} className='fa fa-circle-o' />
                     {strings.symbolTypeSimple}
                     <input
                         type='radio'
@@ -346,10 +346,10 @@ export class SymbolMenu extends React.Component<{
                         name='symboltype'
                         id='circle'
                         />
-                    <br/>
+                    <br />
                 </label>
                 <label htmlFor='icon'>
-                    <i style={{ margin: 4 }} className='fa fa-map-marker'/>
+                    <i style={{ margin: 4 }} className='fa fa-map-marker' />
                     {strings.icon}
                     <input
                         type='radio'
@@ -358,33 +358,33 @@ export class SymbolMenu extends React.Component<{
                         name='symboltype'
                         id='icon'
                         />
-                    <br/>
+                    <br />
                 </label>
                 <label htmlFor='chart'>
-                    <i style={{ margin: 4 }} className='fa fa-pie-chart'/>
+                    <i style={{ margin: 4 }} className='fa fa-pie-chart' />
                     {strings.symbolTypeChart}
                     <input
                         type='radio'
                         onChange={this.onTypeChange.bind(this, SymbolTypes.Chart)}
                         checked={sym.symbolType === SymbolTypes.Chart}
                         name='symboltype'
-                        disabled = {!hasNumberHeaders}
+                        disabled={!hasNumberHeaders}
                         id='chart'
                         />
-                    <br/>
+                    <br />
                 </label>
                 <label htmlFor='blocks'>
-                    <i style={{ margin: 4 }} className='fa fa-th-large'/>
+                    <i style={{ margin: 4 }} className='fa fa-th-large' />
                     {strings.symbolTypeBlocks}
                     <input
                         type='radio'
                         onChange={this.onTypeChange.bind(this, SymbolTypes.Blocks)}
                         checked={sym.symbolType === SymbolTypes.Blocks}
                         name='symboltype'
-                        disabled = {!hasNumberHeaders}
+                        disabled={!hasNumberHeaders}
                         id='blocks'
                         />
-                    <br/>
+                    <br />
                 </label>
                 {sym.symbolType !== SymbolTypes.Icon ?
                     <div>
@@ -394,7 +394,7 @@ export class SymbolMenu extends React.Component<{
                             onChange={this.onXVariableChange}
                             value={sym.symbolType === SymbolTypes.Blocks ? sym.blockSizeVar : sym.sizeXVar}
                             clearable={sym.symbolType !== SymbolTypes.Blocks}
-                            placeholder= {strings.selectPlaceholder}
+                            placeholder={strings.selectPlaceholder}
                             />
 
                         {sym.symbolType === SymbolTypes.Simple ? <div>
@@ -403,17 +403,17 @@ export class SymbolMenu extends React.Component<{
                                 options={layer.numberHeaders}
                                 onChange={this.onYVariableChange}
                                 value={sym.sizeYVar}
-                                placeholder= {strings.selectPlaceholder}
+                                placeholder={strings.selectPlaceholder}
                                 />
                             <label>{strings.borderRadius}
                                 <input type='number' value={sym.borderRadius.toString()} onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
-                                    if (sym.borderRadius != val) {
+                                    if (sym.borderRadius !== val) {
                                         sym.borderRadius = val;
                                         if (autoRefresh)
                                             layer.refresh();
                                     }
-                                } } min={0} max={100} step={1}/>
+                                } } min={0} max={100} step={1} />
                             </label>
                         </div> : null}
                         {sym.symbolType !== SymbolTypes.Blocks && (sym.sizeXVar || sym.sizeYVar) ?
@@ -421,34 +421,34 @@ export class SymbolMenu extends React.Component<{
                                 <label>{strings.sizeMultiplier}
                                     <input type='number' value={sym.sizeMultiplier.toString()} onChange={(e) => {
                                         let val = (e.currentTarget as any).valueAsNumber;
-                                        if (sym.sizeMultiplier != val) {
+                                        if (sym.sizeMultiplier !== val) {
                                             sym.sizeMultiplier = val;
                                             if (autoRefresh)
                                                 layer.refresh();
                                         }
-                                    } } min={0.1} max={10} step={0.1}/>
+                                    } } min={0.1} max={10} step={0.1} />
                                 </label>
-                                <br/>
+                                <br />
                                 <label>{strings.sizeLowLimit}
                                     <input type='number' value={sym.sizeLowLimit.toString()} onChange={(e) => {
                                         let val = (e.currentTarget as any).valueAsNumber;
-                                        if (sym.sizeLowLimit != val) {
+                                        if (sym.sizeLowLimit !== val) {
                                             sym.sizeLowLimit = val;
                                             if (autoRefresh)
                                                 layer.refresh();
                                         }
-                                    } } min={0}/>
+                                    } } min={0} />
                                 </label>
-                                <br/>
+                                <br />
                                 <label>{strings.sizeUpLimit}
                                     <input type='number' value={sym.sizeUpLimit.toString()} onChange={(e) => {
                                         let val = (e.currentTarget as any).valueAsNumber;
-                                        if (sym.sizeUpLimit != val) {
+                                        if (sym.sizeUpLimit !== val) {
                                             sym.sizeUpLimit = val;
                                             if (autoRefresh)
                                                 layer.refresh();
                                         }
-                                    } } min={1}/>
+                                    } } min={1} />
                                 </label>
                             </div>
                             : null}
@@ -459,7 +459,7 @@ export class SymbolMenu extends React.Component<{
                     sym.symbolType === SymbolTypes.Icon ?
                         <div>
                             <label htmlFor='iconSteps'>{strings.useMultipleIcons}</label>
-                            <input id='iconSteps' type='checkbox' onChange={this.onUseIconStepsChange} checked={sym.useMultipleIcons}/>
+                            <input id='iconSteps' type='checkbox' onChange={this.onUseIconStepsChange} checked={sym.useMultipleIcons} />
 
                             {sym.useMultipleIcons ?
                                 <div>
@@ -471,9 +471,9 @@ export class SymbolMenu extends React.Component<{
                                         clearable={false}
                                         placeholder={strings.selectPlaceholder}
                                         />
-                                    {sym.iconField && sym.iconField.type == 'number' ?
+                                    {sym.iconField && sym.iconField.type === 'number' ?
                                         <div>{strings.iconStepHelp}
-                                            <br/>
+                                            <br />
                                             <button onClick={this.onIconStepCountChange.bind(this, -1)}>-</button>
                                             <button onClick={this.onIconStepCountChange.bind(this, 1)}>+</button>
 
@@ -488,7 +488,7 @@ export class SymbolMenu extends React.Component<{
 
                                 </div>
                             }
-                            <br/>
+                            <br />
                             {strings.iconColorHelp}
                         </div>
                         : null
@@ -505,7 +505,7 @@ export class SymbolMenu extends React.Component<{
                             placeholder={strings.selectPlaceholder}
                             />
                         {strings.chartType}
-                        <br/>
+                        <br />
                         <label htmlFor='pie'>
                             {strings.chartTypePie}
                             <input
@@ -518,7 +518,7 @@ export class SymbolMenu extends React.Component<{
                                 name='charttype'
                                 id='pie'
                                 />
-                            <br/>
+                            <br />
 
                         </label>
                         <label htmlFor='donut'>
@@ -527,13 +527,13 @@ export class SymbolMenu extends React.Component<{
                                 type='radio'
                                 onChange={() => {
                                     sym.chartType = 'donut';
-                                    if (autoRefresh) layer.refresh()
+                                    if (autoRefresh) layer.refresh();
                                 } }
                                 checked={sym.chartType === 'donut'}
                                 name='charttype'
                                 id='donut'
                                 />
-                            <br/>
+                            <br />
 
                         </label>
                     </div>
@@ -546,56 +546,56 @@ export class SymbolMenu extends React.Component<{
                             <input type='number' value={sym.blockValue.toString()}
                                 onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
-                                    if (sym.blockValue != val) {
+                                    if (sym.blockValue !== val) {
                                         sym.blockValue = val;
                                         if (autoRefresh)
                                             layer.refresh();
                                     }
                                 } }
-                                min={1}/>
+                                min={1} />
                         </label>
                         <label>{strings.singleBlockWidth}
                             <input type='number' value={sym.blockWidth.toString()}
                                 onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
-                                    if (sym.blockWidth != val) {
+                                    if (sym.blockWidth !== val) {
                                         sym.blockWidth = val;
                                         if (autoRefresh)
                                             layer.refresh();
                                     }
                                 } }
-                                min={1}/>
+                                min={1} />
                         </label>
                         <label>{strings.maxBlockColumns}
                             <input type='number' value={sym.maxBlockColumns.toString()}
                                 onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
-                                    if (sym.maxBlockColumns != val) {
+                                    if (sym.maxBlockColumns !== val) {
                                         sym.maxBlockColumns = val;
                                         if (autoRefresh)
                                             layer.refresh();
                                     }
                                 } }
-                                min={1}/>
+                                min={1} />
                         </label>
                         <label>{strings.maxBlockRows}
                             <input type='number' value={sym.maxBlockRows.toString()}
                                 onChange={(e) => {
                                     let val = (e.currentTarget as any).valueAsNumber;
-                                    if (sym.maxBlockRows != val) {
+                                    if (sym.maxBlockRows !== val) {
                                         sym.maxBlockRows = val;
                                         if (autoRefresh)
                                             layer.refresh();
                                     }
                                 } }
-                                min={1}/>
+                                min={1} />
                         </label>
                     </div>
                     : null
 
                 }
                 {autoRefresh ? null :
-                    <button className='menuButton' onClick={() => { layer.refresh() } }>{strings.refreshMap}</button>
+                    <button className='menuButton' onClick={() => { layer.refresh(); } }>{strings.refreshMap}</button>
                 }
                 {iconSelect}
             </div >
@@ -634,8 +634,8 @@ export class SymbolMenu extends React.Component<{
                     borderRadius: 30,
                     lineHeight: '30px',
                     textAlign: 'center'
-                }
-                columns.push(<td style={style} key={i + c} className={'symbolIcon fa ' + faIcons[i + c]} onClick={this.onFAIconChange.bind(this, faIcons[i + c])}/>);
+                };
+                columns.push(<td style={style} key={i + c} className={'symbolIcon fa ' + faIcons[i + c]} onClick={this.onFAIconChange.bind(this, faIcons[i + c])} />);
             }
             return columns;
         }
@@ -659,7 +659,7 @@ export class SymbolMenu extends React.Component<{
         let limits = layer.symbolOptions.iconLimits.slice();
         let rows = [];
         let row = 0;
-        if (layer.symbolOptions.iconField.type == 'number') {
+        if (layer.symbolOptions.iconField.type === 'number') {
             for (let i of limits) {
 
                 rows.push(
@@ -689,7 +689,7 @@ export class SymbolMenu extends React.Component<{
                 row++;
             }
         }
-        return <ul id='customSteps' style={{ listStyle: 'none', padding: 0 }}>{rows.map(function(r) { return r })}</ul>
+        return <ul id='customSteps' style={{ listStyle: 'none', padding: 0 }}>{rows.map(function(r) { return r; })}</ul>;
     }
 
 }

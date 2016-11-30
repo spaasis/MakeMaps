@@ -63,7 +63,7 @@ export class Filter {
 
 
     constructor(appState: AppState, prev?: Filter) {
-        this.id = prev && prev.id !== undefined ? prev.id : undefined;;
+        this.id = prev && prev.id !== undefined ? prev.id : undefined;
         this.title = prev && prev.title || '';
         this.layerId = prev && prev.layerId !== undefined ? prev.layerId : undefined;
         this.filterHeaderId = prev && prev.filterHeaderId || undefined;
@@ -97,7 +97,7 @@ export class Filter {
         this.filteredIndices = [];
         let id = this.layerId;
         let count = 0;
-        let layer = this.appState.layers.filter(function(l) { return l.id == id })[0];
+        let layer = this.appState.layers.filter(function(l) { return l.id === id; })[0];
         let header = layer.getHeaderById(this.filterHeaderId);
 
         if (layer.layerType !== LayerTypes.HeatMap) {
@@ -121,11 +121,11 @@ export class Filter {
     filterLayer() {
         if (this.show) {
             let id = this.layerId;
-            let layer = this.appState.layers.filter(function(l) { return l.id === id })[0];
-            let header = layer.getHeaderById(this.filterHeaderId)
+            let layer = this.appState.layers.filter(function(l) { return l.id === id; })[0];
+            let header = layer.getHeaderById(this.filterHeaderId);
             if (layer.layerType !== LayerTypes.HeatMap) {
                 for (let val in this.filterValues) {
-                    if (header.type == 'number') {
+                    if (header.type === 'number') {
                         filterByNumber.call(this, +val, layer);
                     }
                     else {
@@ -174,12 +174,12 @@ export class Filter {
         function filterByNumber(val: number, layer: Layer) {
             if ((this.previousLower <= +val && +val < this.currentMin) || (this.currentMin <= +val && +val < this.previousLower) ||
                 (this.previousUpper < +val && +val <= this.currentMax) || (this.currentMax < +val && +val <= this.previousUpper)) {
-                let filteredIndex = this.filteredIndices.indexOf(+val); //is filtered?
-                if (filteredIndex === -1 && (+val < this.currentMin || +val > this.currentMax)) { //If not yet filtered and values over thresholds
+                let filteredIndex = this.filteredIndices.indexOf(+val); // is filtered?
+                if (filteredIndex === -1 && (+val < this.currentMin || +val > this.currentMax)) { // If not yet filtered and values over thresholds
                     hide.call(this, val);
-                    this.filteredIndices.push(+val); //mark as filtered
+                    this.filteredIndices.push(+val); // mark as filtered
                 }
-                else if (filteredIndex > -1 && (+val >= this.currentMin && +val <= this.currentMax)) { //If filtered and within thresholds
+                else if (filteredIndex > -1 && (+val >= this.currentMin && +val <= this.currentMax)) { // If filtered and within thresholds
                     show.call(this, val, layer);
                     this.filteredIndices.splice(filteredIndex, 1);
                 }
@@ -190,22 +190,22 @@ export class Filter {
 
             this.filterValues[val].map(function(lyr: any) {
                 if (!this.remove) {
-                    if (lyr._icon && lyr._icon.style.display == 'none') {
+                    if (lyr._icon && lyr._icon.style.display === 'none') {
                         lyr._icon.style.display = '';
                         if (lyr._shadow) {
                             lyr._shadow.style.display = '';
                         }
                     }
-                    if (lyr._shadow && lyr._shadow.style.display == 'none') {
+                    if (lyr._shadow && lyr._shadow.style.display === 'none') {
                         lyr._shadow.style.display = '';
                     }
-                    else if (lyr._path && lyr._path.style.display == 'none') {
+                    else if (lyr._path && lyr._path.style.display === 'none') {
                         lyr._path.style.display = '';
                     }
                     if (lyr.setOpacity)
                         lyr.setOpacity(0.2);
                     else
-                        lyr.setStyle({ fillOpacity: 0.2, opacity: 0.2 })
+                        lyr.setStyle({ fillOpacity: 0.2, opacity: 0.2 });
                 }
                 else {
                     if (lyr._icon) {
@@ -217,7 +217,7 @@ export class Filter {
                     else if (lyr._path) {
                         lyr._path.style.display = 'none';
                     }
-                    if (lyr.options.icon && lyr.options.icon.options.className.indexOf('marker-hidden') == -1) {
+                    if (lyr.options.icon && lyr.options.icon.options.className.indexOf('marker-hidden') === -1) {
                         lyr.options.icon.options.className += ' marker-hidden';
                         lyr.setIcon(lyr.options.icon);
                     }
@@ -233,7 +233,7 @@ export class Filter {
                     if (lyr.setOpacity)
                         lyr.setOpacity(layer.colorOptions.fillOpacity);
                     else
-                        lyr.setStyle({ fillOpacity: layer.colorOptions.fillOpacity, opacity: layer.colorOptions.opacity })
+                        lyr.setStyle({ fillOpacity: layer.colorOptions.fillOpacity, opacity: layer.colorOptions.opacity });
 
                     if (lyr._icon) {
                         lyr._icon.style.display = '';
@@ -258,13 +258,13 @@ export class Filter {
          * TODO: optimize performance (by storing every filter current value in state?)
          */
         function shouldLayerBeAdded(layer) {
-            let filters: Filter[] = this.appState.filters.filter((f) => { return f.id !== this.id && f.layerId === this.layerId });
+            let filters: Filter[] = this.appState.filters.filter((f) => { return f.id !== this.id && f.layerId === this.layerId; });
 
             let canUnFilter = true;
             for (let filter of filters) {
-                let header: Header = this.appState.layers.filter((layer) => { return layer.id == this.layerId })[0].getHeaderById(filter.filterHeaderId);
+                let header: Header = this.appState.layers.filter((layer) => { return layer.id === this.layerId; })[0].getHeaderById(filter.filterHeaderId);
                 let val = layer.feature.properties[header.value];
-                if (header.type == 'number') {
+                if (header.type === 'number') {
                     canUnFilter = val <= filter.currentMax && val >= filter.currentMin;
                 }
                 else

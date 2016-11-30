@@ -8,14 +8,14 @@ import { observer } from 'mobx-react';
 require('../../../styles/react-slider.css');
 
 @observer
-export class OnScreenFilter extends React.Component<{ filter: Filter, state: AppState }, {}>{
+export class OnScreenFilter extends React.Component<{ filter: Filter, state: AppState }, {}> {
     componentDidMount() {
         let filter = this.props.filter;
         setTimeout(function() {
-            filter.x = Math.min(filter.x, window.innerWidth - +document.getElementById('filter' + filter.id).offsetWidth); //place within bounds
+            filter.x = Math.min(filter.x, window.innerWidth - +document.getElementById('filter' + filter.id).offsetWidth); // place within bounds
             filter.y = Math.min(filter.y, window.innerWidth - +document.getElementById('filter' + filter.id).offsetHeight);
 
-        }, 10)
+        }, 10);
 
     }
 
@@ -23,7 +23,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
         let filter = this.props.filter;
         let minValDiff = filter.currentMin - lower;
         let maxValDiff = filter.currentMax - upper;
-        if (minValDiff != 0) {
+        if (minValDiff !== 0) {
             if (filter.currentMin - minValDiff >= filter.totalMin &&
                 filter.currentMax - minValDiff <= filter.totalMax) {
 
@@ -33,29 +33,29 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
             else {
                 if (filter.currentMin - minValDiff < filter.totalMin) {
                     filter.currentMin = filter.totalMin;
-                    filter.currentMax = filter.totalMin + filter.lockedDistance
+                    filter.currentMax = filter.totalMin + filter.lockedDistance;
                 }
                 if (filter.currentMax - minValDiff > filter.totalMax) {
                     filter.currentMax = filter.totalMax;
-                    filter.currentMin = filter.totalMax - filter.lockedDistance
+                    filter.currentMin = filter.totalMax - filter.lockedDistance;
                 }
             }
         }
-        else if (maxValDiff != 0) {
+        else if (maxValDiff !== 0) {
             if (filter.currentMin - maxValDiff >= filter.totalMin &&
                 filter.currentMax - maxValDiff <= filter.totalMax) {
 
-                filter.currentMin -= maxValDiff
+                filter.currentMin -= maxValDiff;
                 filter.currentMax -= maxValDiff;
             }
             else {
                 if (filter.currentMin - maxValDiff < filter.totalMin) {
                     filter.currentMin = filter.totalMin;
-                    filter.currentMax = filter.totalMin + filter.lockedDistance
+                    filter.currentMax = filter.totalMin + filter.lockedDistance;
                 }
                 if (filter.currentMax - maxValDiff > filter.totalMax) {
                     filter.currentMax = filter.totalMax;
-                    filter.currentMin = filter.totalMax - filter.lockedDistance
+                    filter.currentMin = filter.totalMax - filter.lockedDistance;
                 }
             }
         }
@@ -73,7 +73,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
 
     }
     onCurrentMinChange = (e) => {
-        let val = e.currentTarget.valueAsNumber
+        let val = e.currentTarget.valueAsNumber;
         this.props.filter.selectedStep = -1;
         if (this.props.filter.locked) {
             this.advanceSliderWhenLocked(val, this.props.filter.currentMax);
@@ -85,7 +85,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
 
     }
     onCurrentMaxChange = (e) => {
-        let val = e.currentTarget.valueAsNumber
+        let val = e.currentTarget.valueAsNumber;
         this.props.filter.selectedStep = -1;
         if (this.props.filter.locked) {
             this.advanceSliderWhenLocked(this.props.filter.currentMin, val);
@@ -98,27 +98,27 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
     }
     onKeyDown = (e) => {
         let filter = this.props.filter;
-        let up = e.keyCode == 38;
-        let down = e.keyCode == 40;
+        let up = e.keyCode === 38;
+        let down = e.keyCode === 40;
         if (up || down) {
             if (filter.categories.length > 0) {
                 let index = filter.categories.indexOf(filter.selectedCategories[filter.selectedCategories.length - 1]);
                 index += up ? -1 : 1;
-                this.onCustomCategoryClick(index == -1 ? 0 : index)
+                this.onCustomCategoryClick(index === -1 ? 0 : index);
             }
             else if (filter.steps.length > 0) {
                 let index = filter.selectedStep + (up ? -1 : 1);
                 if (index > -1 && index < filter.steps.length)
                     this.onCustomStepClick(index);
                 else
-                    this.onCustomStepClick(0)
+                    this.onCustomStepClick(0);
             }
         }
     }
 
     onCustomStepClick = (i: number) => {
         let filter = this.props.filter;
-        if (filter.selectedStep == i) {
+        if (filter.selectedStep === i) {
             if (!filter.forceSelection) {
                 filter.selectedStep = -1;
                 filter.currentMin = filter.totalMin;
@@ -140,7 +140,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
         let categories = filter.selectedCategories;
         let category = filter.categories[i];
         let index = categories.indexOf(category);
-        if (index == -1) {
+        if (index === -1) {
             if (!filter.allowCategoryMultiSelect)
                 categories.splice(0, categories.length);
             categories.push(category);
@@ -156,7 +156,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
     render() {
         let filter = this.props.filter;
         let map = filter.appState.map;
-        let header = this.props.state.layers.filter((layer) => { return layer.id == filter.layerId })[0].getHeaderById(filter.filterHeaderId);
+        let header = this.props.state.layers.filter((layer) => { return layer.id === filter.layerId; })[0].getHeaderById(filter.filterHeaderId);
 
         return <Draggable
             handle={'.filterhead'}
@@ -177,7 +177,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
                     <h3 >{filter.title}</h3>
                 </div>
                 {this.renderSteps.call(this)}
-                {header.type == 'number' && filter.showSlider ?
+                {header.type === 'number' && filter.showSlider ?
                     <div style={{ display: 'inline-flex' }}                    >
                         <input type='number' style={{ width: '70px' }} value={filter.currentMin.toFixed(0)} onChange={this.onCurrentMinChange} />
                         <Slider className='horizontal-slider'
@@ -199,7 +199,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
                     </div>
                     : null}
             </div>
-        </Draggable>
+        </Draggable>;
     }
 
     renderSteps() {
@@ -222,7 +222,7 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
                         key={step[0]}
                         onClick={this.onCustomStepClick.bind(this, index)}
                         >{step[0] + (!filter.useDistinctValues ? ('-' + step[1]) : '')}
-                    </div>)
+                    </div>);
                 index++;
             }, this);
 
@@ -253,12 +253,12 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
                         }}>
                             {category}
                         </span>
-                    </div>)
+                    </div>);
                 index++;
             }, this);
 
         }
-        return <div> {rows.map(function(e) { return e })} </div>
+        return <div> {rows.map(function(e) { return e; })} </div>;
     }
 
 }

@@ -15,7 +15,7 @@ import { OnScreenInfoDisplay } from './misc/OnScreenInfoDisplay';
 import 'leaflet';
 import 'Leaflet.extra-markers';
 import 'leaflet-fullscreen';
-import 'leaflet.markercluster'
+import 'leaflet.markercluster';
 let d3 = require('d3');
 let chroma = require('chroma-js');
 let heat = require('leaflet.heat');
@@ -27,7 +27,7 @@ require('../../styles/MarkerCluster.css');
 
 
 @observer
-export class Map extends React.Component<{ state: AppState }, {}>{
+export class Map extends React.Component<{ state: AppState }, {}> {
 
 
     componentDidMount() {
@@ -37,18 +37,18 @@ export class Map extends React.Component<{ state: AppState }, {}>{
         if (state.embed)
             this.embed();
 
-        //Handle direct JSON embed
+        // Handle direct JSON embed
         if (window.addEventListener) {
             window.addEventListener('message', function(e) {
-                //TODO: verify JSON before
+                // TODO: verify JSON before
                 state.embed = true;
                 ShowLoading();
-                LoadSavedMap(JSON.parse(e.data), state)
+                LoadSavedMap(JSON.parse(e.data), state);
             }, false);
         }
-        //  else if ( window.attachEvent ) { // ie8
-        //     window.attachEvent('onmessage', handleMessage);
-        // }
+        //   else if ( window.attachEvent ) { //  ie8
+        //      window.attachEvent('onmessage', handleMessage);
+        //  }
     }
 
     /** Parse URL parameters and act accordingly */
@@ -57,8 +57,8 @@ export class Map extends React.Component<{ state: AppState }, {}>{
         if (this.getUrlParameter('mapURL', parameters))
             this.props.state.embed = true;
 
-        //URL to get a .makeMaps-file
-        let mapURL = this.getUrlParameter("mapURL", parameters);
+        // URL to get a .makeMaps-file
+        let mapURL = this.getUrlParameter('mapURL', parameters);
         if (mapURL) {
             ShowLoading();
             FetchSavedMap(mapURL, this.props.state);
@@ -70,12 +70,12 @@ export class Map extends React.Component<{ state: AppState }, {}>{
     /**
      * Get URL parameter value
      *
-     * http://stackoverflow.com/questions/19491336/get-url-parameter-jquery-or-how-to-get-query-string-values-in-js/21903119#21903119
+     * http:// stackoverflow.com/questions/19491336/get-url-parameter-jquery-or-how-to-get-query-string-values-in-js/21903119#21903119
      * @param  sParam   parameter to look for
      * @return false when not found, value when found
      */
     getUrlParameter(sParam: string, parameters: string[]) {
-        var sParameterName: string[], i;
+        let sParameterName: string[], i;
         for (i = 0; i < parameters.length; i++) {
             sParameterName = parameters[i].split('=');
 
@@ -99,12 +99,12 @@ export class Map extends React.Component<{ state: AppState }, {}>{
         let props: L.MapOptions = {
             layers: (this.props.state.activeBaseLayer.layer as any),
             doubleClickZoom: false,
-            // fullscreenControl: true,
+            //  fullscreenControl: true,
         };
         this.props.state.map = L.map('map', props).setView(this.props.state.mapStartingCenter, this.props.state.mapStartingZoom);
         this.props.state.map.doubleClickZoom.disable();
-        this.props.state.map.on('contextmenu', function(e) { //disable context menu opening on right-click
-            // map.openTooltip('asd', (e as any).latlng );
+        this.props.state.map.on('contextmenu', function(e) { // disable context menu opening on right-click
+            //  map.openTooltip('asd', (e as any).latlng );
             return;
         });
     }
@@ -119,7 +119,7 @@ export class Map extends React.Component<{ state: AppState }, {}>{
         let arr: JSX.Element[] = [];
         if (this.props.state.filters && this.props.state.filters.length > 0)
             for (let key in this.props.state.filters.slice()) {
-                if (this.props.state.filters[key].show) { //if filter has been properly initialized
+                if (this.props.state.filters[key].show) { // if filter has been properly initialized
                     arr.push(<OnScreenFilter
                         state={this.props.state}
                         filter={this.props.state.filters[key]}
@@ -133,7 +133,7 @@ export class Map extends React.Component<{ state: AppState }, {}>{
     renderLegend() {
         if (this.props.state.legend && this.props.state.legend.visible) {
             return <OnScreenLegend
-                state={this.props.state} />
+                state={this.props.state} />;
 
         }
     }

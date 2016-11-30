@@ -7,23 +7,23 @@ let Select = require('react-select');
 @observer
 export class ClusterMenu extends React.Component<{
     state: AppState,
-}, {}>{
+}, {}> {
     render() {
         let strings = this.props.state.strings;
         let layer = this.props.state.editingLayer;
         let menuState = this.props.state.clusterMenuState;
         let options = layer.clusterOptions;
-        let hoverHeader = menuState.selectedHeader ? options.hoverHeaders.filter(function(f) { return f.headerId == menuState.selectedHeader.id })[0] : undefined;
+        let hoverHeader = menuState.selectedHeader ? options.hoverHeaders.filter(function(f) { return f.headerId === menuState.selectedHeader.id; })[0] : undefined;
         return (
             <div className='makeMaps-options'>
                 <label htmlFor='useClustering'>{strings.useClustering}
                     <input id='useClustering' type='checkbox' checked={options.useClustering} onChange={(e) => {
                         let val = (e.currentTarget as any).checked;
-                        if (options.useClustering != val) {
+                        if (options.useClustering !== val) {
                             options.useClustering = val;
-                            layer.reDraw()
+                            layer.reDraw();
                         }
-                    } }/>
+                    } } />
                 </label>
                 {options.useClustering ?
                     <div>
@@ -31,13 +31,13 @@ export class ClusterMenu extends React.Component<{
                             <input id='useDefaultStyle' type='checkbox' checked={options.useSymbolStyle} onChange={(e) => {
                                 options.useSymbolStyle = (e.currentTarget as any).checked;
                                 layer.refreshCluster();
-                            } }/>
+                            } } />
                         </label>
                         <label htmlFor='showCount'>{strings.clusterShowCount}
                             <input id='showCount' type='checkbox' checked={options.showCount} onChange={(e) => {
                                 options.showCount = (e.currentTarget as any).checked;
                                 layer.refreshCluster();
-                            } }/>
+                            } } />
                         </label>
                         {options.showCount ?
                             <div>
@@ -45,7 +45,7 @@ export class ClusterMenu extends React.Component<{
                                 <input type='text' style={{ width: '100%' }} value={options.countText} onChange={(e) => {
                                     options.countText = (e.target as any).value;
                                     layer.refreshCluster();
-                                } }/>
+                                } } />
                             </div>
                             : null}
                         {strings.clusterInfo}
@@ -66,13 +66,13 @@ export class ClusterMenu extends React.Component<{
                                                 hoverHeader.showAvg = val;
                                             else if (hoverHeader && !val) {
                                                 if (!hoverHeader.showSum)
-                                                    options.hoverHeaders = options.hoverHeaders.filter(function(f) { return f.headerId != menuState.selectedHeader.id }); //remove from hoverHeaders
+                                                    options.hoverHeaders = options.hoverHeaders.filter(function(f) { return f.headerId !== menuState.selectedHeader.id; }); // remove from hoverHeaders
                                             }
                                             else if (val && !hoverHeader) {
                                                 options.hoverHeaders.push({ headerId: menuState.selectedHeader.id, showAvg: val, showSum: false, avgText: menuState.selectedHeader.label + ' avg: ', sumText: menuState.selectedHeader.label + ' sum: ' });
                                             }
                                             layer.refreshCluster();
-                                        } }/>
+                                        } } />
                                 </label>
                                 {hoverHeader && hoverHeader.showAvg ?
                                     <div>
@@ -81,7 +81,7 @@ export class ClusterMenu extends React.Component<{
                                             onChange={(e) => {
                                                 hoverHeader.avgText = (e.target as any).value;
                                                 layer.refreshCluster();
-                                            } }/>
+                                            } } />
                                     </div>
                                     : null}
                                 <label htmlFor='showSum'>{strings.clusterShowSum}
@@ -93,13 +93,13 @@ export class ClusterMenu extends React.Component<{
                                                 hoverHeader.showSum = val;
                                             else if (hoverHeader && !val) {
                                                 if (!hoverHeader.showAvg)
-                                                    options.hoverHeaders = options.hoverHeaders.filter(function(f) { return f.headerId != menuState.selectedHeader.id }); //remove from hoverHeaders
+                                                    options.hoverHeaders = options.hoverHeaders.filter(function(f) { return f.headerId !== menuState.selectedHeader.id; }); // remove from hoverHeaders
                                             } else if (val && !hoverHeader) {
                                                 options.hoverHeaders.push({ headerId: menuState.selectedHeader.id, showSum: val, showAvg: false, avgText: menuState.selectedHeader.label + ' avg: ', sumText: menuState.selectedHeader.label + ' sum: ' });
                                             }
 
                                             layer.refreshCluster();
-                                        } }/>
+                                        } } />
                                 </label>
                                 {hoverHeader && hoverHeader.showSum ?
 
@@ -109,7 +109,7 @@ export class ClusterMenu extends React.Component<{
                                             onChange={(e) => {
                                                 hoverHeader.sumText = (e.target as any).value;
                                                 layer.refreshCluster();
-                                            } }/>
+                                            } } />
                                     </div>
                                     : null}
 
@@ -122,6 +122,6 @@ export class ClusterMenu extends React.Component<{
                 }
 
             </div>
-        )
+        );
     }
 }

@@ -9,7 +9,7 @@ import { LayerTypes } from '../../stores/Layer';
 @observer
 export class FilterMenu extends React.Component<{
     state: AppState,
-}, {}>{
+}, {}> {
 
     onFilterVariableChange = (val: Header) => {
         let filter = this.props.state.editingFilter;
@@ -23,14 +23,14 @@ export class FilterMenu extends React.Component<{
         else {
             this.props.state.filterMenuState.useCustomSteps = false;
             filter.useDistinctValues = false;
-            this.getMinMax()
+            this.getMinMax();
         }
     }
 
     getMinMax() {
         let filter = this.props.state.editingFilter;
         if (filter) {
-            let layer = this.props.state.layers.filter(function(l) { return l.id == filter.layerId })[0]
+            let layer = this.props.state.layers.filter(function(l) { return l.id === filter.layerId; })[0];
             let field = layer.getHeaderById(filter.filterHeaderId).value;
             let minVal = layer.values[field][0];
             let maxVal = layer.values[field][layer.values[field].length - 1];
@@ -50,13 +50,13 @@ export class FilterMenu extends React.Component<{
     calculateSteps(header: Header) {
         let state = this.props.state.filterMenuState;
         let filter = this.props.state.editingFilter;
-        let layer = this.props.state.layers.filter(function(l) { return l.id == filter.layerId })[0];
+        let layer = this.props.state.layers.filter(function(l) { return l.id === filter.layerId; })[0];
 
         let steps: [number, number][] = [];
         if (state.useCustomSteps) {
             if (filter.useDistinctValues) {
                 let values = layer.uniqueValues[header.value];
-                if (header.type == 'string') {
+                if (header.type === 'string') {
                     filter.categories = values;
                     return;
                 }
@@ -83,7 +83,7 @@ export class FilterMenu extends React.Component<{
         let filter = new Filter(this.props.state);
         filter.id = this.props.state.nextFilterId;
         filter.layerId = this.props.state.editingLayer.id;
-        let header = this.props.state.editingLayer.headers[0]
+        let header = this.props.state.editingLayer.headers[0];
         filter.filterHeaderId = header.id;
         filter.title = header.label;
 
@@ -97,15 +97,15 @@ export class FilterMenu extends React.Component<{
         else {
             this.props.state.filterMenuState.useCustomSteps = false;
             filter.useDistinctValues = false;
-            this.getMinMax()
+            this.getMinMax();
         }
     }
     onSave = () => {
         let filter = this.props.state.editingFilter;
-        let header = this.props.state.layers.filter((f) => { return f.id == filter.layerId })[0].getHeaderById(filter.filterHeaderId);
+        let header = this.props.state.layers.filter((f) => { return f.id === filter.layerId; })[0].getHeaderById(filter.filterHeaderId);
         if (!filter.show)
             filter.init();
-        if (header.type == 'number' && this.props.state.filterMenuState.useCustomSteps) {
+        if (header.type === 'number' && this.props.state.filterMenuState.useCustomSteps) {
             filter.steps = this.getStepValues();
             filter.categories = null;
         }
@@ -117,7 +117,7 @@ export class FilterMenu extends React.Component<{
         filter.currentMax = filter.totalMax;
         filter.currentMin = filter.totalMin;
         filter.filterLayer();
-        this.props.state.filters = this.props.state.filters.filter(function(f) { return f.id !== filter.id });
+        this.props.state.filters = this.props.state.filters.filter(function(f) { return f.id !== filter.id; });
         this.props.state.filterMenuState.selectedFilterId = - 1;
     }
     getStepValues() {
@@ -125,7 +125,7 @@ export class FilterMenu extends React.Component<{
         for (let i = 0; i < this.props.state.filterMenuState.customStepCount; i++) {
             let step: [number, number] = [+(document.getElementById(i + 'min') as any).value,
             +(document.getElementById(i + 'max') as any).value];
-            steps.push(step)
+            steps.push(step);
         }
         return steps;
     }
@@ -143,20 +143,20 @@ export class FilterMenu extends React.Component<{
             filters.push({ value: this.props.state.filters[i].id, label: this.props.state.filters[i].title });
         }
         let filter = this.props.state.editingFilter;
-        let layer = filter ? this.props.state.layers.filter(function(l) { return l.id == filter.layerId })[0] : null;
+        let layer = filter ? this.props.state.layers.filter(function(l) { return l.id === filter.layerId; })[0] : null;
         let state = this.props.state.filterMenuState;
         let header = layer ? layer.getHeaderById(filter.filterHeaderId) : null;
 
-        return (this.props.state.layers.slice().length == 0 ? null :
-            <div className="makeMaps-options">
+        return (this.props.state.layers.slice().length === 0 ? null :
+            <div className='makeMaps-options'>
                 {filters ?
                     <div>
                         <label>{strings.selectFilter}</label>
                         <Select
                             options={filters}
                             onChange={(id: ISelectData) => {
-                                state.selectedFilterId = id != null ? id.value : -1;
-                                let filt = this.props.state.filters.filter(function(f) { return f.id == id.value })[0]
+                                state.selectedFilterId = id !== null ? id.value : -1;
+                                let filt = this.props.state.filters.filter(function(f) { return f.id === id.value; })[0];
                                 if (filt) {
                                     let steps = filt.steps.slice();
                                     let categories = filt.categories.slice();
@@ -165,7 +165,7 @@ export class FilterMenu extends React.Component<{
                             }
                             }
                             value={filter}
-                            valueRenderer={(v) => { return v.title } }
+                            valueRenderer={(v) => { return v.title; } }
                             placeholder={strings.selectPlaceholder}
                             />
                         {strings.or}</div> : null}
@@ -190,7 +190,7 @@ export class FilterMenu extends React.Component<{
                             />
                         <br />
                         <label>{strings.giveNameToFilter}
-                            <input type="text" onChange={(e) => {
+                            <input type='text' onChange={(e) => {
                                 filter.title = (e.target as any).value;
                             } } value={filter ? filter.title : ''} />
                         </label>
@@ -208,7 +208,7 @@ export class FilterMenu extends React.Component<{
                                 </label>
                             </div>
                         }
-                        {filter.filterHeaderId != undefined ?
+                        {filter.filterHeaderId !== undefined ?
                             <div>
                                 {header.type !== 'string' ?
                                     <div>
@@ -247,7 +247,7 @@ export class FilterMenu extends React.Component<{
                                                 let val = (e.target as any).checked;
                                                 filter.allowCategoryMultiSelect = val;
                                                 if (!val && filter.selectedCategories.length > 1)
-                                                    filter.selectedCategories.splice(1, filter.selectedCategories.length)
+                                                    filter.selectedCategories.splice(1, filter.selectedCategories.length);
                                             } }
                                             checked={filter.allowCategoryMultiSelect}
                                             id='multiSelect'
@@ -363,15 +363,15 @@ export class FilterMenu extends React.Component<{
 
     renderSteps() {
         let filter = this.props.state.editingFilter;
-        let header = this.props.state.layers.filter((f) => { return f.id == filter.layerId })[0].getHeaderById(filter.filterHeaderId);
+        let header = this.props.state.layers.filter((f) => { return f.id === filter.layerId; })[0].getHeaderById(filter.filterHeaderId);
         let rows = [];
         let inputStyle = {
             display: 'inline',
             width: 100
-        }
+        };
         let row = 0;
 
-        if (header.type == 'number') {
+        if (header.type === 'number') {
             filter.steps.map(function(s) {
                 rows.push(
                     <li key={row}>
@@ -379,7 +379,7 @@ export class FilterMenu extends React.Component<{
                             id={row + 'min'}
                             type='number'
                             value={s[0].toString()}
-                            onChange={(e) => { s[0] = (e.currentTarget as any).valueAsNumber } }
+                            onChange={(e) => { s[0] = (e.currentTarget as any).valueAsNumber; } }
                             style={inputStyle}
                             step='any' />
                         -
@@ -387,7 +387,7 @@ export class FilterMenu extends React.Component<{
                             id={row + 'max'}
                             type='number'
                             value={s[1].toString()}
-                            onChange={(e) => { s[1] = (e.currentTarget as any).valueAsNumber } }
+                            onChange={(e) => { s[1] = (e.currentTarget as any).valueAsNumber; } }
                             style={inputStyle}
                             step='any' />
                     </li>);
@@ -409,7 +409,7 @@ export class FilterMenu extends React.Component<{
         return <div>
             <button onClick={this.onStepsCountChange.bind(this, -1)}>-</button>
             <button onClick={this.onStepsCountChange.bind(this, 1)}>+</button>
-            <ul id='customSteps' style={{ listStyle: 'none', padding: 0 }}>{rows.map(function(r) { return r })}</ul>
-        </div>
+            <ul id='customSteps' style={{ listStyle: 'none', padding: 0 }}>{rows.map(function(r) { return r; })}</ul>
+        </div>;
     }
 }

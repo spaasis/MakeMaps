@@ -8,14 +8,14 @@ import { Header } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 
 @observer
-export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
+export class OnScreenLegend extends React.Component<{ state: AppState }, {}> {
     createLegend(layer: Layer, showLayerName: boolean, showSeparator: boolean) {
         let choroLegend, scaledLegend, chartLegend, iconLegend, blockLegend;
         let options = layer;
         let col = options.colorOptions;
         let sym = options.symbolOptions;
         let isHeat = layer.layerType === LayerTypes.HeatMap;
-        let isChart = layer.layerType == LayerTypes.Standard && layer.symbolOptions.symbolType === SymbolTypes.Chart;
+        let isChart = layer.layerType === LayerTypes.Standard && layer.symbolOptions.symbolType === SymbolTypes.Chart;
         if (col.colors && col.colors.length !== 0 && !isChart && (isHeat || sym.symbolType !== SymbolTypes.Icon || sym.iconField !== col.colorField)) {
             let percentages: number[] = this.props.state.legend.showPercentages ? this.getStepPercentages(layer.values[col.colorField.value], col.limits) : [];
             choroLegend = this.createMultiColorLegend(options, percentages);
@@ -33,9 +33,9 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         if (!isHeat && sym.symbolType === SymbolTypes.Blocks) {
             blockLegend = this.createBlockLegend(options);
         }
-        let hasLegend = choroLegend != null || chartLegend != null || scaledLegend != null || iconLegend != null || blockLegend != null;
+        let hasLegend = choroLegend !== null || chartLegend !== null || scaledLegend !== null || iconLegend !== null || blockLegend !== null;
         if (!hasLegend)
-            return null
+            return null;
         return <div key={layer.id} style={{ clear: 'both', padding: 10 }}>
             <div>
                 {showLayerName ? layer.name : null}
@@ -47,13 +47,13 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             {blockLegend}
             {showSeparator ? <hr style={{ clear: 'both' }} /> : null}
 
-        </div>
+        </div>;
     }
     createMultiColorLegend(layer: Layer, percentages: number[]) {
         let divs = [];
         let limits = layer.colorOptions.limits;
         let colors = layer.colorOptions.colors;
-        let isNumber = layer.colorOptions.colorField.type == 'number';
+        let isNumber = layer.colorOptions.colorField.type === 'number';
         let legend = this.props.state.legend;
         for (let i of limits) {
             let index = limits.indexOf(i);
@@ -62,7 +62,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 opacity: layer.layerType === LayerTypes.HeatMap ? 1 : layer.colorOptions.fillOpacity,
                 minWidth: '20px',
                 minHeight: '20px',
-            }
+            };
 
             divs.push(<div key={i} style={{ display: legend.horizontal ? 'initial' : 'flex', width: '100%' }}>
                 <div style={colorStyle} />
@@ -81,7 +81,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         return <div style={{ margin: '5px', float: '', textAlign: 'center' }}>
             {legend.showVariableNames ? layer.colorOptions.colorField.label : null}
             <div style={{ display: 'flex', flexDirection: legend.horizontal ? 'row' : 'column', flex: '1' }}>
-                {divs.map(function(d) { return d })}
+                {divs.map(function(d) { return d; })}
             </div >
         </div >;
     }
@@ -97,7 +97,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             float: 'left',
             margin: 5,
             clear: this.props.state.legend.horizontal ? 'both' : ''
-        }
+        };
 
         if (square)
             return (<div style={style}>
@@ -117,7 +117,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             let divs = [], sides = [], values = [];
             let col = layer.colorOptions;
             let classes: number = 5;
-            let minValue = sym.sizeLowLimit == 0 ? 0 : Math.max((y ? layer.values[yVar.value][0] : layer.values[xVar.value][0]), (sym.sizeLowLimit ** 2 / sym.sizeMultiplier));
+            let minValue = sym.sizeLowLimit === 0 ? 0 : Math.max((y ? layer.values[yVar.value][0] : layer.values[xVar.value][0]), (sym.sizeLowLimit ** 2 / sym.sizeMultiplier));
             let maxValue = Math.max((y ? layer.values[yVar.value][layer.values[yVar.value].length - 1] : layer.values[xVar.value][layer.values[xVar.value].length - 1]), sym.sizeUpLimit ** 2 / sym.sizeMultiplier);
 
             for (let i = minValue; i < maxValue; i += (maxValue - minValue) / classes) {
@@ -133,31 +133,31 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 let style = {
                     width: square ? l : y ? 10 : l,
                     height: square ? l : y ? l : 10,
-                    backgroundColor: symbolType == SymbolTypes.Chart ? col.chartColors[xVar.value] ? col.chartColors[xVar.value] : '#36e' : col.fillColor,
+                    backgroundColor: symbolType === SymbolTypes.Chart ? col.chartColors[xVar.value] ? col.chartColors[xVar.value] : '#36e' : col.fillColor,
                     display: this.props.state.legend.horizontal ? '' : 'inline-block',
                     border: col.weight + 'px solid' + col.color,
                     borderRadius: sym.borderRadius,
-                    marginLeft: this.props.state.legend.horizontal || y ? 'auto' : margin, //center values
-                    marginRight: this.props.state.legend.horizontal || y ? 'auto' : margin, //center values
+                    marginLeft: this.props.state.legend.horizontal || y ? 'auto' : margin, // center values
+                    marginRight: this.props.state.legend.horizontal || y ? 'auto' : margin, // center values
                     marginTop: this.props.state.legend.horizontal && y ? margin : 'auto',
                     marginBottom: this.props.state.legend.horizontal && y ? margin : 'auto',
-                }
+                };
 
                 let parentDivStyle = {
                     float: this.props.state.legend.horizontal ? 'left' : '',
                     marginRight: this.props.state.legend.horizontal ? 5 : 0,
-                }
+                };
                 divs.push(
                     <div key={i} style={parentDivStyle}>
                         <div style={style} />
-                        <span style={{ display: 'inline-block', width: this.props.state.legend.horizontal ? '' : textWidth * 10 }}>{values[i] + (i == 0 ? '-' : i == classes - 1 ? '+' : '')}</span>
+                        <span style={{ display: 'inline-block', width: this.props.state.legend.horizontal ? '' : textWidth * 10 }}>{values[i] + (i === 0 ? '-' : i === classes - 1 ? '+' : '')}</span>
                     </div >);
             }
 
             return <div style={{ float: this.props.state.legend.horizontal ? '' : 'left', textAlign: 'center' }}>
                 {y ? sym.sizeYVar.label : sym.sizeXVar.label}
                 <div>
-                    {divs.map(function(d) { return d })}
+                    {divs.map(function(d) { return d; })}
                 </div>
             </div>;
         }
@@ -172,7 +172,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 background: col.chartColors[headers[i].value],
                 minWidth: '20px',
                 minHeight: '20px',
-            }
+            };
             divs.push(<div key={i} style={{ display: this.props.state.legend.horizontal ? 'initial' : 'flex', width: '100%' }}>
                 <div style={colorStyle} />
                 <span style={{ marginLeft: '3px', marginRight: '3px' }}>
@@ -182,7 +182,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         }
         return <div style={{ margin: '5px', float: '' }}>
             <div style={{ display: 'flex', flexDirection: this.props.state.legend.horizontal ? 'row' : 'column', flex: '1' }}>
-                {divs.map(function(d) { return d })}
+                {divs.map(function(d) { return d; })}
             </div >
         </div >;
     }
@@ -192,8 +192,8 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         let col = layer.colorOptions;
         let sym = layer.symbolOptions;
         let icons: IIcon[] = sym.icons.slice();
-        let limits = sym.iconField == col.colorField ? this.combineLimits(layer) : sym.iconLimits.slice();
-        let isNumber = sym.iconField.type == 'number';
+        let limits = sym.iconField === col.colorField ? this.combineLimits(layer) : sym.iconLimits.slice();
+        let isNumber = sym.iconField.type === 'number';
         let legend = this.props.state.legend;
         if (limits && limits.length > 0) {
             for (let i of limits) {
@@ -202,13 +202,13 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
 
                 let fillColor: string = col.colorField === layer.symbolOptions.iconField && col.useMultipleFillColors ?
                     isNumber ?
-                        GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), (limits[index] + limits[index]) / 2) ://if can be fitted into the same legend, show colors and symbols together. Get fill color by average of icon limits
+                        GetItemBetweenLimits(col.limits.slice(), col.colors.slice(), (limits[index] + limits[index]) / 2) : // if can be fitted into the same legend, show colors and symbols together. Get fill color by average of icon limits
                         col.colors[index]
                     : col.fillColor;
-                let icon = icons.length == 1 ? icons[0] : isNumber ? GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), (i + limits[index]) / 2) : icons[index];
+                let icon = icons.length === 1 ? icons[0] : isNumber ? GetItemBetweenLimits(sym.iconLimits.slice(), sym.icons.slice(), (i + limits[index]) / 2) : icons[index];
 
                 divs.push(<div key={i} style={{ display: legend.horizontal ? 'initial' : 'flex', width: '100%' }}>
-                    {!icon ? '' : getIcon(icon.shape, icon.fa, col.color, fillColor, fillColor != '000' ? layer.colorOptions.iconTextColor : 'FFF')}
+                    {!icon ? '' : getIcon(icon.shape, icon.fa, col.color, fillColor, fillColor !== '000' ? layer.colorOptions.iconTextColor : 'FFF')}
                     <span style={{ marginLeft: '3px', marginRight: '3px' }}>
 
                         {isNumber ? (i.toFixed(sym.iconField.decimalAccuracy) + (index < (limits.length - 1) ? '-' : '+')) : i}
@@ -222,7 +222,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             return <div style={{ margin: '5px', float: '', textAlign: 'center' }}>
                 {legend.showVariableNames ? layer.symbolOptions.iconField.label : null}
                 <div style={{ display: 'flex', flexDirection: legend.horizontal ? 'row' : 'column', flex: '1' }}>
-                    {divs.map(function(d) { return d })}
+                    {divs.map(function(d) { return d; })}
                 </div >
             </div >;
         }
@@ -236,29 +236,29 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         }
         function getIcon(shape: string, fa: string, stroke: string, fill: string, iconColor: string) {
             let circleIcon =
-                <svg viewBox="0 0 69.529271 95.44922" height="40" width="40">
-                    <g transform="translate(-139.52 -173.21)">
-                        <path fill={fill} stroke={stroke} d="m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z" />
+                <svg viewBox='0 0 69.529271 95.44922' height='40' width='40'>
+                    <g transform='translate(-139.52 -173.21)'>
+                        <path fill={fill} stroke={stroke} d='m174.28 173.21c-19.199 0.00035-34.764 15.355-34.764 34.297 0.007 6.7035 1.5591 12.813 5.7461 18.854l0.0234 0.0371 28.979 42.262 28.754-42.107c3.1982-5.8558 5.9163-11.544 6.0275-19.045-0.0001-18.942-15.565-34.298-34.766-34.297z' />
                     </g>
 
                 </svg>;
             let squareIcon =
-                <svg viewBox="0 0 69.457038 96.523441" height="40" width="40">
-                    <g transform="translate(-545.27 -658.39)">
-                        <path fill={fill} stroke={stroke} d="m545.27 658.39v65.301h22.248l12.48 31.223 12.676-31.223h22.053v-65.301h-69.457z" />
+                <svg viewBox='0 0 69.457038 96.523441' height='40' width='40'>
+                    <g transform='translate(-545.27 -658.39)'>
+                        <path fill={fill} stroke={stroke} d='m545.27 658.39v65.301h22.248l12.48 31.223 12.676-31.223h22.053v-65.301h-69.457z' />
                     </g>
-                </svg>
+                </svg>;
             let starIcon =
-                <svg height="40" width="40" viewBox="0 0 77.690999 101.4702"><g transform="translate(-101.15 -162.97)">
-                    <g transform="matrix(1 0 0 1.0165 -65.712 -150.28)">
-                        <path fill={fill} stroke={stroke} d="m205.97 308.16-11.561 11.561h-16.346v16.346l-11.197 11.197 11.197 11.197v15.83h15.744l11.615 33.693 11.467-33.568 0.125-0.125h16.346v-16.346l11.197-11.197-11.197-11.197v-15.83h-15.83l-11.561-11.561z" /></g>
+                <svg height='40' width='40' viewBox='0 0 77.690999 101.4702'><g transform='translate(-101.15 -162.97)'>
+                    <g transform='matrix(1 0 0 1.0165 -65.712 -150.28)'>
+                        <path fill={fill} stroke={stroke} d='m205.97 308.16-11.561 11.561h-16.346v16.346l-11.197 11.197 11.197 11.197v15.83h15.744l11.615 33.693 11.467-33.568 0.125-0.125h16.346v-16.346l11.197-11.197-11.197-11.197v-15.83h-15.83l-11.561-11.561z' /></g>
                 </g>
-                </svg>
+                </svg>;
             let pentaIcon =
-                <svg viewBox="0 0 71.550368 96.362438" height="40" width="40">
-                    <g fill={fill} transform="translate(-367.08 -289.9)">
-                        <path stroke={stroke} d="m367.08 322.5 17.236-32.604h36.151l18.164 32.25-35.665 64.112z" /></g>
-                </svg>
+                <svg viewBox='0 0 71.550368 96.362438' height='40' width='40'>
+                    <g fill={fill} transform='translate(-367.08 -289.9)'>
+                        <path stroke={stroke} d='m367.08 322.5 17.236-32.604h36.151l18.164 32.25-35.665 64.112z' /></g>
+                </svg>;
             let activeIcon;
             switch (shape) {
                 case ('circle'):
@@ -284,7 +284,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 >
                 {activeIcon}
                 <i style={{ position: 'relative', bottom: 33, width: 18, height: 18 }} className={'fa ' + fa} />
-            </div>
+            </div>;
 
         }
     }
@@ -298,14 +298,14 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
             float: legend.horizontal ? '' : 'left',
             border: '1px solid ' + layer.colorOptions.color,
             margin: 'auto',
-        }
+        };
         let parentDivStyle = {
             float: legend.horizontal ? 'left' : '',
             minHeight: '15px',
             overflow: legend.horizontal ? 'none' : 'auto',
             lineHeight: legend.horizontal ? '' : 24 + 'px',
 
-        }
+        };
         return (
             <div style={{ margin: '5px', float: 'left' }}>
                 {legend.showVariableNames ? layer.symbolOptions.blockSizeVar ? layer.symbolOptions.blockSizeVar.label : '' : null}
@@ -327,7 +327,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                 step++;
                 if (step < limits.length - 1)
                     upperLimit = limits[step + 1];
-                else upperLimit = Infinity
+                else upperLimit = Infinity;
             }
             if (!counts[step])
                 counts[step] = 0;
@@ -343,7 +343,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
     combineLimits(layer: Layer) {
         return layer.symbolOptions.iconLimits.concat(layer.colorOptions.limits.filter(function(item) {
             return layer.symbolOptions.iconLimits.indexOf(item) < 0;
-        })).sort(function(a, b) { return a == b ? 0 : a < b ? -1 : 1 });
+        })).sort(function(a, b) { return a === b ? 0 : a < b ? -1 : 1; });
     }
 
     render() {
@@ -353,7 +353,7 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
         let layerCount = 0;
         let classExtension = legend.right ? (state.visibleMenu > 0 ? ' legendRightAnimate' : ' legendLeftAnimate') : '';
         return (
-            <div className={'legend' + classExtension} //animate with menu open/close
+            <div className={'legend' + classExtension} // animate with menu open/close
                 onMouseEnter={(e) => { state.map.dragging.disable(); state.map.scrollWheelZoom.disable(); } }
                 onMouseLeave={(e) => { state.map.dragging.enable(); state.map.scrollWheelZoom.enable(); } }
                 style={{
@@ -361,10 +361,10 @@ export class OnScreenLegend extends React.Component<{ state: AppState }, {}>{
                     textAlign: 'center',
                     position: 'absolute',
                     left: legend.left ? 0 : '',
-                    right: legend.right ? (state.menuShown ? (state.visibleMenu == 0 ? 30 : 281) : 0) : '',
-                    bottom: legend.bottom ? 15 : '', //15 to keep the legend above map attributions
+                    right: legend.right ? (state.menuShown ? (state.visibleMenu === 0 ? 30 : 281) : 0) : '',
+                    bottom: legend.bottom ? 15 : '', // 15 to keep the legend above map attributions
                     top: legend.top ? 0 : '',
-                    background: "#FFF",
+                    background: '#FFF',
                     borderRadius: 15,
                     zIndex: 600
                 }}>

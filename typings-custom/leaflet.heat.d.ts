@@ -1,4 +1,4 @@
-/// <reference path="./../typings/globals/leaflet/index.d.ts" />
+// / <reference path="./../typings/globals/leaflet/index.d.ts" />
 
 declare namespace L {
 

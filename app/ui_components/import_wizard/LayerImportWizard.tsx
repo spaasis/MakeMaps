@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { FileUploadView } from './FileUploadView';
 import { FileDetailsView } from './FileDetailsView';
-import { ShowLoading, HideLoading, ShowNotification, HideNotification, IsNumber } from '../../common_items/common'
+import { ShowLoading, HideLoading, ShowNotification, HideNotification, IsNumber } from '../../common_items/common';
 import { ParseToGeoJSON, ParseCSVToGeoJSON, ParseHeadersFromCSV, ProjectCoords, SetGeoJSONTypes } from '../../models/FilePreProcessModel';
 import { ImportWizardState, AppState } from '../../stores/States';
 import { Layer, Header, LayerTypes } from '../../stores/Layer';
@@ -10,10 +10,10 @@ import { observer } from 'mobx-react';
 @observer
 export class LayerImportWizard extends React.Component<{
     state: AppState,
-}, {}>{
+}, {}> {
     nextStep() {
         this.props.state.importWizardState.step++;
-        if (this.props.state.importWizardState.step == 2)
+        if (this.props.state.importWizardState.step === 2)
             this.submit();
     }
 
@@ -33,7 +33,7 @@ export class LayerImportWizard extends React.Component<{
             else
                 ParseToGeoJSON(state.content, ext, function(geojson) {
                     state.layer.geoJSON = SetGeoJSONTypes(geojson, state.layer.headers);
-                })
+                });
             this.nextStep();
 
 
@@ -69,12 +69,12 @@ export class LayerImportWizard extends React.Component<{
     submit() {
         let state = this.props.state.importWizardState;
         let l = state.layer;
-        l.headers = l.headers.filter(function(val) { return val.label !== state.longitudeField && val.label !== state.latitudeField });
+        l.headers = l.headers.filter(function(val) { return val.label !== state.longitudeField && val.label !== state.latitudeField; });
         if (state.coordinateSystem && state.coordinateSystem !== 'WGS84') {
             l.geoJSON = ProjectCoords(l.geoJSON, state.coordinateSystem);
         }
         window.location.hash = 'edit';
-        l.getValues()
+        l.getValues();
         if (l.layerType !== LayerTypes.HeatMap && l.pointFeatureCount > 500) {
             ShowNotification(this.props.state.strings.clusterTogglePopup);
             l.clusterOptions.useClustering = true;
@@ -85,7 +85,7 @@ export class LayerImportWizard extends React.Component<{
         l.colorOptions.useMultipleFillColors = true;
         l.getColors();
 
-        setTimeout(function() { l.init() }, 10);
+        setTimeout(function() { l.init(); }, 10);
         this.props.state.layers.push(l);
         if (l.layerType === LayerTypes.HeatMap)
             this.props.state.heatLayerOrder.push({ id: l.id });
@@ -106,18 +106,18 @@ export class LayerImportWizard extends React.Component<{
                     saveValues={() => {
                         ShowLoading();
                         let setInfo = this.setFileInfo.bind(this);
-                        setTimeout(setInfo, 10)
+                        setTimeout(setInfo, 10);
                     } }
                     cancel={() => {
                         this.props.state.importWizardShown = false;
-                        if (this.props.state.layers.length == 0)
+                        if (this.props.state.layers.length === 0)
                             this.props.state.welcomeShown = true;
                         else {
                             this.props.state.menuShown = true;
                             this.props.state.editingLayer = this.props.state.layers[0];
                         }
                     } }
-                    />
+                    />;
             case 1:
                 return <FileDetailsView
                     strings={this.props.state.strings}
@@ -125,10 +125,10 @@ export class LayerImportWizard extends React.Component<{
                     saveValues={() => {
                         ShowLoading();
                         let setDetails = this.setFileDetails.bind(this);
-                        setTimeout(setDetails, 10)
+                        setTimeout(setDetails, 10);
                     } }
                     goBack={this.previousStep.bind(this)}
-                    />
+                    />;
         }
     }
 
@@ -137,6 +137,6 @@ export class LayerImportWizard extends React.Component<{
             <div style={{ overflowX: 'auto' }}>
                 {this.getCurrentView()}
             </div>
-        )
+        );
     }
 }

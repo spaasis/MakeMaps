@@ -38,15 +38,15 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
 
         }
         if (!this.props.viewOptions)
-            this.props.viewOptions = new ViewOptions(); //init with defaults
+            this.props.viewOptions = new ViewOptions(); // init with defaults
         if (!this.props.mapOptions)
-            this.props.mapOptions = new MapOptions(); //init with defaults
+            this.props.mapOptions = new MapOptions(); // init with defaults
 
         state.mapStartingCenter = this.props.mapOptions.mapCenter || [0, 0];
         state.mapStartingZoom = this.props.mapOptions.zoomLevel || 2;
 
         state.language = this.props.viewOptions.language || Locale.getLanguage();
-        //Hack - get all the string options visible in the IDE
+        // Hack - get all the string options visible in the IDE
         let strings: Strings = (Locale as any);
         state.strings = strings;
         state.welcomeShown = this.props.viewOptions.showWelcomeScreen && !this.props.data;
@@ -61,10 +61,10 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         if (!this.props.data && !state.embed) {
             window.onpopstate = this.onBackButtonEvent.bind(this);
         }
-        if (this.props.mapOptions.baseMapName && state.activeBaseLayer.id != this.props.mapOptions.baseMapName) {
+        if (this.props.mapOptions.baseMapName && state.activeBaseLayer.id!==this.props.mapOptions.baseMapName) {
             state.map.removeLayer(state.activeBaseLayer.layer);
-            state.baseLayers.filter(f => f.id == this.props.mapOptions.baseMapName)[0].layer
-            state.activeBaseLayer = { id: this.props.mapOptions.baseMapName, layer: state.baseLayers.filter(f => f.id == this.props.mapOptions.baseMapName)[0].layer };
+            state.baseLayers.filter(f => f.id === this.props.mapOptions.baseMapName)[0].layer
+            state.activeBaseLayer = { id: this.props.mapOptions.baseMapName, layer: state.baseLayers.filter(f => f.id === this.props.mapOptions.baseMapName)[0].layer };
             state.map.addLayer(state.activeBaseLayer.layer);
         }
         if (this.props.data) {
@@ -84,9 +84,9 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
             state.menuShown = newProps.viewOptions.showMenu;
             state.language = newProps.viewOptions.language;
         }
-        if (this.props.mapOptions.baseMapName && state.activeBaseLayer.id != this.props.mapOptions.baseMapName) {
+        if (this.props.mapOptions.baseMapName && state.activeBaseLayer.id!==this.props.mapOptions.baseMapName) {
             state.map.removeLayer(state.activeBaseLayer.layer);
-            state.activeBaseLayer = { id: this.props.mapOptions.baseMapName, layer: state.baseLayers.filter(f => f.id == this.props.mapOptions.baseMapName)[0].layer };
+            state.activeBaseLayer = { id: this.props.mapOptions.baseMapName, layer: state.baseLayers.filter(f => f.id === this.props.mapOptions.baseMapName)[0].layer };
             state.map.addLayer(state.activeBaseLayer.layer);
         }
     }
@@ -94,7 +94,7 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
     /** Load data from parent system based on props     */
     loadData(oldData: MakeMapsData[], newData: MakeMapsData[]) {
         for (let d of newData) {
-            let old = oldData ? oldData.filter(f => f.id == d.id)[0] : null;
+            let old = oldData ? oldData.filter(f => f.id === d.id)[0] : null;
             if (!old) {
                 addData(d);
             }
@@ -102,11 +102,11 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
                 refreshData(d);
             }
         }
-        if (oldData) { //remove layers no longer in newData
+        if (oldData) { // remove layers no longer in newData
             let oldIds = oldData.map(d => d.id);
             let newIds = newData.map(d => d.id);
             for (let id of oldIds) {
-                if (newIds.indexOf(id) == -1)
+                if (newIds.indexOf(id) === -1)
                     removeData(id);
             }
         }
@@ -115,7 +115,7 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         state.menuShown = true;
 
         function getGeoJSONFromData(d: MakeMapsData, layer: Layer) {
-            if (d.type == 'csv') {
+            if (d.type === 'csv') {
                 let index = 0, headers, delim;
                 let res = ParseHeadersFromCSV(d.content);
                 headers = res.headers;
@@ -124,10 +124,10 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
                 ParseCSVToGeoJSON(d.content, d.latName, d.lonName, delim, layer.headers,
                     function(geo) { layer.geoJSON = geo });
             }
-            else if (d.type == 'general') {
+            else if (d.type === 'general') {
                 ParseTableToGeoJSON(d.data ? d.data : JSON.parse(d.content), function(geo) { layer.geoJSON = SetGeoJSONTypes(geo, layer.headers) });
             }
-            else if (d.type != 'geojson') {
+            else if (d.type!=='geojson') {
                 ParseToGeoJSON(d.content, d.type, function(geo) { layer.geoJSON = SetGeoJSONTypes(geo, layer.headers) });
             }
             else {
@@ -145,30 +145,30 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         }
 
         function refreshData(d: MakeMapsData) {
-            let layer: Layer = state.layers.filter(f => f.id == d.id)[0];
+            let layer: Layer = state.layers.filter(f => f.id === d.id)[0];
             layer.values = {};
             let oldHeaders = layer.headers;
             layer.headers = [];
             getGeoJSONFromData(d, layer);
             for (let newHeader of layer.headers) {
-                newHeader.id = oldHeaders.filter(h => h.value == newHeader.value)[0].id;
+                newHeader.id = oldHeaders.filter(h => h.value === newHeader.value)[0].id;
             }
 
-            let filters = state.filters.filter(f => { return f.layerId == layer.id && layer.headers.map(h => h.id).indexOf(f.filterHeaderId) == -1 })//filters from fields that have been removed
+            let filters = state.filters.filter(f => { return f.layerId === layer.id && layer.headers.map(h => h.id).indexOf(f.filterHeaderId) === -1 })// filters from fields that have been removed
             for (let filter of filters) {
                 filter.show = false;
-                state.filters.splice(state.filters.indexOf(filter), 1); //remove from filters
+                state.filters.splice(state.filters.indexOf(filter), 1); // remove from filters
             }
 
             layer.reDraw();
 
             for (let filter of state.filters) {
-                if (filter.useDistinctValues) { //refresh distinct values
-                    let lyr = state.layers.filter(l => l.id == filter.layerId)[0];
+                if (filter.useDistinctValues) { // refresh distinct values
+                    let lyr = state.layers.filter(l => l.id === filter.layerId)[0];
                     filter.steps = [];
-                    let header = lyr.headers.filter(h => h.id == filter.filterHeaderId)[0]
+                    let header = lyr.headers.filter(h => h.id === filter.filterHeaderId)[0]
                     let values = lyr.uniqueValues[header.value];
-                    if (header.type == 'string') {
+                    if (header.type === 'string') {
                         filter.categories = values;
                         break;
                     }
@@ -181,11 +181,11 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         }
 
         function removeData(id: number) {
-            let layer: Layer = state.layers.filter(f => f.id == id)[0];
+            let layer: Layer = state.layers.filter(f => f.id === id)[0];
             if (layer) {
                 state.map.removeLayer(layer.displayLayer);
                 state.layers.splice(state.layers.indexOf(layer), 1);
-                if (state.editingLayer == layer)
+                if (state.editingLayer === layer)
                     state.editingLayer = state.layers[0] || null;
                 let filters = state.filters.filter(f => f.layerId = layer.id);
                 for (let filter of filters) {
@@ -287,9 +287,9 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
 
             <div className='notification' id='loading'>
                 <span style={{ lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}>{state.strings.loading}</span>
-                <div className="sk-double-bounce">
-                    <div className="sk-child sk-double-bounce1"></div>
-                    <div className="sk-child sk-double-bounce2"></div>
+                <div className='sk-double-bounce'>
+                    <div className='sk-child sk-double-bounce1'></div>
+                    <div className='sk-child sk-double-bounce2'></div>
                 </div>
             </div>
             <div className='notification' id='notification'>
