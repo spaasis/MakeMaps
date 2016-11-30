@@ -25,7 +25,8 @@ Sample of an integration baseline: https://github.com/simopaasisalo/MakeMapsInte
 **Installing** 
 
 Make sure you have these loaders in package.json:
-```"devDependencies": {
+```
+"devDependencies": {
     "css-loader": "^0.26.0",
     "file-loader": "^0.9.0",
     "json-loader": "^0.5.4",
@@ -56,6 +57,7 @@ loaders : [
       }
     ]
 ```
+
 ```
 1. npm i makeMaps --save
 2. npm install
@@ -64,7 +66,6 @@ In your typescript (tsx) file:
 ```
 import { MakeMaps } from 'makeMaps';
 ```
-
 
 
 **API**
