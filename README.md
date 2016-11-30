@@ -1,6 +1,8 @@
-[Hosting](#hosting)|
+[Integrating](#integrating)|
 [Embedding](#embedding)|
-[Integrating](#integrating)
+[Hosting](#hosting)|
+
+
 #MakeMaps
 
  [![build status](https://travis-ci.org/simopaasisalo/MakeMaps.svg?branch=master)](http://travis-ci.org/simopaasisalo/MakeMaps)
@@ -13,54 +15,57 @@ MakeMaps is a map creation tool that takes in data in multiple formats and outpu
 
 It is built on Leaflet and OpenStreetMaps by React/TypeScript using MobX for state control.
 
-
-License: GPL V3
-
-Hosting
-=======
-```
-1. git clone
-2. npm install
-3. open index.html
-
-If you want the demos, fetch them from the gh-pages-branch
-```
-
-Embedding
-=========
-There are two ways to embed maps to your website/blog:
-
-**Download the embed code from the editor**
-
-1. Upload file to MakeMaps
-2. Make visualizations
-3. Go to the Download-menu
-4. Click "Save embed code" and download the .html file
-5. Copy&paste the code in the html file to your page
-
-**Refer to a hosted file**
-
-1. Create a .mmap file from your data
-  1. Upload to MakeMaps
-  2. Make visualizations
-  2. Go to the Download-menu and click "Save as a file"
-2. Host your file someplace where it can be accessed remotely
-3. Use an IFrame to embed into your page:
-  1. src - pointing to the `index.html` on a hosted MakeMaps instance
-  2. mapURL - URL of the .mmap-file
-```
-<iframe style="height: 400px; width: 400px;"
-src="https://makemaps.online
-?
-mapURL=https://makemaps.online/demos/symboldemo.mmap"</iframe>
-```
-
 Integrating
 ===========
 
 You can integrate MakeMaps as a part of a larger React application through React properties.
 
 Sample of an integration baseline: https://github.com/simopaasisalo/MakeMapsIntegrationTests
+
+**Installing** 
+
+Make sure you have these loaders in package.json:
+```"devDependencies": {
+    "css-loader": "^0.26.0",
+    "file-loader": "^0.9.0",
+    "json-loader": "^0.5.4",
+    "style-loader": "^0.13.1",
+    "url-loader": "^0.5.7",
+    ...
+  },
+```
+webpack.config:
+```
+loaders : [
+      {
+        test: /\.json$/,
+        loader: "json-loader"
+      },
+      {
+        test: /\.css$/,
+        loader: "style-loader!css-loader"
+      },
+      {
+        test: /\.png$/,
+        loader: 'url-loader',
+        query: { mimetype: 'image/png' }
+      },
+      {
+        test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
+        loader: 'url-loader'
+      }
+    ]
+```
+```
+1. npm i makeMaps --save
+2. npm install
+```
+In your typescript (tsx) file:
+```
+import { MakeMaps } from 'makeMaps';
+```
+
+
 
 **API**
 
@@ -111,7 +116,48 @@ var data = [{
 - **allowLayerChanges (bool)** allow the creation and removal of additional layers through menu. Default false
 - **showWelcomeScreen (bool)** show the MakeMaps welcome screen when there is no data to load. Setting this to false shows an empty map.
 
+Embedding a map
+=========
+There are two ways to embed maps to your website/blog:
 
+**Download the embed code from the editor**
+
+1. Upload file to MakeMaps
+2. Make visualizations
+3. Go to the Download-menu
+4. Click "Save embed code" and download the .html file
+5. Copy&paste the code in the html file to your page
+
+**Refer to a hosted file**
+
+1. Create a .mmap file from your data
+  1. Upload to MakeMaps
+  2. Make visualizations
+  2. Go to the Download-menu and click "Save as a file"
+2. Host your file someplace where it can be accessed remotely
+3. Use an IFrame to embed into your page:
+  1. src - pointing to the `index.html` on a hosted MakeMaps instance
+  2. mapURL - URL of the .mmap-file
+```
+<iframe style="height: 400px; width: 400px;"
+src="https://makemaps.online
+?
+mapURL=https://makemaps.online/demos/symboldemo.mmap"</iframe>
+```
+
+Hosting
+=======
+```
+1. git clone
+2. npm install
+3. open index.html
+
+If you want the demos, fetch them from the gh-pages-branch
+```
+
+
+
+License: GPL V3
 
 Author
 -----
