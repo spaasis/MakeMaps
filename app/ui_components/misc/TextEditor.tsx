@@ -25,7 +25,7 @@ export class TextEditor extends React.Component<{
     }
 
     addLink() {
-        let linkURL = prompt('Enter a URL:', 'http:// ');
+        let linkURL = prompt('Enter a URL:', 'http://');
         if (linkURL !== null) {
             let selection = document.getSelection().toString();
             let linkText = selection === '' ? prompt('Enter the link text:', linkURL) : selection;

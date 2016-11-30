@@ -13,39 +13,39 @@ export class MapInitModel {
     * NOTE: Add an 'id'-option. This will be displayed on the UI
     */
     public InitBaseMaps() {
-        //  let base1 = L.tileLayer('https:// api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
+        //  let base1 = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
         //      maxZoom: 18,
-        //      attribution: 'Map data &copy; <a href="http:// openstreetmap.org">OpenStreetMap</a> contributors, ' +
-        //      '<a href="http:// creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-        //      'Imagery © <a href="http:// mapbox.com">Mapbox</a>',
+        //      attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+        //      '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+        //      'Imagery © <a href="http://mapbox.com">Mapbox</a>',
         //      id: 'MapBox Streets'
         //  });
 
         return [
             {
-                id: 'OSM Streets', layer: L.tileLayer('https:// {s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                id: 'OSM Streets', layer: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
-                    attribution: '&copy; <a href="http:// www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                 })
             }
             ,
             {
                 id: 'OSM Black&White',
-                layer: L.tileLayer('http:// {s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+                layer: L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
                     maxZoom: 18,
-                    attribution: '&copy; <a href="http:// www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                 })
             },
             {
-                id: 'OpenTopoMap', layer: L.tileLayer('http:// {s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                id: 'OpenTopoMap', layer: L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
                     maxZoom: 17,
-                    attribution: 'Map data: &copy; <a href="http:// www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http:// viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https:// opentopomap.org">OpenTopoMap</a> (<a href="https:// creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+                    attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
                 })
             }
             ,
             {
-                id: 'Stamen Toner', layer: L.tileLayer('https:// stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', {
-                    attribution: 'Map tiles by <a href="http:// stamen.com">Stamen Design</a>, <a href="http:// creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http:// www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                id: 'Stamen Toner', layer: L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', {
+                    attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                     subdomains: 'abcd',
                     minZoom: 0,
                     maxZoom: 20,
@@ -54,8 +54,8 @@ export class MapInitModel {
             }
             ,
             {
-                id: 'Stamen Watercolor', layer: L.tileLayer('https:// stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png', {
-                    attribution: 'Map tiles by <a href="http:// stamen.com">Stamen Design</a>, <a href="http:// creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http:// www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                id: 'Stamen Watercolor', layer: L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png', {
+                    attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                     subdomains: 'abcd',
                     minZoom: 1,
                     maxZoom: 16,

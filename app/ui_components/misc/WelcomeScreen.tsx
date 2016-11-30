@@ -104,25 +104,25 @@ export class WelcomeScreen extends React.Component<{
             <div style={{ display: 'inline-flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '85%' }}>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeOpenness}</b>
-                    <a style={{ textDecoration: 'none' }} target='_blank' rel='noopener noreferrer' href='https:// github.com/simopaasisalo/MakeMaps'><i className='fa fa-github-square' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} /></a>
-                    {strings.welcomeOpennessText1}<br />{strings.welcomeOpennessText2}<a target='_blank' rel='noopener noreferrer' href='https:// github.com/simopaasisalo/MakeMaps'>GitHub</a>
+                    <a style={{ textDecoration: 'none' }} target='_blank' rel='noopener noreferrer' href='https://github.com/simopaasisalo/MakeMaps'><i className='fa fa-github-square' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} /></a>
+                    {strings.welcomeOpennessText1}<br />{strings.welcomeOpennessText2}<a target='_blank' rel='noopener noreferrer' href='https://github.com/simopaasisalo/MakeMaps'>GitHub</a>
                 </div>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeAccessibility}</b>
                     <i className='fa fa-eye' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} />
                     {strings.welcomeAccessibilityText1}
-                    <a target='_blank' rel='noopener noreferrer' href='http:// colorbrewer2.org/'>Color Brewer</a>
+                    <a target='_blank' rel='noopener noreferrer' href='http://colorbrewer2.org/'>Color Brewer</a>
                     {strings.welcomeAccessibilityText2}
                 </div>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeUsability}</b>
                     <i className='fa fa-bolt' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} />
-                    {strings.welcomeUsabilityText1} <a target='_blank' rel='noopener noreferrer' href='https:// github.com/simopaasisalo/MakeMaps/wiki'>{strings.wiki}</a> {strings.welcomeUsabilityText2}
+                    {strings.welcomeUsabilityText1} <a target='_blank' rel='noopener noreferrer' href='https://github.com/simopaasisalo/MakeMaps/wiki'>{strings.wiki}</a> {strings.welcomeUsabilityText2}
                 </div>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeFileSupport}</b>
                     <i className='fa fa-file-text-o' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} />
-                    {strings.welcomeFileSupportText}<br /><a target='_blank' rel='noopener noreferrer' href='https:// github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'>{strings.welcomeFileSupportLink}</a>
+                    {strings.welcomeFileSupportText}<br /><a target='_blank' rel='noopener noreferrer' href='https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'>{strings.welcomeFileSupportLink}</a>
                 </div>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeDataFiltering}</b>

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { AppState, ImportWizardState, WelcomeScreenState, ColorMenuState, SymbolMenuState, FilterMenuState, LegendMenuState, LayerMenuState, ExportMenuState, ClusterMenuState, SaveState } from './stores/States';
 import { Layer, ColorOptions, SymbolOptions, ClusterOptions, Header, LayerTypes } from './stores/Layer';
-import { Legend } from './stores/Legend'
+import { Legend } from './stores/Legend';
 import { MakeMapsData, MapOptions, ViewOptions } from './stores/Main';
 import { Map } from './ui_components/Map';
 import { Locale } from './localizations/Locale';
@@ -25,23 +25,22 @@ let Modal = require('react-modal');
 const state = new AppState();
 
 @observer
-export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOptions: ViewOptions, mapOptions: MapOptions }, {}>{
+export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOptions: ViewOptions, mapOptions: MapOptions }, {}> {
 
     componentWillMount() {
         if (!this.props.data) {
-
             let parameters = decodeURIComponent(window.location.search.substring(1)).split('&');
             for (let i of parameters) {
                 if (i.indexOf('mapURL') > -1)
                     state.embed = true;
             }
-
         }
+
         if (!this.props.viewOptions)
             this.props.viewOptions = new ViewOptions(); // init with defaults
         if (!this.props.mapOptions)
             this.props.mapOptions = new MapOptions(); // init with defaults
-
+        console.log(this.props.mapOptions.baseMapName);
         state.mapStartingCenter = this.props.mapOptions.mapCenter || [0, 0];
         state.mapStartingZoom = this.props.mapOptions.zoomLevel || 2;
 
@@ -50,6 +49,8 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         let strings: Strings = (Locale as any);
         state.strings = strings;
         state.welcomeShown = this.props.viewOptions.showWelcomeScreen && !this.props.data;
+        state.showExportOptions = this.props.viewOptions.showExportOptions;
+        state.layerMenuState.allowChanges = this.props.viewOptions.allowLayerChanges;
 
         window.onload = function() {
             state.loaded = true;
@@ -61,14 +62,14 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         if (!this.props.data && !state.embed) {
             window.onpopstate = this.onBackButtonEvent.bind(this);
         }
-        if (this.props.mapOptions.baseMapName && state.activeBaseLayer.id!==this.props.mapOptions.baseMapName) {
+        if (this.props.mapOptions.baseMapName && state.activeBaseLayer.id !== this.props.mapOptions.baseMapName) {
             state.map.removeLayer(state.activeBaseLayer.layer);
-            state.baseLayers.filter(f => f.id === this.props.mapOptions.baseMapName)[0].layer
+            state.baseLayers.filter(f => f.id === this.props.mapOptions.baseMapName)[0].layer;
             state.activeBaseLayer = { id: this.props.mapOptions.baseMapName, layer: state.baseLayers.filter(f => f.id === this.props.mapOptions.baseMapName)[0].layer };
             state.map.addLayer(state.activeBaseLayer.layer);
         }
         if (this.props.data) {
-            this.loadData(null, this.props.data)
+            this.loadData(null, this.props.data);
         }
     }
 
@@ -78,13 +79,14 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         }
         if (state.map) {
             if (newProps.mapOptions.mapCenter && !!newProps.mapOptions.zoomLevel)
-                state.map.setView(newProps.mapOptions.mapCenter, newProps.mapOptions.zoomLevel)
+                state.map.setView(newProps.mapOptions.mapCenter, newProps.mapOptions.zoomLevel);
         }
         if (JSON.stringify(newProps.viewOptions) !== JSON.stringify(this.props.viewOptions)) {
             state.menuShown = newProps.viewOptions.showMenu;
             state.language = newProps.viewOptions.language;
+            state.layerMenuState.allowChanges = newProps.viewOptions.allowLayerChanges;
         }
-        if (this.props.mapOptions.baseMapName && state.activeBaseLayer.id!==this.props.mapOptions.baseMapName) {
+        if (this.props.mapOptions.baseMapName && state.activeBaseLayer.id !== this.props.mapOptions.baseMapName) {
             state.map.removeLayer(state.activeBaseLayer.layer);
             state.activeBaseLayer = { id: this.props.mapOptions.baseMapName, layer: state.baseLayers.filter(f => f.id === this.props.mapOptions.baseMapName)[0].layer };
             state.map.addLayer(state.activeBaseLayer.layer);
@@ -120,18 +122,18 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
                 let res = ParseHeadersFromCSV(d.content);
                 headers = res.headers;
                 delim = res.delim;
-                headers.map(function(h) { layer.headers.push({ id: index, value: h.name, label: h.name, type: h.type, decimalAccuracy: 0 }) });
+                headers.map(function(h) { layer.headers.push({ id: index, value: h.name, label: h.name, type: h.type, decimalAccuracy: 0 }); });
                 ParseCSVToGeoJSON(d.content, d.latName, d.lonName, delim, layer.headers,
-                    function(geo) { layer.geoJSON = geo });
+                    function(geo) { layer.geoJSON = geo; });
             }
             else if (d.type === 'general') {
-                ParseTableToGeoJSON(d.data ? d.data : JSON.parse(d.content), function(geo) { layer.geoJSON = SetGeoJSONTypes(geo, layer.headers) });
+                ParseTableToGeoJSON(d.data ? d.data : JSON.parse(d.content), function(geo) { layer.geoJSON = SetGeoJSONTypes(geo, layer.headers); });
             }
-            else if (d.type!=='geojson') {
-                ParseToGeoJSON(d.content, d.type, function(geo) { layer.geoJSON = SetGeoJSONTypes(geo, layer.headers) });
+            else if (d.type !== 'geojson') {
+                ParseToGeoJSON(d.content, d.type, function(geo) { layer.geoJSON = SetGeoJSONTypes(geo, layer.headers); });
             }
             else {
-                layer.geoJSON = SetGeoJSONTypes(d.data ? d.data : JSON.parse(d.content), layer.headers)
+                layer.geoJSON = SetGeoJSONTypes(d.data ? d.data : JSON.parse(d.content), layer.headers);
             }
         }
 
@@ -154,7 +156,7 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
                 newHeader.id = oldHeaders.filter(h => h.value === newHeader.value)[0].id;
             }
 
-            let filters = state.filters.filter(f => { return f.layerId === layer.id && layer.headers.map(h => h.id).indexOf(f.filterHeaderId) === -1 })// filters from fields that have been removed
+            let filters = state.filters.filter(f => { return f.layerId === layer.id && layer.headers.map(h => h.id).indexOf(f.filterHeaderId) === -1; }); // filters from fields that have been removed
             for (let filter of filters) {
                 filter.show = false;
                 state.filters.splice(state.filters.indexOf(filter), 1); // remove from filters
@@ -166,7 +168,7 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
                 if (filter.useDistinctValues) { // refresh distinct values
                     let lyr = state.layers.filter(l => l.id === filter.layerId)[0];
                     filter.steps = [];
-                    let header = lyr.headers.filter(h => h.id === filter.filterHeaderId)[0]
+                    let header = lyr.headers.filter(h => h.id === filter.filterHeaderId)[0];
                     let values = lyr.uniqueValues[header.value];
                     if (header.type === 'string') {
                         filter.categories = values;
@@ -258,7 +260,7 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
                 padding: '0px',
                 maxWidth: 1900,
             }
-        }
+        };
         return <div>
             <Map state={state} />
             {!state.loaded || state.embed ? null :
@@ -295,8 +297,8 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
             <div className='notification' id='notification'>
                 <span id='notificationText' style={{ lineHeight: '40px', paddingLeft: 10, paddingRight: 10 }}>{state.strings.notification}</span>
                 <br />
-                <button className='menuButton' onClick={() => { HideNotification() } }>Ok</button>
+                <button className='menuButton' onClick={() => { HideNotification(); } }>Ok</button>
             </div>
-        </div>
+        </div>;
     }
 }

@@ -54,10 +54,11 @@ export class MakeMapsMenu extends React.Component<{
     }
 
     render() {
-        let strings = this.props.state.strings;
+        let state = this.props.state;
+        let strings = state.strings;
         let layers = [];
-        if (this.props.state.layers) {
-            for (let layer of this.props.state.layers) {
+        if (state.layers) {
+            for (let layer of state.layers) {
                 layers.push({ value: layer, label: layer.name });
             }
         }
@@ -69,7 +70,7 @@ export class MakeMapsMenu extends React.Component<{
             bottom: 0,
             zIndex: 999
         };
-        let visibleMenu = this.props.state.visibleMenu;
+        let visibleMenu = state.visibleMenu;
         let visibleMenuName: string;
         switch (visibleMenu) {
             case 1:
@@ -98,31 +99,31 @@ export class MakeMapsMenu extends React.Component<{
                 break;
         }
         return (
-            !this.props.state.menuShown ? null :
+            !state.menuShown ? null :
                 <div style={menuStyle} className='menu'>
                     <div style={{ float: 'left', display: 'flex', flexFlow: 'column', height: '100%' }}>
                         <MenuEntry text={strings.layerMenuTitle} id={1} active={visibleMenu === 1} fa='bars' onClick={this.onActiveMenuChange} />
-                        <MenuEntry text={strings.colorMenuTitle} id={2} active={visibleMenu === 2} fa='paint-brush' onClick={this.onActiveMenuChange} hide={!this.props.state.editingLayer} />
-                        <MenuEntry text={strings.symbolMenuTitle} id={3} active={visibleMenu === 3} fa='map-marker' onClick={this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.pointFeatureCount === 0 || this.props.state.editingLayer.layerType === LayerTypes.HeatMap} />
+                        <MenuEntry text={strings.colorMenuTitle} id={2} active={visibleMenu === 2} fa='paint-brush' onClick={this.onActiveMenuChange} hide={!state.editingLayer} />
+                        <MenuEntry text={strings.symbolMenuTitle} id={3} active={visibleMenu === 3} fa='map-marker' onClick={this.onActiveMenuChange} hide={!state.editingLayer || state.editingLayer.pointFeatureCount === 0 || state.editingLayer.layerType === LayerTypes.HeatMap} />
                         <MenuEntry text={strings.filterMenuTitle} id={4} active={visibleMenu === 4} fa='sliders' onClick={this.onActiveMenuChange} />
                         <MenuEntry text={strings.legendMenuTitle} id={5} active={visibleMenu === 5} fa='map-o' onClick={this.onActiveMenuChange} />
-                        <MenuEntry text={strings.clusterMenuTitle} id={6} active={visibleMenu === 6} fa='asterisk' onClick={this.onActiveMenuChange} hide={this.props.state.editingLayer.pointFeatureCount === 0 || this.props.state.editingLayer.layerType === LayerTypes.HeatMap} />
-                        <MenuEntry text={strings.popupMenuTitle} id={7} active={visibleMenu === 7} fa='newspaper-o' onClick={this.onActiveMenuChange} hide={!this.props.state.editingLayer || this.props.state.editingLayer.layerType === LayerTypes.HeatMap} />
-                        <MenuEntry text={strings.downloadMenuTitle} id={8} active={visibleMenu === 8} fa='download' onClick={this.onActiveMenuChange} />
+                        <MenuEntry text={strings.clusterMenuTitle} id={6} active={visibleMenu === 6} fa='asterisk' onClick={this.onActiveMenuChange} hide={state.editingLayer.pointFeatureCount === 0 || state.editingLayer.layerType === LayerTypes.HeatMap} />
+                        <MenuEntry text={strings.popupMenuTitle} id={7} active={visibleMenu === 7} fa='newspaper-o' onClick={this.onActiveMenuChange} hide={!state.editingLayer || state.editingLayer.layerType === LayerTypes.HeatMap} />
+                        <MenuEntry text={strings.downloadMenuTitle} id={8} active={visibleMenu === 8} fa='download' onClick={this.onActiveMenuChange} hide={!state.showExportOptions} />
                     </div >
-                    <div className={this.props.state.visibleMenu > 0 ? 'menuOpen' : document.getElementsByClassName('menuOpen').length > 0 ? 'menuClose' : ''}
-                        style={{ float: 'right', width: this.props.state.visibleMenu > 0 ? 250 : 0, height: '100%', overflowY: 'auto', background: '#ededed' }}>
+                    <div className={state.visibleMenu > 0 ? 'menuOpen' : document.getElementsByClassName('menuOpen').length > 0 ? 'menuClose' : ''}
+                        style={{ float: 'right', width: state.visibleMenu > 0 ? 250 : 0, height: '100%', overflowY: 'auto', background: '#ededed' }}>
                         <h3>{visibleMenuName}</h3>
                         {
-                            this.props.state.visibleMenu !== 0 && this.props.state.visibleMenu !== 1 && this.props.state.visibleMenu !== 4 && this.props.state.visibleMenu !== 5 && this.props.state.visibleMenu !== 8 ?
+                            state.visibleMenu !== 0 && state.visibleMenu !== 1 && state.visibleMenu !== 4 && state.visibleMenu !== 5 && state.visibleMenu !== 8 ?
                                 <div>
                                     <label>{strings.editingLayerSelection}</label>
                                     <Select
                                         options={layers}
                                         onChange={(val: { label: string, value: Layer }) => {
-                                            this.props.state.editingLayer = val.value;
+                                            state.editingLayer = val.value;
                                         } }
-                                        value={this.props.state.editingLayer}
+                                        value={state.editingLayer}
                                         valueRenderer={(option: Layer) => {
                                             return option ? option.name : '';
                                         } }

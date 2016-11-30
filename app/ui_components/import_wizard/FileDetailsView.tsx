@@ -79,7 +79,7 @@ export class FileDetailsView extends React.Component<
                 {state.useCustomProjection ?
                     <div>
                         <p>{strings.coordSystemMissing}
-                            <a href='http:// spatialreference.org/ref/'>Spatial Reference</a>
+                            <a href='http://spatialreference.org/ref/'>Spatial Reference</a>
                         </p>
                         <input id='customProj' defaultValue={strings.customProjectionPrompt} style={{ width: 400 }} />
 

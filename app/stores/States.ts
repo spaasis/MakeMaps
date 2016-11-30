@@ -84,6 +84,9 @@ export class AppState {
 
     @observable bounds: L.LatLngBounds;
 
+    /** Should export menu be visible*/
+    @observable showExportOptions: any;
+
     strings: Strings;
 
     map: L.Map;
@@ -189,6 +192,7 @@ export class LegendMenuState {
 }
 
 export class LayerMenuState {
+    @observable allowChanges: boolean;
     @observable editingLayerId: number;
 }
 

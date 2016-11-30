@@ -296,7 +296,7 @@ export class SymbolMenu extends React.Component<{
                     {this.renderIcons.call(this)}
                     {strings.or}
                     <br />
-                    <label>{strings.symbolMenuUseFAIcon} <a href='http:// fontawesome.io/icons/'>Font Awesome</a></label>
+                    <label>{strings.symbolMenuUseFAIcon} <a href='http://fontawesome.io/icons/'>Font Awesome</a></label>
                     <input type='text' onChange={this.onFAIconChange} value={sym.icons[state.currentIconIndex].fa} />
 
                     <br />

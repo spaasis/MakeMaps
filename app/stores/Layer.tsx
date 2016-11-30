@@ -366,7 +366,7 @@ export class Layer {
         }
 
         this.pointFeatureCount = pointCount;
-        function unique(arr: any[]) { // http:// stackoverflow.com/questions/1960473/unique-values-in-an-array/1961068#1961068
+        function unique(arr: any[]) { // http://stackoverflow.com/questions/1960473/unique-values-in-an-array/1961068#1961068
             let u = {}, a = [];
             for (let i = 0, l = arr.length; i < l; ++i) {
                 if (u.hasOwnProperty(arr[i])) {
@@ -629,7 +629,7 @@ function getChartSymbol(sym: SymbolOptions, col: ColorOptions, sizeModifier: num
             arc = sym.chartType === 'pie' ? d3.arc().innerRadius(0).outerRadius(x / 2) : d3.arc().innerRadius(x / 5).outerRadius(x / 2);
 
         // Create an svg element
-        let svg = document.createElementNS('http:// www.w3.org/2000/svg', 'svg');
+        let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         // Create the pie chart
         let vis = d3.select(svg)
             .attr('width', w)

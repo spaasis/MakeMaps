@@ -104,19 +104,21 @@ export class LayerMenu extends React.Component<{
                             {state.standardLayerOrder.map(function(item) {
                                 return <div style={layerStyle} key={item.id} data-id={item.id} >
                                     {this.props.state.layers.filter(function(f) { return f.id === item.id; })[0].name}
-                                    <i className='fa fa-times' onClick={this.deleteLayer.bind(this, item.id)} style={{ float: 'right', lineHeight: '40px', marginRight: '5px' }} />
+                                    {state.layerMenuState.allowChanges ? <i className='fa fa-times' onClick={this.deleteLayer.bind(this, item.id)} style={{ float: 'right', lineHeight: '40px', marginRight: '5px' }} /> : null}
                                 </div>;
                             }, this)}
                         </Sortable>
                     </div> : null
                 }
-                <button className='menuButton' onClick={() => {
-                    this.props.state.editingLayer = null;
-                    this.props.state.visibleMenu = 0;
-                    this.props.state.importWizardShown = true;
-                    this.props.state.menuShown = false;
-                } }>{strings.addNewLayer}</button>
+                {state.layerMenuState.allowChanges ?
+                    <button className='menuButton' onClick={() => {
+                        this.props.state.editingLayer = null;
+                        this.props.state.visibleMenu = 0;
+                        this.props.state.importWizardShown = true;
+                        this.props.state.menuShown = false;
+                    } }>{strings.addNewLayer}</button>
 
+                    : null}
                 <hr />
                 <label>{strings.editLayerProperties}</label>
                 <Select

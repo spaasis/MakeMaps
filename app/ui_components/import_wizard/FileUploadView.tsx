@@ -95,7 +95,7 @@ export class FileUploadView extends React.Component<{
                     <hr />
                     <p>{strings.currentlySupportedTypes}: </p>
                     <p> GeoJSON, Microsoft Office {strings.spreadsheets}, OpenDocument {strings.spreadsheets}, CSV, KML, GPX, WKT, OSM...</p>
-                    <a target='_blank' rel='noopener noreferrer' href='https:// github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'>{strings.fileTypeSupportInfo}</a>
+                    <a target='_blank' rel='noopener noreferrer' href='https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements'>{strings.fileTypeSupportInfo}</a>
                     <Dropzone
                         className='dropZone'
                         onDrop={this.onDrop.bind(this)}

@@ -70,7 +70,7 @@ export class Map extends React.Component<{ state: AppState }, {}> {
     /**
      * Get URL parameter value
      *
-     * http:// stackoverflow.com/questions/19491336/get-url-parameter-jquery-or-how-to-get-query-string-values-in-js/21903119#21903119
+     * http://stackoverflow.com/questions/19491336/get-url-parameter-jquery-or-how-to-get-query-string-values-in-js/21903119#21903119
      * @param  sParam   parameter to look for
      * @return false when not found, value when found
      */

@@ -101,7 +101,7 @@ export class ExportMenu extends React.Component<{
         // tslint:disable-next-line
         let script = "<script type='text/javascript'>function loadJSON(){var json =' + JSON.stringify(this.formSaveJSON()) + '; var frame =	document.getElementById('MakeMapsEmbed'); frame.contentWindow.postMessage(JSON.stringify(json), '*');}</script>";
         // tslint:disable-next-line
-        let frame = "<iframe onLoad='loadJSON();' src=';https:// makemaps.online' id='MakeMapsEmbed' style='height: 100%; width: 100%; border:none;'/>";
+        let frame = "<iframe onLoad='loadJSON();' src=';https://makemaps.online' id='MakeMapsEmbed' style='height: 100%; width: 100%; border:none;'/>";
 
         let html = script + frame;
 
