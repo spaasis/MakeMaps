@@ -5,6 +5,7 @@ import { AppState } from '../../stores/States';
 let Slider = require('react-slider');
 let Draggable = require('react-draggable');
 import { observer } from 'mobx-react';
+require('../../../styles/react-slider.css');
 
 @observer
 export class OnScreenFilter extends React.Component<{ filter: Filter, state: AppState }, {}>{
@@ -167,18 +168,18 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
             bounds={'parent'}
             >
             <div className='filter'
-                id = {'filter' + filter.id}
+                id={'filter' + filter.id}
                 onMouseEnter={(e) => { map.dragging.disable(); map.scrollWheelZoom.disable(); map.keyboard.disable(); document.onkeydown = this.onKeyDown.bind(this); } }
                 onMouseLeave={(e) => { map.dragging.enable(); map.scrollWheelZoom.enable(); map.keyboard.enable(); document.onkeydown = null; } }
                 onKeyDown={this.onKeyDown.bind(this)}
                 >
-                <div className='filterhead' style ={{ position: 'sticky' }}>
+                <div className='filterhead' style={{ position: 'sticky' }}>
                     <h3 >{filter.title}</h3>
                 </div>
                 {this.renderSteps.call(this)}
                 {header.type == 'number' && filter.showSlider ?
                     <div style={{ display: 'inline-flex' }}                    >
-                        <input type='number' style={{ width: '70px' }} value={filter.currentMin.toFixed(0)} onChange={this.onCurrentMinChange}/>
+                        <input type='number' style={{ width: '70px' }} value={filter.currentMin.toFixed(0)} onChange={this.onCurrentMinChange} />
                         <Slider className='horizontal-slider'
                             onAfterChange={(e) => { this.onFilterScaleChange(e); filter.selectedStep = -1; } }
                             value={[filter.currentMin, filter.currentMax]}
@@ -188,12 +189,12 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
                             <div className='minHandle'></div>
                             <div className='maxHandle'></div>
                         </Slider>
-                        <input type='number' style={{ width: '70px' }} value={filter.currentMax.toFixed(0)} onChange={this.onCurrentMaxChange}/>
+                        <input type='number' style={{ width: '70px' }} value={filter.currentMax.toFixed(0)} onChange={this.onCurrentMaxChange} />
                         <div style={{ display: 'inline-block', cursor: 'pointer' }} onClick={() => {
                             filter.locked = !filter.locked;
                             filter.lockedDistance = filter.currentMax - filter.currentMin;
                         } }>
-                            <i style={{ color: 'cecece', fontSize: 20, padding: 4 }} className={!filter.locked ? 'fa fa-unlock-alt' : 'fa fa-lock'}/>
+                            <i style={{ color: 'cecece', fontSize: 20, padding: 4 }} className={!filter.locked ? 'fa fa-unlock-alt' : 'fa fa-lock'} />
                         </div>
                     </div>
                     : null}

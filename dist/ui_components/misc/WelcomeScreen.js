@@ -18,6 +18,7 @@ var DemoPreview_1 = require('./DemoPreview');
 var Dropzone = require('react-dropzone');
 var common_1 = require('../../common_items/common');
 var States_1 = require('../../stores/States');
+require('../../../styles/flags32.css');
 var mobx_react_1 = require('mobx-react');
 var WelcomeScreen = (function (_super) {
     __extends(WelcomeScreen, _super);
@@ -129,9 +130,9 @@ var WelcomeScreen = (function (_super) {
         return (React.createElement("div", {style: { textAlign: 'center' }}, 
             flags, 
             React.createElement("div", {style: { display: 'block', margin: '0 auto', padding: 5 }}, 
-                React.createElement("img", {src: 'app/images/favicon.png', style: { display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }}), 
-                React.createElement("img", {src: 'app/images/logo.png', style: { display: 'inline-block', verticalAlign: 'middle' }}), 
-                React.createElement("img", {src: 'app/images/favicon.png', style: { display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }})), 
+                React.createElement("img", {src: 'images/favicon.png', style: { display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }}), 
+                React.createElement("img", {src: 'images/logo.png', style: { display: 'inline-block', verticalAlign: 'middle' }}), 
+                React.createElement("img", {src: 'images/favicon.png', style: { display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }})), 
             React.createElement("hr", null), 
             this.getDemoButtons().map(function (d) { return d; }), 
             React.createElement("div", {style: {

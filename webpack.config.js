@@ -2,7 +2,7 @@ var webpack = require('webpack');
 var path = require('path');
 
 var BUILD_DIR = path.resolve(__dirname, 'release');
-var APP_DIR = path.resolve(__dirname, 'app');
+var APP_DIR = path.resolve(__dirname, 'dist');
 
 module.exports = {
   entry: APP_DIR + '/View.js',
@@ -19,6 +19,19 @@ module.exports = {
         test: /\.json$/,
         loader: "json-loader"
       },
+      {
+        test: /\.css$/,
+        loader: "style-loader!css-loader"
+      },
+      {
+        test: /\.png$/,
+        loader: 'url-loader',
+        query: { mimetype: 'image/png' }
+      },
+      {
+        test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
+        loader: 'url-loader'
+      }
     ]
   },
   // required for xlsx to work with webpack

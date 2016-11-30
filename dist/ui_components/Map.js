@@ -29,6 +29,9 @@ var chroma = require('chroma-js');
 var heat = require('leaflet.heat');
 var reactDOMServer = require('react-dom/server');
 var _mapInitModel = new MapInitModel_1.MapInitModel();
+require('../../styles/leaflet.css');
+require('../../styles/leaflet.extra-markers.css');
+require('../../styles/MarkerCluster.css');
 var Map = (function (_super) {
     __extends(Map, _super);
     function Map() {

@@ -12,6 +12,13 @@ import { MakeMapsMenu } from './ui_components/menu/Menu';
 import { HideLoading, HideNotification } from './common_items/common';
 import { ParseHeadersFromCSV, ParseCSVToGeoJSON, ParseTableToGeoJSON, ParseToGeoJSON, SetGeoJSONTypes } from './models/FilePreProcessModel';
 import { observer } from 'mobx-react';
+require('../styles/font_awesome/font-awesome.min.css');
+require('../styles/fonts/DejaVuSans-Book.css');
+require('../styles/fonts/DejaVuSans-ExtraLight.css');
+require('../styles/makeMaps_components.css');
+require('../styles/react-select.css');
+require('../styles/2-double-bounce.css');
+
 
 let Modal = require('react-modal');
 

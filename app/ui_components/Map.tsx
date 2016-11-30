@@ -21,6 +21,9 @@ let chroma = require('chroma-js');
 let heat = require('leaflet.heat');
 let reactDOMServer = require('react-dom/server');
 let _mapInitModel = new MapInitModel();
+require('../../styles/leaflet.css');
+require('../../styles/leaflet.extra-markers.css');
+require('../../styles/MarkerCluster.css');
 
 
 @observer

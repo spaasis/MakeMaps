@@ -17,6 +17,7 @@ var React = require('react');
 var Slider = require('react-slider');
 var Draggable = require('react-draggable');
 var mobx_react_1 = require('mobx-react');
+require('../../../styles/react-slider.css');
 var OnScreenFilter = (function (_super) {
     __extends(OnScreenFilter, _super);
     function OnScreenFilter() {

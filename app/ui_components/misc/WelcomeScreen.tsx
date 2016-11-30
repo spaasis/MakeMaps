@@ -4,6 +4,7 @@ let Dropzone = require('react-dropzone');
 import { FetchSavedMap, LoadSavedMap, ShowLoading, ShowNotification } from '../../common_items/common';
 import { WelcomeScreenState, AppState, ImportWizardState } from '../../stores/States';
 import { Strings } from '../../localizations/Strings';
+require('../../../styles/flags32.css');
 
 import { observer } from 'mobx-react';
 @observer
@@ -94,8 +95,8 @@ export class WelcomeScreen extends React.Component<{
 
         let flags =
             <div style={{ position: 'absolute', top: 5, left: 5 }} className='f32'>
-                <i className = 'flag gb' onClick={() => { this.props.changeLanguage('en'); } } style ={{ cursor: 'pointer', borderBottom: this.props.appState.language == 'en' ? '2px solid #cecece' : '' }}/>
-                <i className = 'flag fi' onClick={() => { this.props.changeLanguage('fi'); } } style ={{ cursor: 'pointer', borderBottom: this.props.appState.language == 'fi' ? '2px solid #cecece' : '' }}/>
+                <i className='flag gb' onClick={() => { this.props.changeLanguage('en'); } } style={{ cursor: 'pointer', borderBottom: this.props.appState.language == 'en' ? '2px solid #cecece' : '' }} />
+                <i className='flag fi' onClick={() => { this.props.changeLanguage('fi'); } } style={{ cursor: 'pointer', borderBottom: this.props.appState.language == 'fi' ? '2px solid #cecece' : '' }} />
             </div>
 
 
@@ -103,29 +104,29 @@ export class WelcomeScreen extends React.Component<{
             <div style={{ display: 'inline-flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '85%' }}>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeOpenness}</b>
-                    <a style={{ textDecoration: 'none' }} target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps"><i className='fa fa-github-square' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/></a>
-                    {strings.welcomeOpennessText1}<br/>{strings.welcomeOpennessText2}<a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps">GitHub</a>
+                    <a style={{ textDecoration: 'none' }} target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps"><i className='fa fa-github-square' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} /></a>
+                    {strings.welcomeOpennessText1}<br />{strings.welcomeOpennessText2}<a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps">GitHub</a>
                 </div>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeAccessibility}</b>
-                    <i className='fa fa-eye' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/>
+                    <i className='fa fa-eye' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} />
                     {strings.welcomeAccessibilityText1}
                     <a target="_blank" rel="noopener noreferrer" href="http://colorbrewer2.org/">Color Brewer</a>
                     {strings.welcomeAccessibilityText2}
                 </div>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeUsability}</b>
-                    <i className='fa fa-bolt' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/>
+                    <i className='fa fa-bolt' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} />
                     {strings.welcomeUsabilityText1} <a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps/wiki">{strings.wiki}</a> {strings.welcomeUsabilityText2}
                 </div>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeFileSupport}</b>
-                    <i className='fa fa-file-text-o' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/>
-                    {strings.welcomeFileSupportText}<br/><a target="_blank" rel="noopener noreferrer"  href="https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements">{strings.welcomeFileSupportLink}</a>
+                    <i className='fa fa-file-text-o' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} />
+                    {strings.welcomeFileSupportText}<br /><a target="_blank" rel="noopener noreferrer" href="https://github.com/simopaasisalo/MakeMaps/wiki/Supported-file-types-and-their-requirements">{strings.welcomeFileSupportLink}</a>
                 </div>
                 <div style={infoDivStyle}>
                     <b style={blockHeaderStyle}>{strings.welcomeDataFiltering}</b>
-                    <i className='fa fa-sliders' style={{ display: 'block', fontSize: '80px', color: '#cecece' }}/>
+                    <i className='fa fa-sliders' style={{ display: 'block', fontSize: '80px', color: '#cecece' }} />
                     {strings.welcomeDataFilteringText}
                 </div>
             </div>;
@@ -134,12 +135,12 @@ export class WelcomeScreen extends React.Component<{
         return (<div style={{ textAlign: 'center' }}>
             {flags}
             <div style={{ display: 'block', margin: '0 auto', padding: 5 }}>
-                <img src='app/images/favicon.png' style={{ display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }}/>
-                <img src='app/images/logo.png' style={{ display: 'inline-block', verticalAlign: 'middle' }}/>
-                <img src='app/images/favicon.png' style={{ display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }}/>
+                <img src='images/favicon.png' style={{ display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }} />
+                <img src='images/logo.png' style={{ display: 'inline-block', verticalAlign: 'middle' }} />
+                <img src='images/favicon.png' style={{ display: 'inline-block', width: 50, height: 50, verticalAlign: 'middle' }} />
 
             </div>
-            <hr/>
+            <hr />
             {this.getDemoButtons().map(function(d) { return d; })}
             <div
                 style={{
@@ -155,7 +156,7 @@ export class WelcomeScreen extends React.Component<{
                 <button className='primaryButton' style={{ height: '100%', width: 40, position: 'absolute', right: 0, top: 0 }} onClick={() => this.moveDemosLeft()}>{'>'}</button>
 
             </div>
-            <hr/>
+            <hr />
             <div style={{ display: 'inline-flex', flexWrap: 'wrap', justifyContent: 'center', padding: 20 }}>
                 <Dropzone
                     className='primaryButton dropButton'
@@ -174,9 +175,9 @@ export class WelcomeScreen extends React.Component<{
                         state.menuShown = false;
                     } }>{strings.createNewMap}</button>
             </div>
-            <br/>
+            <br />
             {infoBlocks}
-            <br/>
+            <br />
 
         </div >);
     }
@@ -200,7 +201,7 @@ export class WelcomeScreen extends React.Component<{
         let strings = this.props.appState.strings;
         let demos = [<DemoPreview
             key={0}
-            strings = {strings}
+            strings={strings}
             imageURL='demos/chorodemo.png'
             description={strings.chorodemoDescription}
             loadDemo={this.loadDemo.bind(this, 'chorodemo')}
@@ -208,7 +209,7 @@ export class WelcomeScreen extends React.Component<{
             />,
         <DemoPreview
             key={1}
-            strings = {strings}
+            strings={strings}
             imageURL='demos/symboldemo.png'
             description={strings.symboldemoDescription}
             loadDemo={this.loadDemo.bind(this, 'symboldemo')}
@@ -216,7 +217,7 @@ export class WelcomeScreen extends React.Component<{
             />,
         <DemoPreview
             key={2}
-            strings = {strings}
+            strings={strings}
             imageURL='demos/hki_chartdemo.png'
             description={strings.chartDemoDescription}
             loadDemo={this.loadDemo.bind(this, 'hki_chartdemo')}
@@ -224,7 +225,7 @@ export class WelcomeScreen extends React.Component<{
             />,
         <DemoPreview
             key={3}
-            strings = {strings}
+            strings={strings}
             imageURL='demos/hki_heatdemo.png'
             description={strings.heatDemoDescription}
             loadDemo={this.loadDemo.bind(this, 'hki_heatdemo')}
@@ -232,7 +233,7 @@ export class WelcomeScreen extends React.Component<{
             />,
         <DemoPreview
             key={4}
-            strings = {strings}
+            strings={strings}
             imageURL='demos/clusterdemo.png'
             description={strings.clusterDemoDescription}
             loadDemo={this.loadDemo.bind(this, 'clusterdemo')}
