@@ -5,9 +5,9 @@
 
 #MakeMaps
 
- [![build status](https:// travis-ci.org/simopaasisalo/MakeMaps.svg?branch=master)](http:// travis-ci.org/simopaasisalo/MakeMaps)
+ [![build status](https://travis-ci.org/simopaasisalo/MakeMaps.svg?branch=master)](http://travis-ci.org/simopaasisalo/MakeMaps)
 
-![alt text](https:// github.com/simopaasisalo/MakeMaps/blob/master/misc/map_preview.png "Map previews")
+![alt text](https://github.com/simopaasisalo/MakeMaps/blob/master/misc/map_preview.png "Map previews")
 
 
 
@@ -20,7 +20,7 @@ Integrating
 
 You can integrate MakeMaps as a part of a larger React application through React properties.
 
-Sample of an integration baseline: https:// github.com/simopaasisalo/MakeMapsIntegrationTests
+Sample of an integration baseline: https://github.com/simopaasisalo/MakeMapsIntegrationTests
 
 **Installing** 
 
