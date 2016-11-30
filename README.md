@@ -60,6 +60,8 @@ Integrating
 
 You can integrate MakeMaps as a part of a larger React application through React properties.
 
+Sample of an integration baseline: https://github.com/simopaasisalo/MakeMapsIntegrationTests
+
 **API**
 
 ```
