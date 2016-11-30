@@ -1,13 +1,18 @@
 {
   "name": "makeMaps",
-  "version": "1.0.0",
+  "repository" : "https://github.com/simopaasisalo/MakeMaps",
+  "description": "A simple, integrable map editor built on Leaflet",
+  "bugs":{
+    "url":"https://github.com/simopaasisalo/MakeMaps/issues"
+  },
+  "version": "0.8.0",
   "main": "./dist/MakeMaps.js",
   "typings": "./dist/MakeMaps",
   "scripts": {
 	"prepublish": "typings install && tsc && webpack"
   },
   "author": "Simo Paasisalo",
-  "license": "GPL V3",
+  "license": "GPL-3.0",
   "dependencies": {
     "Leaflet.extra-markers": "git+http://github.com/coryasilva/Leaflet.ExtraMarkers",
     "chroma-js": "^1.1.1",
@@ -50,5 +55,12 @@
 	"external_js",
 	"app/styles"
   ],
-  "description": ""
+  "keywords":[
+  "map",
+  "react",
+  "leaflet",
+  "typescript",
+  "mobx"
+  ]
+
 }
