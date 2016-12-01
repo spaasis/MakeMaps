@@ -2,6 +2,7 @@ import { observable, computed, autorun } from 'mobx';
 import { Layer, LayerTypes, Header } from './Layer';
 import { Filter } from './Filter';
 import { Legend } from './Legend';
+import { MapOptions, ViewOptions } from './Main';
 import { Strings } from '../localizations/Strings';
 
 let mobx = require('mobx');
@@ -78,14 +79,9 @@ export class AppState {
 
     @observable infoScreenText: string;
 
-    @observable language: string;
-
     @observable loaded: boolean = false;
 
     @observable bounds: L.LatLngBounds;
-
-    /** Should export menu be visible*/
-    @observable showExportOptions: any;
 
     strings: Strings;
 
@@ -95,10 +91,27 @@ export class AppState {
 
     mapStartingZoom = 2;
 
+    @observable viewOptions: ViewOptions;
+
+    @observable mapOptions: MapOptions;
+
+
     constructor() {
         mobx.autorun(() => {
             if (this.bounds) {
-                this.map.fitBounds(this.bounds, {});
+                try {
+
+                    this.map.fitBounds(this.bounds, {});
+                }
+                catch (ex) { // try for HeatMap
+                    try {
+                        let bounds = (this.bounds as any).slice().map(function(va) { return va.slice(); });
+                        this.map.fitBounds(bounds, {});
+                    }
+                    catch (e) {
+                        console.log(e);
+                    }
+                }
             }
         });
     }
@@ -192,7 +205,6 @@ export class LegendMenuState {
 }
 
 export class LayerMenuState {
-    @observable allowChanges: boolean;
     @observable editingLayerId: number;
 }
 

@@ -239,6 +239,7 @@ export class Layer {
             }
 
             if (!this.bounds) {
+
                 this.appState.bounds = this.bounds || this.layerType === LayerTypes.HeatMap ? ((this.displayLayer as any)._latlngs as L.LatLngBounds) : this.displayLayer.getBounds();
             }
             this.appState.map.addLayer(this.displayLayer);
@@ -738,7 +739,7 @@ function getSimpleIcon(sym: SymbolOptions, col: ColorOptions, sizeModifier: numb
     let y = yValue !== undefined ? GetSymbolRadius(yValue, sym.sizeMultiplier, sym.sizeLowLimit, sym.sizeUpLimit) : 20;
     x += sizeModifier;
     y += sizeModifier;
-    let rectHtml = '<div style="height: " + y + " px; width: " + x + "px; background-color:" + col.fillColor + "; border: " + (col.weight + sizeModifier / 6) + "px solid " + col.color + "; border-radius: " + sym.borderRadius + "px;"/>';
+    let rectHtml = '<div style="height: ' + y + 'px; width: ' + x + 'px; background-color:' + col.fillColor + '; border: ' + (col.weight + sizeModifier / 6) + 'px solid ' + col.color + '; border-radius: ' + sym.borderRadius + 'px;"/>';
     return L.divIcon({ iconAnchor: L.point((x + col.weight + sizeModifier / 3) / 2, (y + col.weight + sizeModifier / 3) / 2), popupAnchor: L.point(0, -y / 2), html: rectHtml, className: '' });
 }
 

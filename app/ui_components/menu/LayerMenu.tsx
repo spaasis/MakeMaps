@@ -1,6 +1,6 @@
 import * as React from 'react';
 let Sortable = require('react-sortablejs');
-import { AppState } from '../../stores/States';
+import { AppState, ImportWizardState } from '../../stores/States';
 import { Layer, LayerTypes } from '../../stores/Layer';
 import { observer } from 'mobx-react';
 let Select = require('react-select');
@@ -104,14 +104,15 @@ export class LayerMenu extends React.Component<{
                             {state.standardLayerOrder.map(function(item) {
                                 return <div style={layerStyle} key={item.id} data-id={item.id} >
                                     {this.props.state.layers.filter(function(f) { return f.id === item.id; })[0].name}
-                                    {state.layerMenuState.allowChanges ? <i className='fa fa-times' onClick={this.deleteLayer.bind(this, item.id)} style={{ float: 'right', lineHeight: '40px', marginRight: '5px' }} /> : null}
+                                    {state.viewOptions.allowLayerChanges ? <i className='fa fa-times' onClick={this.deleteLayer.bind(this, item.id)} style={{ float: 'right', lineHeight: '40px', marginRight: '5px' }} /> : null}
                                 </div>;
                             }, this)}
                         </Sortable>
                     </div> : null
                 }
-                {state.layerMenuState.allowChanges ?
+                {state.viewOptions.allowLayerChanges ?
                     <button className='menuButton' onClick={() => {
+                        this.props.state.importWizardState = new ImportWizardState(state);
                         this.props.state.editingLayer = null;
                         this.props.state.visibleMenu = 0;
                         this.props.state.importWizardShown = true;

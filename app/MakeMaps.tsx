@@ -36,21 +36,17 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
             }
         }
 
-        if (!this.props.viewOptions)
-            this.props.viewOptions = new ViewOptions(); // init with defaults
-        if (!this.props.mapOptions)
-            this.props.mapOptions = new MapOptions(); // init with defaults
-        console.log(this.props.mapOptions.baseMapName);
-        state.mapStartingCenter = this.props.mapOptions.mapCenter || [0, 0];
-        state.mapStartingZoom = this.props.mapOptions.zoomLevel || 2;
+        state.viewOptions = this.props.viewOptions || new ViewOptions(); // init with defaults if no input
+        state.mapOptions = this.props.mapOptions || new MapOptions(); // init with defaults if no input
+        state.mapStartingCenter = state.mapOptions.mapCenter || [0, 0];
+        state.mapStartingZoom = state.mapOptions.zoomLevel || 2;
 
-        state.language = this.props.viewOptions.language || Locale.getLanguage();
+        if (!state.viewOptions.language)
+            state.viewOptions.language = Locale.getLanguage();
         // Hack - get all the string options visible in the IDE
         let strings: Strings = (Locale as any);
         state.strings = strings;
-        state.welcomeShown = this.props.viewOptions.showWelcomeScreen && !this.props.data;
-        state.showExportOptions = this.props.viewOptions.showExportOptions;
-        state.layerMenuState.allowChanges = this.props.viewOptions.allowLayerChanges;
+        state.welcomeShown = state.viewOptions.showWelcomeScreen && !this.props.data;
 
         window.onload = function() {
             state.loaded = true;
@@ -62,10 +58,10 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         if (!this.props.data && !state.embed) {
             window.onpopstate = this.onBackButtonEvent.bind(this);
         }
-        if (this.props.mapOptions.baseMapName && state.activeBaseLayer.id !== this.props.mapOptions.baseMapName) {
+        if (state.mapOptions.baseMapName && state.activeBaseLayer.id !== state.mapOptions.baseMapName) {
             state.map.removeLayer(state.activeBaseLayer.layer);
-            state.baseLayers.filter(f => f.id === this.props.mapOptions.baseMapName)[0].layer;
-            state.activeBaseLayer = { id: this.props.mapOptions.baseMapName, layer: state.baseLayers.filter(f => f.id === this.props.mapOptions.baseMapName)[0].layer };
+            state.baseLayers.filter(f => f.id === state.mapOptions.baseMapName)[0].layer;
+            state.activeBaseLayer = { id: state.mapOptions.baseMapName, layer: state.baseLayers.filter(f => f.id === state.mapOptions.baseMapName)[0].layer };
             state.map.addLayer(state.activeBaseLayer.layer);
         }
         if (this.props.data) {
@@ -77,18 +73,16 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         if (newProps.data && JSON.stringify(newProps.data) !== JSON.stringify(this.props.data)) {
             this.loadData(this.props.data, newProps.data);
         }
+        if (JSON.stringify(newProps.viewOptions) !== JSON.stringify(state.viewOptions)) {
+            state.viewOptions = newProps.viewOptions;
+        }
         if (state.map) {
             if (newProps.mapOptions.mapCenter && !!newProps.mapOptions.zoomLevel)
                 state.map.setView(newProps.mapOptions.mapCenter, newProps.mapOptions.zoomLevel);
         }
-        if (JSON.stringify(newProps.viewOptions) !== JSON.stringify(this.props.viewOptions)) {
-            state.menuShown = newProps.viewOptions.showMenu;
-            state.language = newProps.viewOptions.language;
-            state.layerMenuState.allowChanges = newProps.viewOptions.allowLayerChanges;
-        }
-        if (this.props.mapOptions.baseMapName && state.activeBaseLayer.id !== this.props.mapOptions.baseMapName) {
+        if (state.mapOptions.baseMapName && state.activeBaseLayer.id !== state.mapOptions.baseMapName) {
             state.map.removeLayer(state.activeBaseLayer.layer);
-            state.activeBaseLayer = { id: this.props.mapOptions.baseMapName, layer: state.baseLayers.filter(f => f.id === this.props.mapOptions.baseMapName)[0].layer };
+            state.activeBaseLayer = { id: state.mapOptions.baseMapName, layer: state.baseLayers.filter(f => f.id === state.mapOptions.baseMapName)[0].layer };
             state.map.addLayer(state.activeBaseLayer.layer);
         }
     }
@@ -210,9 +204,9 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         }
     }
 
-    changeLanguage(lang: string) {
+    changeLanguage(lang: 'en' | 'fi') {
         Locale.setLanguage(lang);
-        state.language = lang;
+        state.viewOptions.language = lang;
     }
 
     reset() {
@@ -240,7 +234,7 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         state.editingLayer = undefined;
         state.importWizardShown = false;
 
-        state.welcomeShown = this.props.viewOptions.showWelcomeScreen && !this.props.data;
+        state.welcomeShown = state.viewOptions.showWelcomeScreen && !this.props.data;
         state.currentLayerId = 0;
         state.standardLayerOrder = [];
         state.heatLayerOrder = [];
@@ -281,7 +275,7 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
                             <LayerImportWizard state={state} />
                         </Modal>
                         : null}
-                    {state.menuShown || this.props.viewOptions.showMenu ?
+                    {state.menuShown || state.viewOptions.showMenu ?
                         <MakeMapsMenu state={state} />
                         : null}
                 </div>

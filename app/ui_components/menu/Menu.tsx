@@ -109,7 +109,7 @@ export class MakeMapsMenu extends React.Component<{
                         <MenuEntry text={strings.legendMenuTitle} id={5} active={visibleMenu === 5} fa='map-o' onClick={this.onActiveMenuChange} />
                         <MenuEntry text={strings.clusterMenuTitle} id={6} active={visibleMenu === 6} fa='asterisk' onClick={this.onActiveMenuChange} hide={state.editingLayer.pointFeatureCount === 0 || state.editingLayer.layerType === LayerTypes.HeatMap} />
                         <MenuEntry text={strings.popupMenuTitle} id={7} active={visibleMenu === 7} fa='newspaper-o' onClick={this.onActiveMenuChange} hide={!state.editingLayer || state.editingLayer.layerType === LayerTypes.HeatMap} />
-                        <MenuEntry text={strings.downloadMenuTitle} id={8} active={visibleMenu === 8} fa='download' onClick={this.onActiveMenuChange} hide={!state.showExportOptions} />
+                        <MenuEntry text={strings.downloadMenuTitle} id={8} active={visibleMenu === 8} fa='download' onClick={this.onActiveMenuChange} hide={!state.viewOptions.showExportOptions} />
                     </div >
                     <div className={state.visibleMenu > 0 ? 'menuOpen' : document.getElementsByClassName('menuOpen').length > 0 ? 'menuClose' : ''}
                         style={{ float: 'right', width: state.visibleMenu > 0 ? 250 : 0, height: '100%', overflowY: 'auto', background: '#ededed' }}>

@@ -95,8 +95,8 @@ export class WelcomeScreen extends React.Component<{
 
         let flags =
             <div style={{ position: 'absolute', top: 5, left: 5 }} className='f32'>
-                <i className='flag gb' onClick={() => { this.props.changeLanguage('en'); } } style={{ cursor: 'pointer', borderBottom: this.props.appState.language === 'en' ? '2px solid #cecece' : '' }} />
-                <i className='flag fi' onClick={() => { this.props.changeLanguage('fi'); } } style={{ cursor: 'pointer', borderBottom: this.props.appState.language === 'fi' ? '2px solid #cecece' : '' }} />
+                <i className='flag gb' onClick={() => { this.props.changeLanguage('en'); } } style={{ cursor: 'pointer', borderBottom: this.props.appState.viewOptions.language === 'en' ? '2px solid #cecece' : '' }} />
+                <i className='flag fi' onClick={() => { this.props.changeLanguage('fi'); } } style={{ cursor: 'pointer', borderBottom: this.props.appState.viewOptions.language === 'fi' ? '2px solid #cecece' : '' }} />
             </div>;
 
 

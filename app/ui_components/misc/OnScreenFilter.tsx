@@ -156,7 +156,12 @@ export class OnScreenFilter extends React.Component<{ filter: Filter, state: App
     render() {
         let filter = this.props.filter;
         let map = filter.appState.map;
-        let header = this.props.state.layers.filter((layer) => { return layer.id === filter.layerId; })[0].getHeaderById(filter.filterHeaderId);
+        let layer = this.props.state.layers.filter((layer) => { return layer.id === filter.layerId; })[0];
+        if (!layer)
+            return null;
+        let header = layer.getHeaderById(filter.filterHeaderId);
+        if (!header)
+            return null;
 
         return <Draggable
             handle={'.filterhead'}

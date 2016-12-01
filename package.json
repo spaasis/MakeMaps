@@ -5,11 +5,11 @@
   "bugs": {
     "url": "https://github.com/simopaasisalo/MakeMaps/issues"
   },
-  "version": "0.8.2",
+  "version": "0.8.3",
   "main": "./dist/MakeMaps.js",
   "typings": "./dist/MakeMaps",
   "scripts": {
-    "prepublish": "typings install && tslint app/**/*.ts* && tsc && webpack"
+    "prepublish": "typings install && tslint app/*.ts* && tslint app/**/*.ts* && tsc && webpack"
   },
   "author": "Simo Paasisalo",
   "license": "GPL-3.0",
