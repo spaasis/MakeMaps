@@ -26,8 +26,8 @@ body{
 
 h2,h3{
   font-family: 'dejavu_sansextralight',Arial,sans-serif;
-  text-align: center;;
-  margin: 0
+  text-align: center;
+  margin: 0;
   text-align: center;
   margin: 0;
 }
@@ -35,6 +35,28 @@ h2,h3{
 hr{
   color: #cecece;
   width: 75%;
+}
+
+.fav{
+  content: '';
+  background: url(../images/favicon.png);
+  background-size: contain;
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  vertical-align: middle;
+  border-style: none;
+}
+
+.logo{
+  content: '';
+  background: url(../images/logo.png);
+  background-size: cover;
+  width: 210px;
+  height: 40px;
+  display: inline-block;
+  vertical-align: middle;
+  border-style: none;
 }
 
 .menuOpen{
@@ -254,7 +276,6 @@ hr{
   max-height: calc(100% - 15px);
   z-index: 600;
   overflow-y: auto;
-  padding: 10px;
 }
 
 .filter{
