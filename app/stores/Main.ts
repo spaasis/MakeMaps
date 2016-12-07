@@ -1,3 +1,5 @@
+import { observable, computed, autorun } from 'mobx';
+
 export class MakeMapsData {
     /** Unique id that is used to reference the map layers. */
     id: number;
@@ -38,7 +40,7 @@ export class ViewOptions {
     /** Should the addition and removal of layers be allowed in the layer menu. Default true*/
     allowLayerChanges: boolean = true;
     /** Menu display language. */
-    language: 'fi' | 'en';
+    @observable language: 'fi' | 'en';
     /** Show default MakeMaps welcome screen when there is no data to load. Default true*/
     showWelcomeScreen = true;
 }

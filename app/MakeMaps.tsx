@@ -261,7 +261,8 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
                 <div>
                     <Modal
                         isOpen={state.welcomeShown}
-                        style={modalStyle}>
+                        style={modalStyle}
+                        contentLabel='Welcome'>
                         <WelcomeScreen
                             state={state.welcomeScreenState}
                             appState={state}
@@ -271,7 +272,8 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
                     {state.importWizardShown ?
                         <Modal
                             isOpen={state.importWizardShown}
-                            style={modalStyle}>
+                            style={modalStyle}
+                            contentLabel='New Layer'>
                             <LayerImportWizard state={state} />
                         </Modal>
                         : null}
