@@ -6,8 +6,8 @@ let en = new Strings();
 
 // TODO:fix typings!
 let Locale: any = new Loc({
-    fi,
     en,
+    fi,
 });
 
 export { Locale }

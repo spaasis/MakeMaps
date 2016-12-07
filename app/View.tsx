@@ -6,7 +6,7 @@ import { MakeMapsData } from './stores/Main';
 ReactDOM.render(
     <div>
         <MakeMaps data={null}
-            viewOptions={{ showMenu: true, showExportOptions: true, showWelcomeScreen: true, allowLayerChanges: true, language: 'fi' }}
+            viewOptions={null}
             mapOptions={null} />
     </div>, document.getElementById('content')
 );

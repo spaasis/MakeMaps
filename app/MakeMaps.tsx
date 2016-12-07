@@ -40,9 +40,9 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
         state.mapOptions = this.props.mapOptions || new MapOptions(); // init with defaults if no input
         state.mapStartingCenter = state.mapOptions.mapCenter || [0, 0];
         state.mapStartingZoom = state.mapOptions.zoomLevel || 2;
-
         if (!state.viewOptions.language)
             state.viewOptions.language = Locale.getLanguage();
+        Locale.setLanguage(state.viewOptions.language);
         // Hack - get all the string options visible in the IDE
         let strings: Strings = (Locale as any);
         state.strings = strings;
