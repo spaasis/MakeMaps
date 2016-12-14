@@ -30,6 +30,7 @@ export class MapOptions {
     zoomLevel: number = 2;
     /** Map base layer*/
     baseMapName: 'OSM Streets' | 'OSM Black&White' | 'OpenTopoMap' | 'Stamen Toner' | 'Stamen Watercolor' = 'OSM Streets';
+
 }
 
 export class ViewOptions {

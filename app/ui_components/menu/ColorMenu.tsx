@@ -241,6 +241,7 @@ export class ColorMenu extends React.Component<{
         let colorPicker = <Modal
             isOpen={state.colorSelectOpen}
             style={colorSelectStyle}
+            contentLabel='Colors'
             >
 
             <ColorPicker.SwatchesPicker

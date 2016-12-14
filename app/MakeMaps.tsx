@@ -25,7 +25,7 @@ let Modal = require('react-modal');
 const state = new AppState();
 
 @observer
-export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOptions: ViewOptions, mapOptions: MapOptions }, {}> {
+export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOptions: ViewOptions, mapOptions: MapOptions, onMapDoubleClick: (layerId: number | null, featureId: number | null, geoJSON) => void }, {}> {
 
     componentWillMount() {
         if (!this.props.data) {
@@ -256,7 +256,7 @@ export class MakeMaps extends React.Component<{ data: MakeMapsData[], viewOption
             }
         };
         return <div>
-            <Map state={state} />
+            <Map state={state} onDoubleClick={this.props.onMapDoubleClick ? this.props.onMapDoubleClick : null} />
             {!state.loaded || state.embed ? null :
                 <div>
                     <Modal

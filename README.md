@@ -22,7 +22,7 @@ You can integrate MakeMaps as a part of a larger React application through React
 
 Sample of an integration baseline: https://github.com/simopaasisalo/MakeMapsIntegrationTests
 
-**Installing** 
+**Installing**
 
 Make sure you have these loaders in package.json:
 ```
@@ -87,7 +87,8 @@ var data = [{
 <MakeMaps
   data={data}
   viewOptions={{ showMenu: true, showExportOptions: true, allowLayerChanges: true, language: 'en', showWelcomeScreen:false }}
-  mapOptions={{ attributionExtension: '', mapCenter: [15,16], zoomLevel: 4, baseMapName: 'OSM Black&White' }} />
+  mapOptions={{ attributionExtension: '', mapCenter: [15,16], zoomLevel: 4, baseMapName: 'OSM Black&White' }}
+  onMapDoubleClick={null} />
 
 ```
 
@@ -116,6 +117,12 @@ var data = [{
 - **showExportOptions (bool)** show map download options on menu. Default true
 - **allowLayerChanges (bool)** allow the creation and removal of additional layers through menu. Default false
 - **showWelcomeScreen (bool)** show the MakeMaps welcome screen when there is no data to load. Setting this to false shows an empty map.
+
+**Events**
+- **onMapDoubleClick** Track double click events on the map. Can be used to highlight items or geocode existing data in the host app. This method has three parameters:
+  - layerId - if the user double clicked on a map feature, the layer id of the clicked feature. Undefined if no feature.
+  - featureId - if the user double clicked on a map feature, the unique id (by the order of addition) of the clicked feature. Undefined if no feature.
+  - geoJSON - either the feature's GeoJSON presentation OR a new GeoJSON object with the coordinates of the click.
 
 Embedding a map
 =========

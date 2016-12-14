@@ -34,7 +34,7 @@ export class Filter {
     /** Currently selected number step in the UI*/
     @observable selectedStep: number;
     /** Can multiple categories be selected at the same time*/
-    @observable allowCategoryMultiSelect: boolean;
+    @observable allowCategoryMultiSelect: boolean = false;
     /** Array of currently selected string categories in the UI*/
     @observable selectedCategories: string[];
     /** Keep the distance between the min and max the same when the slider is being moved.

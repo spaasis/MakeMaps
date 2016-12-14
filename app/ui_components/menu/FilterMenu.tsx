@@ -80,26 +80,34 @@ export class FilterMenu extends React.Component<{
     }
 
     onCreate = () => {
-        let filter = new Filter(this.props.state);
-        filter.id = this.props.state.nextFilterId;
-        filter.layerId = this.props.state.editingLayer.id;
-        let header = this.props.state.editingLayer.headers[0];
-        filter.filterHeaderId = header.id;
-        filter.title = header.label;
+        let state = this.props.state;
+        let filter = new Filter(state);
+        filter.id = state.nextFilterId;
 
-        this.props.state.filters.push(filter);
-        this.props.state.filterMenuState.selectedFilterId = filter.id;
+        state.filters.push(filter);
+        state.filterMenuState.selectedFilterId = filter.id;
+        this.setFilterLayerInfo(state.editingLayer);
+    }
+
+    setFilterLayerInfo = (layer: Layer) => {
+        let state = this.props.state;
+        state.editingFilter.layerId = layer.id;
+        let header = layer.headers[0];
+        state.editingFilter.filterHeaderId = header.id;
+        state.editingFilter.title = header.label;
         if (header.type === 'string') {
-            this.props.state.filterMenuState.useCustomSteps = true;
-            filter.useDistinctValues = true;
+            state.filterMenuState.useCustomSteps = true;
+            state.editingFilter.useDistinctValues = true;
             this.calculateSteps(header);
         }
         else {
-            this.props.state.filterMenuState.useCustomSteps = false;
-            filter.useDistinctValues = false;
+            state.filterMenuState.useCustomSteps = false;
+            state.editingFilter.useDistinctValues = false;
             this.getMinMax();
         }
+
     }
+
     onSave = () => {
         let filter = this.props.state.editingFilter;
         let header = this.props.state.layers.filter((f) => { return f.id === filter.layerId; })[0].getHeaderById(filter.filterHeaderId);
@@ -169,7 +177,7 @@ export class FilterMenu extends React.Component<{
                             placeholder={strings.selectPlaceholder}
                             />
                         {strings.or}</div> : null}
-                <button className='menuButton' onClick={this.onCreate}>{strings.createNewFilter}</button>
+                <button className='menuButton' onClick={() => { this.onCreate(); } }>{strings.createNewFilter}</button>
                 <br />
 
                 {filter ?
@@ -179,7 +187,7 @@ export class FilterMenu extends React.Component<{
                         <Select
                             options={layers}
                             onChange={(val: { label: string, value: Layer }) => {
-                                filter.layerId = val.value.id;
+                                this.setFilterLayerInfo(val.value);
                             } }
                             value={layer}
                             valueRenderer={(option: Layer) => {

@@ -5,7 +5,7 @@
   "bugs": {
     "url": "https://github.com/simopaasisalo/MakeMaps/issues"
   },
-  "version": "0.8.5",
+  "version": "0.9.0",
   "main": "./dist/MakeMaps.js",
   "typings": "./dist/MakeMaps",
   "scripts": {

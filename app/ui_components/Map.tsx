@@ -27,7 +27,7 @@ require('../../styles/MarkerCluster.css');
 
 
 @observer
-export class Map extends React.Component<{ state: AppState }, {}> {
+export class Map extends React.Component<{ state: AppState, onDoubleClick: (layerId: number | null, featureId: number | null, geoJSON) => void }, {}> {
 
 
     componentDidMount() {
@@ -94,17 +94,26 @@ export class Map extends React.Component<{ state: AppState }, {}> {
      * initMap - Initializes the map with basic options
      */
     initMap() {
-        this.props.state.baseLayers = _mapInitModel.InitBaseMaps();
-        this.props.state.activeBaseLayer = this.props.state.baseLayers[0];
+        let state = this.props.state;
+        state.baseLayers = _mapInitModel.InitBaseMaps();
+        state.activeBaseLayer = state.baseLayers[0];
         let props: L.MapOptions = {
-            layers: (this.props.state.activeBaseLayer.layer as any),
-            doubleClickZoom: false,
+            layers: (state.activeBaseLayer.layer as any),
             //  fullscreenControl: true,
         };
-        this.props.state.map = L.map('map', props).setView(this.props.state.mapStartingCenter, this.props.state.mapStartingZoom);
-        this.props.state.map.doubleClickZoom.disable();
-        this.props.state.map.on('contextmenu', function(e) { // disable context menu opening on right-click
+        state.map = L.map('map', props).setView(state.mapStartingCenter, state.mapStartingZoom);
+        state.map.doubleClickZoom.disable();
+        state.map.on('contextmenu', function(e) { // disable context menu opening on right-click
             //  map.openTooltip('asd', (e as any).latlng );
+            return;
+        });
+        let onDoubleClick = this.props.onDoubleClick;
+        state.map.on('dblclick', function(e) { // disable context menu opening on right-click
+            if (onDoubleClick) {
+                let feature = state.mouseOverFeature;
+                let geoJSON = feature ? feature.featureGeoJSON : { type: 'Feature', geometry: { type: 'Point', coordinates: [(e as any).latlng.lng, (e as any).latlng.lat] }, properties: {} };
+                onDoubleClick(feature && feature.layerId | null, feature && feature.featureId | null, geoJSON);
+            }
             return;
         });
     }

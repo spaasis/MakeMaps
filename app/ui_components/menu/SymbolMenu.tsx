@@ -290,6 +290,7 @@ export class SymbolMenu extends React.Component<{
             <Modal
                 isOpen={state.iconSelectOpen}
                 style={iconSelectStyle}
+                contentLabel='Icons'
                 >
                 {state.iconSelectOpen ? <div>
                     {strings.icon}

@@ -3,7 +3,6 @@ import { AppState } from '../../stores/States';
 import { Legend } from '../../stores/Legend';
 import { observer } from 'mobx-react';
 import { TextEditor } from '../misc/TextEditor';
-let Modal = require('react-modal');
 @observer
 export class LegendMenu extends React.Component<{
     state: AppState,

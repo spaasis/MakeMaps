@@ -95,6 +95,9 @@ export class AppState {
 
     @observable mapOptions: MapOptions;
 
+    /** Currently hovered map feature*/
+    mouseOverFeature: { layerId: number; featureId: number, featureGeoJSON };
+
 
     constructor() {
         mobx.autorun(() => {

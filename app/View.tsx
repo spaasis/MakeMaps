@@ -7,6 +7,7 @@ ReactDOM.render(
     <div>
         <MakeMaps data={null}
             viewOptions={null}
-            mapOptions={null} />
+            mapOptions={null}
+            onMapDoubleClick={null} />
     </div>, document.getElementById('content')
 );
