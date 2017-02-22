@@ -216,16 +216,17 @@ export class LayerMenu extends React.Component<{
                             onBlur={(e) => { layer.refreshPopUps(); } }
                             onKeyPress={(e) => { if (e.charCode === 13) { layer.refreshPopUps(); } } } />
                     </td>
-                    <td>
-                        <input type='number' style={{ width: 40 }}
-                            value={h.decimalAccuracy.toString()}
-                            onChange={(e) => { h.decimalAccuracy = (e.currentTarget as any).valueAsNumber; layer.refreshPopUps(); } }
-                            min={0}
-                            />
+                    {h.type === 'number' ?
+                        <td>
+                            <input type='number' style={{ width: 40 }}
+                                value={h.decimalAccuracy.toString()}
+                                onChange={(e) => { h.decimalAccuracy = (e.currentTarget as any).valueAsNumber; layer.refreshPopUps(); } }
+                                min={0}
+                                />
 
 
-                    </td>
-
+                        </td>
+                        : null}
                 </tr>
             );
         }
