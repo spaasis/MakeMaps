@@ -95,8 +95,8 @@ export class WelcomeScreen extends React.Component<{
 
         let flags =
             <div style={{ position: 'absolute', top: 5, left: 5 }} className='f32'>
-                <i className='flag gb' onClick={() => { this.props.changeLanguage('en'); } } style={{ cursor: 'pointer', borderBottom: this.props.appState.viewOptions.language === 'en' ? '2px solid #cecece' : '' }} />
-                <i className='flag fi' onClick={() => { this.props.changeLanguage('fi'); } } style={{ cursor: 'pointer', borderBottom: this.props.appState.viewOptions.language === 'fi' ? '2px solid #cecece' : '' }} />
+                <i className='flag gb' onClick={() => { this.props.changeLanguage('en'); }} style={{ cursor: 'pointer', borderBottom: this.props.appState.viewOptions.language === 'en' ? '2px solid #cecece' : '' }} />
+                <i className='flag fi' onClick={() => { this.props.changeLanguage('fi'); }} style={{ cursor: 'pointer', borderBottom: this.props.appState.viewOptions.language === 'fi' ? '2px solid #cecece' : '' }} />
             </div>;
 
 
@@ -147,8 +147,8 @@ export class WelcomeScreen extends React.Component<{
                     overflowX: 'hidden', overflowY: 'hidden', height: 250, maxWidth: '85%',
                     margin: '0 auto', whiteSpace: 'nowrap', position: 'relative'
                 }}
-                onMouseEnter={() => { this.stopScrolling(); } }
-                onMouseLeave={() => { this.startScrolling(); } }>
+                onMouseEnter={() => { this.stopScrolling(); }}
+                onMouseLeave={() => { this.startScrolling(); }}>
                 <button className='primaryButton' style={{ height: '100%', width: 40, position: 'absolute', left: 0, top: 0 }} onClick={() => this.moveDemosRight()}>{'<'}</button>
                 <div style={{ marginLeft: 40, marginRight: 40 }}>
                     {this.getHighlightedDemo()}
@@ -163,17 +163,17 @@ export class WelcomeScreen extends React.Component<{
                     style={{ width: 300, margin: 5 }}
                     onDrop={this.onDrop.bind(this)}
                     accept={'.mmap'}
-                    >
+                >
                     {strings.uploadSavedMap}
                 </Dropzone>
-                <button style={{ width: 300, margin: 5 }} className='primaryButton'
+                <button id='newMapButton' style={{ width: 300, margin: 5 }} className='primaryButton'
                     onClick={() => {
                         let state = this.props.appState;
                         state.importWizardState = new ImportWizardState(state);
                         state.importWizardShown = true;
                         state.welcomeShown = false;
                         state.menuShown = false;
-                    } }>{strings.createNewMap}</button>
+                    }}>{strings.createNewMap}</button>
             </div>
             <br />
             {infoBlocks}
@@ -188,10 +188,10 @@ export class WelcomeScreen extends React.Component<{
             buttons.push(
                 <button key={i}
                     className={'welcomeDemoButton' + (this.props.state.demoOrder[0] === i ? ' active' : '')}
-                    onClick={() => { this.highlightDemo(i); } }
-                    onMouseEnter={() => { this.stopScrolling(); } }
-                    onMouseLeave={() => { this.startScrolling(); } }
-                    />
+                    onClick={() => { this.highlightDemo(i); }}
+                    onMouseEnter={() => { this.stopScrolling(); }}
+                    onMouseLeave={() => { this.startScrolling(); }}
+                />
             );
         }
         return buttons;
@@ -205,40 +205,40 @@ export class WelcomeScreen extends React.Component<{
             imageURL='demos/chorodemo.png'
             description={strings.chorodemoDescription}
             loadDemo={this.loadDemo.bind(this, 'chorodemo')}
-            onClick={() => { this.highlightDemo(0); } }
-            />,
+            onClick={() => { this.highlightDemo(0); }}
+        />,
         <DemoPreview
             key={1}
             strings={strings}
             imageURL='demos/symboldemo.png'
             description={strings.symboldemoDescription}
             loadDemo={this.loadDemo.bind(this, 'symboldemo')}
-            onClick={() => { this.highlightDemo(1); } }
-            />,
+            onClick={() => { this.highlightDemo(1); }}
+        />,
         <DemoPreview
             key={2}
             strings={strings}
             imageURL='demos/hki_chartdemo.png'
             description={strings.chartDemoDescription}
             loadDemo={this.loadDemo.bind(this, 'hki_chartdemo')}
-            onClick={() => { this.highlightDemo(2); } }
-            />,
+            onClick={() => { this.highlightDemo(2); }}
+        />,
         <DemoPreview
             key={3}
             strings={strings}
             imageURL='demos/hki_heatdemo.png'
             description={strings.heatDemoDescription}
             loadDemo={this.loadDemo.bind(this, 'hki_heatdemo')}
-            onClick={() => { this.highlightDemo(3); } }
-            />,
+            onClick={() => { this.highlightDemo(3); }}
+        />,
         <DemoPreview
             key={4}
             strings={strings}
             imageURL='demos/clusterdemo.png'
             description={strings.clusterDemoDescription}
             loadDemo={this.loadDemo.bind(this, 'clusterdemo')}
-            onClick={() => { this.highlightDemo(4); } }
-            />];
+            onClick={() => { this.highlightDemo(4); }}
+        />];
         return demos[this.props.state.demoOrder[0]];
 
     }

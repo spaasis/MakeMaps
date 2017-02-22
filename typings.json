@@ -1,12 +1,13 @@
 {
   "name": "MakeMaps",
   "version": false,
-  "dependencies": {},
   "globalDependencies": {
+    "chai": "registry:dt/chai#3.4.0+20170217154556",
     "chroma-js": "registry:dt/chroma-js#1.1.1+20160724065645",
     "geojson": "registry:dt/geojson#0.0.0+20160619034323",
     "leaflet": "registry:dt/leaflet#1.0.0-rc3+20160923173226",
     "leaflet.fullscreen": "registry:dt/leaflet.fullscreen#1.3.0+20160317120654",
+    "mocha": "registry:dt/mocha#2.2.5+20170204022515",
     "node": "registry:dt/node#6.0.0+20160728152422",
     "papaparse": "registry:dt/papaparse#4.1.0+20160317120654",
     "react": "registry:dt/react#0.14.0+20160720060442",

@@ -54,14 +54,14 @@ export class FileDetailsView extends React.Component<
                             options={this.activeLayer.numberHeaders}
                             onChange={(val) => {
                                 this.props.state.latitudeField = val ? val.value : '';
-                            } }
+                            }}
                             value={state.latitudeField}
                             clearable={false}
-                            />
+                        />
                         <label>{strings.selectLngHeader}</label>
                         <Select
                             options={this.activeLayer.numberHeaders}
-                            onChange={(val) => { this.props.state.longitudeField = val ? val.value : ''; } }
+                            onChange={(val) => { this.props.state.longitudeField = val ? val.value : ''; }}
                             value={state.longitudeField}
                             clearable={false} />
                     </div>}
@@ -72,7 +72,7 @@ export class FileDetailsView extends React.Component<
                     onChange={(val) => {
                         state.useCustomProjection = false;
                         state.coordinateSystem = val ? val.value : '';
-                    } }
+                    }}
                     value={state.coordinateSystem}
                     clearable={false} />
                 <p>{strings.coordSystemHelp}</p>
@@ -85,13 +85,13 @@ export class FileDetailsView extends React.Component<
 
                     </div>
                     :
-                    <button className='primaryButton' style={{ width: 'auto' }} onClick={() => { state.useCustomProjection = true; } }>{strings.useCustomProjectionButton}</button>
+                    <button className='primaryButton' style={{ width: 'auto' }} onClick={() => { state.useCustomProjection = true; }}>{strings.useCustomProjectionButton}</button>
                 }
             </div>
             <button className='secondaryButton'
                 style={{ position: 'absolute', left: 15, bottom: 15 }}
                 onClick={this.props.goBack}>{strings.previous}</button>
-            <button className='primaryButton'
+            <button className='primaryButton' id='createMapButton'
                 disabled={!state.coordinateSystem || (!state.isGeoJSON && (!state.latitudeField || !state.longitudeField))}
                 style={{ position: 'absolute', right: 15, bottom: 15 }}
                 onClick={this.proceed}>{strings.finishImport}</button>

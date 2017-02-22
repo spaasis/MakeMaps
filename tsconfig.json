@@ -16,20 +16,18 @@
         "suppressImplicitAnyIndexErrors": true,
         "outDir": "dist"
     },
-    "exclude": [
-        "node_modules"
+    "files":[
+      "typings/index.d.ts",
+      "typings-custom/leaflet.heat.d.ts",
+      "typings-custom/leaflet.ExtraMarkers.d.ts",
+      "app/common_items/commonInterfaces.ts",
+      "node_modules/react-localization/lib/LocalizedStrings.d.ts",
+      "app/MakeMaps.tsx",
+      "app/View.tsx",
+      "app/stores/States.ts",
+      "app/stores/Main.ts",
+      "app/test/test_loads.ts"
     ],
-"files":[
-"typings/index.d.ts",
-"typings-custom/leaflet.heat.d.ts",
-"typings-custom/leaflet.ExtraMarkers.d.ts",
-"app/common_items/commonInterfaces.ts",
-"node_modules/react-localization/lib/LocalizedStrings.d.ts",
-"app/MakeMaps.tsx",
-"app/View.tsx",
-"app/stores/States.ts",
-"app/stores/Main.ts"
-],
     "compileOnSave": true,
     "buildOnSave": false,
     "atom": {
