@@ -112,7 +112,8 @@ export class Map extends React.Component<{ state: AppState, onDoubleClick: (laye
             if (onDoubleClick) {
                 let feature = state.mouseOverFeature;
                 let geoJSON = feature ? feature.featureGeoJSON : { type: 'Feature', geometry: { type: 'Point', coordinates: [(e as any).latlng.lng, (e as any).latlng.lat] }, properties: {} };
-                onDoubleClick(feature && feature.layerId | null, feature && feature.featureId | null, geoJSON);
+                if (feature && geoJSON)
+                    onDoubleClick(feature.layerId, feature.featureId, geoJSON);
             }
             return;
         });

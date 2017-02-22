@@ -2,7 +2,6 @@
   "name": "MakeMaps",
   "version": false,
   "globalDependencies": {
-    "chai": "registry:dt/chai#3.4.0+20170217154556",
     "chroma-js": "registry:dt/chroma-js#1.1.1+20160724065645",
     "geojson": "registry:dt/geojson#0.0.0+20160619034323",
     "leaflet": "registry:dt/leaflet#1.0.0-rc3+20160923173226",
