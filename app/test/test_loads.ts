@@ -28,13 +28,14 @@ describe('New map creation test', function() {
         driver.findElement(By.id('newMapButton')).click();
         console.log('Should be on file upload dialog');
         driver.sleep(1000);
+        console.log('Try to load file ' + path.resolve('.') + '/app/test/categories.geojson');
         // check that we are on correct page
         driver.findElement(By.css('.dropZone > input')).sendKeys(path.resolve('.') + '/app/test/categories.geojson');
         driver.findElement(By.css('.primaryButton')).click();
         console.log('File uploaded');
         driver.sleep(1000);
         // check that we are on correct page
-        driver.findElement(By.css('#createMapButton')).click().then(function() { console.log('finish'); done(); });
+        driver.findElement(By.css('#createMapButton')).click().then(function() { console.log('finish'); done(); driver.quit(); });
 
 
     });
