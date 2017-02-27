@@ -32,7 +32,7 @@ describe('New map creation test', function() {
         // check that we are on correct page
         driver.findElement(By.css('.dropZone > input')).sendKeys(path.resolve('.') + '/app/test/categories.geojson');
         driver.findElement(By.css('.primaryButton')).click();
-        driver.sleep(1000);
+        driver.sleep(10000);
         console.log('File uploaded');
         // check that we are on correct page
         driver.findElement(By.css('#createMapButton')).click().then(function() { console.log('finish'); done(); driver.quit(); });
