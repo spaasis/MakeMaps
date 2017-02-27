@@ -22,7 +22,7 @@ describe('New map creation test', function() {
 
     it('Should load the welcome screen and go through the dialogs to load a map', function(done) {
         driver.get(index);
-        this.timeout(10000);
+        this.timeout(20000);
         driver.findElement(By.id('newMapButton')).click();
         // check that we are on correct page
         driver.findElement(By.css('.dropZone > input')).sendKeys(path.resolve('.') + '/app/test/categories.geojson');
