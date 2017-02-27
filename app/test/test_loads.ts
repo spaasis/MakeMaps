@@ -16,10 +16,6 @@ describe('New map creation test', function() {
         console.log('Firefox browser loaded');
     });
 
-    after(function() {
-        driver.quit();
-    });
-
     it('Should load the welcome screen and go through the dialogs to load a map', function(done) {
         console.log('loading ' + index);
         driver.get(index);
@@ -32,7 +28,7 @@ describe('New map creation test', function() {
         // check that we are on correct page
         driver.findElement(By.css('.dropZone > input')).sendKeys(path.resolve('.') + '/app/test/categories.geojson');
         driver.findElement(By.css('.primaryButton')).click();
-        driver.sleep(10000);
+        driver.sleep(1000);
         console.log('File uploaded');
         // check that we are on correct page
         driver.findElement(By.css('#createMapButton')).click().then(function() { console.log('finish'); done(); driver.quit(); });
