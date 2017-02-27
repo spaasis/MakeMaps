@@ -27,11 +27,12 @@ describe('New map creation test', function() {
         this.timeout(200000);
         driver.findElement(By.id('newMapButton')).click();
         console.log('Should be on file upload dialog');
+        driver.sleep(1000);
         // check that we are on correct page
         driver.findElement(By.css('.dropZone > input')).sendKeys(path.resolve('.') + '/app/test/categories.geojson');
         driver.findElement(By.css('.primaryButton')).click();
-        console.log('File upload');
-        driver.sleep(200);
+        console.log('File uploaded');
+        driver.sleep(1000);
         // check that we are on correct page
         driver.findElement(By.css('#createMapButton')).click().then(function() { console.log('finish'); done(); });
 
