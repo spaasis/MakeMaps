@@ -21,21 +21,23 @@ describe('New map creation test', function() {
     });
 
     it('Should load the welcome screen and go through the dialogs to load a map', function(done) {
-        // console.log('loading ' + index);
-        // driver.get(index);
-        // console.log(index + ' loaded');
+        console.log('loading ' + index);
+        driver.get(index);
+        console.log(index + ' loaded');
+        driver.findElement(By.id('newMapButton')).click();
+        console.log('Should be on file upload dialog');
+        driver.sleep(1000);
+        console.log('Try to load file ' + path.resolve('.') + '/app/test/categories.geojson');
+        // check that we are on correct page
+        driver.findElement(By.css('.dropZone > input')).sendKeys(path.resolve('.') + '/app/test/categories.geojson');
+        driver.findElement(By.css('.primaryButton')).click();
+        driver.sleep(1000);
+        console.log('File uploaded');
+        // check that we are on correct page
+        driver.findElement(By.css('#createMapButton')).click();
+        driver.sleep(1000);
+        console.log('finish');
         done();
-        // driver.findElement(By.id('newMapButton')).click();
-        // console.log('Should be on file upload dialog');
-        // driver.sleep(1000);
-        // console.log('Try to load file ' + path.resolve('.') + '/app/test/categories.geojson');
-        // // check that we are on correct page
-        // driver.findElement(By.css('.dropZone > input')).sendKeys(path.resolve('.') + '/app/test/categories.geojson');
-        // driver.findElement(By.css('.primaryButton')).click();
-        // driver.sleep(10000);
-        // console.log('File uploaded');
-        // // check that we are on correct page
-        // driver.findElement(By.css('#createMapButton')).click().then(function() { console.log('finish'); done(); driver.quit(); });
 
 
     });
