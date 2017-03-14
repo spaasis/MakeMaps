@@ -12,8 +12,7 @@ describe('Map load test', function() {
     let driver = new webdriver.Builder()
         .forBrowser('firefox')
         .build();
-    driver.sleep(5000);
-    this.timeout(180000);
+    this.timeout(60000);
 
     beforeEach(function(done) {
         console.log('beforeEach');
