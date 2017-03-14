@@ -6,40 +6,105 @@ let index = 'file:///' + path.resolve('.', 'index.html');
 
 import * as assert from 'assert';
 
-describe('New map creation test', function() {
-    let driver;
 
-    before(function() {
-        driver = new webdriver.Builder()
-            .forBrowser('firefox')
-            .build();
-        console.log('Firefox browser loaded');
+
+describe('Map load test', function() {
+    let driver = new webdriver.Builder()
+        .forBrowser('firefox')
+        .build();
+    this.timeout(8000);
+
+    beforeEach(function(done) {
+        driver.get(index).then(done());
     });
 
     after(function() {
         driver.quit();
     });
 
-    it('Should load the welcome screen and go through the dialogs to load a map', function(done) {
-        console.log('loading ' + index);
-        driver.get(index);
-        console.log(index + ' loaded');
+    it('Should load the choropleth demo without issues', function(done) {
+        driver.getCurrentUrl().then(function(url) {
+            assert.equal(url, index, 'Initial url did not match');
+            driver.findElement(By.css('#demo0')).click();
+            driver.findElement(By.css('.loadDemoButton')).click();
+            driver.sleep(3000);
+            driver.getCurrentUrl().then(function(url) {
+                assert.equal(url, index + '#edit', 'File loaded url did not match');
+                done();
+            });
+        });
+
+    });
+
+    it('Should load the symbol demo without issues', function(done) {
+        driver.getCurrentUrl().then(function(url) {
+            assert.equal(url, index, 'Initial url did not match');
+            driver.findElement(By.css('#demo1')).click();
+            driver.findElement(By.css('.loadDemoButton')).click();
+            driver.sleep(3000);
+            driver.getCurrentUrl().then(function(url) {
+                assert.equal(url, index + '#edit', 'File loaded url did not match');
+                done();
+            });
+        });
+
+    });
+    it('Should load the chart demo without issues', function(done) {
+        driver.getCurrentUrl().then(function(url) {
+            assert.equal(url, index, 'Initial url did not match');
+            driver.findElement(By.css('#demo2')).click();
+            driver.findElement(By.css('.loadDemoButton')).click();
+            driver.sleep(3000);
+            driver.getCurrentUrl().then(function(url) {
+                assert.equal(url, index + '#edit', 'File loaded url did not match');
+                done();
+            });
+        });
+
+    });
+
+    it('Should load the heatmap demo without issues', function(done) {
+        driver.getCurrentUrl().then(function(url) {
+            assert.equal(url, index, 'Initial url did not match');
+            driver.findElement(By.css('#demo3')).click();
+            driver.findElement(By.css('.loadDemoButton')).click();
+            driver.sleep(3000);
+            driver.getCurrentUrl().then(function(url) {
+                assert.equal(url, index + '#edit', 'File loaded url did not match');
+                done();
+            });
+        });
+
+    });
+
+    it('Should load the cluster demo without issues', function(done) {
+        driver.getCurrentUrl().then(function(url) {
+            assert.equal(url, index, 'Initial url did not match');
+            driver.findElement(By.css('#demo4')).click();
+            driver.findElement(By.css('.loadDemoButton')).click();
+            driver.sleep(3000);
+            driver.getCurrentUrl().then(function(url) {
+                assert.equal(url, index + '#edit', 'File loaded url did not match');
+                done();
+            });
+        });
+
+    });
+
+    it('Should go through the dialogs to load a new map', function(done) {
+
         driver.findElement(By.id('newMapButton')).click();
-        console.log('Should be on file upload dialog');
         driver.sleep(1000);
-        console.log('Try to load file ' + path.resolve('.') + '/app/test/categories.geojson');
-        // check that we are on correct page
         driver.findElement(By.css('.dropZone > input')).sendKeys(path.resolve('.') + '/app/test/categories.geojson');
         driver.findElement(By.css('.primaryButton')).click();
         driver.sleep(1000);
-        console.log('File uploaded');
-        // check that we are on correct page
         driver.findElement(By.css('#createMapButton')).click();
         driver.sleep(1000);
-        console.log('finish');
-        done();
-
-
+        driver.getCurrentUrl().then(function(url) {
+            assert.equal(url, index + '#edit', 'File loaded url did not match');
+            done();
+        });
     });
+
 
 });

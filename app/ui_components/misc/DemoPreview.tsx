@@ -39,7 +39,7 @@ export class DemoPreview extends React.Component<{
                 <img className='demoImage' src={this.props.imageURL} />
                 <div style={overlayStyle}>
                     {this.props.description}
-                    <button className='primaryButton' style={{ display: 'block', margin: '0 auto' }} onClick={this.loadClicked.bind(this)}>{this.props.strings.demoLoadButton}</button>
+                    <button className='primaryButton loadDemoButton' style={{ display: 'block', margin: '0 auto' }} onClick={this.loadClicked.bind(this)}>{this.props.strings.demoLoadButton}</button>
                 </div>
 
             </div>

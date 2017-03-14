@@ -188,6 +188,7 @@ export class WelcomeScreen extends React.Component<{
             buttons.push(
                 <button key={i}
                     className={'welcomeDemoButton' + (this.props.state.demoOrder[0] === i ? ' active' : '')}
+                    id={'demo' + i}
                     onClick={() => { this.highlightDemo(i); }}
                     onMouseEnter={() => { this.stopScrolling(); }}
                     onMouseLeave={() => { this.startScrolling(); }}
