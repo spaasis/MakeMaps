@@ -16,10 +16,7 @@ describe('Map load test', function() {
 
     beforeEach(function(done) {
         console.log('beforeEach');
-        driver.get(index).then(function() {
-            console.log('Loaded index');
-            done();
-        });
+        driver.get(index).then(done());
     });
 
     after(function() {
