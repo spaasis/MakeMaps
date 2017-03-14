@@ -15,6 +15,7 @@ describe('Map load test', function() {
     this.timeout(180000);
 
     beforeEach(function(done) {
+        console.log('beforeEach');
         driver.get(index).then(function() {
             console.log('Loaded index');
             done();
@@ -22,6 +23,7 @@ describe('Map load test', function() {
     });
 
     after(function() {
+        console.log('after');
         driver.quit();
     });
 
