@@ -23,9 +23,10 @@ describe('Map load test', function() {
     });
 
     it('Should load the choropleth demo without issues', function(done) {
+        console.log('Starting Choropleth test');
         driver.getCurrentUrl().then(function(url) {
             assert.equal(url, index, 'Initial url did not match');
-            console.log('loaded correct url');
+            console.log('loaded' + url);
             driver.findElement(By.css('#demo0')).click();
             driver.findElement(By.css('.loadDemoButton')).click();
             driver.sleep(3000);
