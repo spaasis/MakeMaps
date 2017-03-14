@@ -12,7 +12,7 @@ describe('Map load test', function() {
     let driver = new webdriver.Builder()
         .forBrowser('firefox')
         .build();
-    this.timeout(60000);
+    this.timeout(180000);
 
     beforeEach(function(done) {
         driver.get(index).then(function() {
