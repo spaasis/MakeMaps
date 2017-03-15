@@ -3,7 +3,7 @@
 [Hosting](#hosting)|
 
 
-#MakeMaps
+**MakeMaps**
 
  [![build status](https://travis-ci.org/simopaasisalo/MakeMaps.svg?branch=master)](http://travis-ci.org/simopaasisalo/MakeMaps)
 
@@ -169,4 +169,4 @@ License: GPL V3
 
 Author
 -----
-Simo Paasisalo [Mail](mailto:simopaasisalo@fastmail.com)|[LinkedIn](https://linkedin.com/in/simopaasisalo)
+Simo Paasisalo [Mail](mailto:simopaasisalo@fastmail.com)
