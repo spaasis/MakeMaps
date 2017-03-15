@@ -7,5 +7,6 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - g++-5
+    firefox: "51.0.1"
 node_js:
  - "7.6.0"
