@@ -2,9 +2,8 @@
 [Embedding](#embedding)|
 [Hosting](#hosting)|
 
-
-**MakeMaps**
-
+MakeMaps
+===========
  [![build status](https://travis-ci.org/simopaasisalo/MakeMaps.svg?branch=master)](http://travis-ci.org/simopaasisalo/MakeMaps)
 
 ![alt text](https://github.com/simopaasisalo/MakeMaps/blob/master/misc/map_preview.png "Map previews")
