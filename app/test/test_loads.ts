@@ -15,24 +15,19 @@ describe('Map load test', function() {
     this.timeout(60000);
 
     beforeEach(function(done) {
-        console.log('beforeEach');
         driver.get(index).then(done());
     });
 
     after(function() {
-        console.log('after');
         driver.quit();
     });
 
     it('Should load the choropleth demo without issues', function(done) {
-        console.log('Starting Choropleth test');
         driver.getCurrentUrl().then(function(url) {
             assert.equal(url, index, 'Initial url did not match');
-            console.log('loaded' + url);
             driver.findElement(By.css('#demo0')).click();
             driver.findElement(By.css('.loadDemoButton')).click();
             driver.sleep(3000);
-            console.log('slept for 3000');
             driver.getCurrentUrl().then(function(url) {
                 assert.equal(url, index + '#edit', 'File loaded url did not match');
                 done();
