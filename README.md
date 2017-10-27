@@ -4,8 +4,6 @@
 
 MakeMaps
 ===========
- [![build status](https://travis-ci.org/simopaasisalo/MakeMaps.svg?branch=master)](http://travis-ci.org/simopaasisalo/MakeMaps)
-
 ![alt text](https://github.com/simopaasisalo/MakeMaps/blob/master/misc/map_preview.png "Map previews")
 
 
@@ -147,9 +145,9 @@ There are two ways to embed maps to your website/blog:
   2. mapURL - URL of the .mmap-file
 ```
 <iframe style="height: 400px; width: 400px;"
-src="https://makemaps.online
+src="https://simopaasisalo.github.io/MakeMaps/
 ?
-mapURL=https://makemaps.online/demos/symboldemo.mmap"</iframe>
+mapURL=https://simopaasisalo.github.io/MakeMaps/demos/symboldemo.mmap"</iframe>
 ```
 
 Hosting
@@ -168,4 +166,4 @@ License: GPL V3
 
 Author
 -----
-Simo Paasisalo [Mail](mailto:simopaasisalo@fastmail.com)
+Simo Paasisalo [Mail](mailto:github@simopaasisalo.fastmail.com)
