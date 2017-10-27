@@ -177,7 +177,6 @@ export class Layer {
                 return;
             }
             else {
-                console.time('start');
                 this.displayLayer = L.geoJSON([], {
                     onEachFeature: this.onEachFeature,
                     pointToLayer: this.getMarker.bind(this, col, sym),
@@ -266,8 +265,6 @@ export class Layer {
             this.bounds = this.appState.map.getBounds();
         }
         HideLoading();
-
-        console.timeEnd('start');
 
     }
 

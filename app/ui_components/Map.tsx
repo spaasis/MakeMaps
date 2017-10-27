@@ -40,10 +40,17 @@ export class Map extends React.Component<{ state: AppState, onDoubleClick: (laye
         // Handle direct JSON embed
         if (window.addEventListener) {
             window.addEventListener('message', function(e) {
-                // TODO: verify JSON before
-                state.embed = true;
-                ShowLoading();
-                LoadSavedMap(JSON.parse(e.data), state);
+                let json = null;
+                try{
+                    json = JSON.parse(e.data);
+                }catch (e){
+                    console.log('Error loading data to JSON, data was: ' + e.data);
+                }
+                if (json != null){
+                    state.embed = true;
+                    ShowLoading();
+                    LoadSavedMap(json, state);
+                }
             }, false);
         }
         //   else if ( window.attachEvent ) { //  ie8

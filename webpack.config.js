@@ -55,6 +55,9 @@ module.exports = {
     },
     {
       './jszip': 'jszip'
+    },
+    {
+        xmlhttprequest: '{XMLHttpRequest:XMLHttpRequest}'
     }
   ],
 
