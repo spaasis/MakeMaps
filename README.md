@@ -4,9 +4,9 @@
 
 MakeMaps
 ===========
-![alt text](https://github.com/simopaasisalo/MakeMaps/blob/master/misc/map_preview.png "Map previews")
+![Map Previews](https://github.com/spaasis/MakeMaps/blob/master/misc/map_preview.png "Map previews")
 
-
+#Note> this package is not maintained
 
 MakeMaps is a map creation tool that takes in data in multiple formats and outputs a powerfully visualized map.
 
@@ -17,7 +17,7 @@ Integrating
 
 You can integrate MakeMaps as a part of a larger React application through React properties.
 
-Sample of an integration baseline: https://github.com/simopaasisalo/MakeMapsIntegrationTests
+Sample of an integration baseline: https://github.com/spaasis/MakeMapsIntegrationTests
 
 **Installing**
 
@@ -145,9 +145,9 @@ There are two ways to embed maps to your website/blog:
   2. mapURL - URL of the .mmap-file
 ```
 <iframe style="height: 400px; width: 400px;"
-src="https://simopaasisalo.github.io/MakeMaps/
+src="https://spaasis.github.io/MakeMaps/
 ?
-mapURL=https://simopaasisalo.github.io/MakeMaps/demos/symboldemo.mmap"</iframe>
+mapURL=https://spaasis.github.io/MakeMaps/demos/symboldemo.mmap"</iframe>
 ```
 
 Hosting
@@ -160,10 +160,4 @@ Hosting
 If you want the demos, fetch them from the gh-pages-branch
 ```
 
-
-
 License: GPL V3
-
-Author
------
-Simo Paasisalo [Mail](mailto:github@simopaasisalo.fastmail.com)
